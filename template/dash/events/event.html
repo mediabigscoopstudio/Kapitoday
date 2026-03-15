@@ -1,0 +1,61 @@
+{% extends "dash/index.html" %}
+{% block 'title' %}Events{% endblock 'title' %}
+{% block 'css' %}{% endblock 'css' %}
+{% block 'body' %}
+<div class="container-fluid">
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Events</h4> 
+        </div>
+        <a aria-label="Add Editor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Add Event" href="/dash/add_event">Add Event</a>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table datatable" id="datatable_1">
+                            <thead>
+                              <tr>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in events %}
+                                <tr>
+                                    <td class="ps-0">
+                                        <p class="d-inline-block align-middle mb-0">
+                                            <span>{{i.title}}</span> 
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p class="d-inline-block align-middle mb-0">
+                                            <span>{{i.created_at}}</span> 
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p class="d-inline-block align-middle mb-0">
+                                            <span>{{i.location}}</span> 
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Article" href="/dash/edit_event/{{i.id}}">Edit</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock 'body' %}
+{% block 'script' %}{% endblock 'script' %}
