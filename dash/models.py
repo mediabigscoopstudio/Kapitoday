@@ -1,6 +1,6 @@
 from django.db import models
-
-class CustomerAccount(models.Model):
+from django.contrib.auth.models import User
+class Customers(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_account')
     phone_number = models.CharField(max_length=15, unique=True)
     date_of_birth = models.DateField(null=True, blank=True)
