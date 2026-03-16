@@ -45,3 +45,20 @@ class Variant(models.Model):
     def __str__(self):
         return self.name    
     
+class Highlight(models.Model):
+    icon = models.ImageField(upload_to='highlight_icons/', null=True, blank=True)
+    text = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.text
+
+
+class APlusContent(models.Model):
+    highlight = models.ForeignKey(Highlight, on_delete=models.CASCADE, related_name='a_plus_contents')
+    content = models.TextField()
+    image = models.ImageField(upload_to='aplus_images/', null=True, blank=True)
+    image_alt = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"A+ Content for {self.highlight.text}"
+    
