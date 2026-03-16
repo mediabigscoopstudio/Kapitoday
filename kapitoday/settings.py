@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-=r6yap3@cyv(5+c*kaa5h#g8-t&#m@*o(jz@r+$uvgkafv75af
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['kapitoday.shop', 'www.kapitoday.shop','dash.kapitoday.shop']
 
 
 # Application definition
@@ -123,9 +123,7 @@ USE_I18N = True
 
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Base url to serve media files  
 MEDIA_URL = '/media/'  
