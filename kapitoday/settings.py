@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-=r6yap3@cyv(5+c*kaa5h#g8-t&#m@*o(jz@r+$uvgkafv75af
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['kapitoday.shop', 'www.kapitoday.shop','dash.kapitoday.shop']
+ALLOWED_HOSTS = ['kapitoday.shop', 'www.kapitoday.shop', 'dash.kapitoday.shop']
 
 
 # Application definition
