@@ -29,6 +29,7 @@ def index(request):
     return render(request,'dash/index.html')
 
 # Category Management Section
+
 @user_passes_test(superadmin_required, login_url=('/login_view'))
 def category(request):
     categories = Category.objects.all().order_by('-id')
@@ -89,3 +90,5 @@ def disable_category(request,id):
     category.status = "Disabled"
     category.save()
     return redirect('/category')
+
+# Sub-Category Management Section
