@@ -9,35 +9,45 @@
         </div>
     </div>
     <div class="row">
-        <!-- User Account Creation Form -->
         <div class="col-xl-6">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Create Category</h5>
                 </div>
-
                 <div class="card-body">
-                    <form class="row g-3" action="" method="POST">
+                    <form class="row g-3" action="" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="col-12">
-                            <label for="categoryTitle" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="categoryTitle" placeholder="Category Title" name="title" required>
+                            <label for="categoryTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="categoryTitle" placeholder="e.g. Single Origin Beans" name="title" required>
                         </div>
                         <div class="col-12">
                             <label for="categoryDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="categoryDescription" rows="3" placeholder="Category Description" name="description"></textarea>
+                            <textarea class="form-control" id="categoryDescription" rows="3" placeholder="Describe this coffee category..." name="description"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="categoryImage" class="form-label">Category Image</label>
+                            <input type="file" class="form-control" id="categoryImage" name="category_image" accept="image/*">
                         </div>
                         <div class="col-md-6">
                             <label for="categoryMetaTitle" class="form-label">Meta Title</label>
-                            <input type="text" class="form-control" id="categoryMetaTitle" placeholder="Meta Title" name="meta_title">
+                            <input type="text" class="form-control" id="categoryMetaTitle" placeholder="e.g. Buy Single Origin Coffee Beans" name="meta_title">
                         </div>
                         <div class="col-md-6">
                             <label for="categoryMetaDescription" class="form-label">Meta Description</label>
-                            <textarea class="form-control" id="categoryMetaDescription" rows="2" placeholder="Meta Description" name="meta_description"></textarea>
+                            <textarea class="form-control" id="categoryMetaDescription" rows="2" placeholder="Brief SEO description (150-160 chars recommended)" name="meta_description"></textarea>
                         </div>
                         <div class="col-12">
                             <label for="categoryMetaKeywords" class="form-label">Meta Keywords</label>
-                            <input type="text" class="form-control" id="categoryMetaKeywords" placeholder="Comma-separated keywords" name="meta_keywords">
+                            <input type="text" class="form-control" id="categoryMetaKeywords" placeholder="e.g. single origin coffee, arabica beans, specialty coffee" name="meta_keywords">
+                        </div>
+                        <div class="col-12">
+                            <label for="categoryStatus" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="categoryStatus" name="status" required>
+                                <option value="" disabled selected>Select Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
                         </div>
                         <div class="col-12">
                             <button class="btn btn-primary" type="submit">Create Category</button>
@@ -46,81 +56,94 @@
                 </div> 
             </div>
         </div> 
-        <!--FAQ Sections-->
+
         <div class="col-xl-6">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Help Desk</h5>
                 </div>
                 <div class="card-body">
-                    <div class="accordion" id="categoryEditFAQ">
+                    <div class="accordion" id="categoryFAQ">
 
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="faqEdit1">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit1" aria-expanded="true" aria-controls="collapseEdit1">
-                              1. What fields can I edit for a category?
-                            </button>
-                          </h2>
-                          <div id="collapseEdit1" class="accordion-collapse collapse show" aria-labelledby="faqEdit1" data-bs-parent="#categoryEditFAQ">
-                            <div class="accordion-body">
-                              You can edit the **Title**, **Description**, **Meta Title**, **Meta Description**, **Meta Keywords**, and **Status** of the category.
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                                    1. How should I name a coffee category for best SEO?
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="faq1" data-bs-parent="#categoryFAQ">
+                                <div class="accordion-body">
+                                    Use clear, keyword-rich titles that customers actually search for — such as <strong>Espresso Blends</strong>, <strong>Cold Brew Coffee</strong>, or <strong>Single Origin Beans</strong>. Avoid vague names like "Collection 1". A good title directly influences your slug and page ranking on Google.
+                                </div>
                             </div>
-                          </div>
                         </div>
-                    
+
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="faqEdit2">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit2" aria-expanded="false" aria-controls="collapseEdit2">
-                              2. Is the Category Title required?
-                            </button>
-                          </h2>
-                          <div id="collapseEdit2" class="accordion-collapse collapse" aria-labelledby="faqEdit2" data-bs-parent="#categoryEditFAQ">
-                            <div class="accordion-body">
-                              Yes, the **Title** field is mandatory. You need to provide a title to identify the category.
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                    2. What should I write in the Meta Title?
+                                </button>
+                            </h2>
+                            <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2" data-bs-parent="#categoryFAQ">
+                                <div class="accordion-body">
+                                    The Meta Title is what appears as the clickable headline in Google search results. Keep it under <strong>60 characters</strong>, include your primary keyword, and ideally your brand — e.g., <em>"Buy Dark Roast Coffee Beans – Kapi Today"</em>. This directly impacts your click-through rate.
+                                </div>
                             </div>
-                          </div>
                         </div>
-                    
+
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="faqEdit3">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit3" aria-expanded="false" aria-controls="collapseEdit3">
-                              3. What are Meta Title, Description, and Keywords for?
-                            </button>
-                          </h2>
-                          <div id="collapseEdit3" class="accordion-collapse collapse" aria-labelledby="faqEdit3" data-bs-parent="#categoryEditFAQ">
-                            <div class="accordion-body">
-                              These fields (**Meta Title**, **Meta Description**, and **Meta Keywords**) are important for Search Engine Optimization (SEO). They help search engines understand the content of pages associated with this category.
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                    3. How do I write an effective Meta Description?
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3" data-bs-parent="#categoryFAQ">
+                                <div class="accordion-body">
+                                    The Meta Description appears below the title in search results. Write it between <strong>150–160 characters</strong>, include a call-to-action like <em>"Shop now"</em> or <em>"Explore our range"</em>, and mention the coffee type. Example: <em>"Explore our premium single origin coffee beans sourced from Ethiopia and Colombia. Order fresh roasts online."</em>
+                                </div>
                             </div>
-                          </div>
                         </div>
-                    
+
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="faqEdit4">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit4" aria-expanded="false" aria-controls="collapseEdit4">
-                              4. What does the 'Status' field control?
-                            </button>
-                          </h2>
-                          <div id="collapseEdit4" class="accordion-collapse collapse" aria-labelledby="faqEdit4" data-bs-parent="#categoryEditFAQ">
-                            <div class="accordion-body">
-                              The **Status** field allows you to control whether the category is currently active and visible on your website. You can set it to "Enabled" or "Disabled".
+                            <h2 class="accordion-header" id="faq4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                    4. What Meta Keywords should I use for coffee categories?
+                                </button>
+                            </h2>
+                            <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faq4" data-bs-parent="#categoryFAQ">
+                                <div class="accordion-body">
+                                    Enter comma-separated keywords relevant to the category. For a category like <strong>Cold Brew</strong>, you might use: <em>cold brew coffee, cold brew concentrate, ready to drink coffee, bottled cold brew</em>. Focus on terms customers use when searching, not internal jargon.
+                                </div>
                             </div>
-                          </div>
                         </div>
-                    
+
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="faqEdit5">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit5" aria-expanded="false" aria-controls="collapseEdit5">
-                              5. Will changing the Title automatically update the Slug?
-                            </button>
-                          </h2>
-                          <div id="collapseEdit5" class="accordion-collapse collapse" aria-labelledby="faqEdit5" data-bs-parent="#categoryEditFAQ">
-                            <div class="accordion-body">
-                              Typically, the **Slug** (the URL-friendly version of the title) is generated automatically when the category is created. Depending on your system, changing the Title *might* not automatically update the Slug. You might have a separate process to regenerate slugs if needed.
+                            <h2 class="accordion-header" id="faq5">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                                    5. What image should I upload for a category?
+                                </button>
+                            </h2>
+                            <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="faq5" data-bs-parent="#categoryFAQ">
+                                <div class="accordion-body">
+                                    Upload a high-quality image that visually represents the category — e.g., a styled shot of espresso cups for an <strong>Espresso</strong> category. Recommended size is <strong>800×600px or larger</strong> in JPG or PNG format. A compelling category image improves customer engagement and conversion rate.
+                                </div>
                             </div>
-                          </div>
                         </div>
-                    
-                      </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq6">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
+                                    6. What does setting a category to Inactive do?
+                                </button>
+                            </h2>
+                            <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="faq6" data-bs-parent="#categoryFAQ">
+                                <div class="accordion-body">
+                                    Setting a category to <strong>Inactive</strong> hides it from the storefront so customers cannot browse or purchase products under it. Use this for seasonal categories like <em>Monsoon Specials</em> or categories being prepared but not yet ready to go live.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>
