@@ -1,0 +1,161 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Add Sub Category{% endblock 'title' %}
+{% block 'css' %}{% endblock 'css' %}
+{% block 'body' %}
+<div class="container-fluid">
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Create Sub Category</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Create Sub Category</h5>
+                </div>
+                <div class="card-body">
+                    <form class="row g-3" action="" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="col-12">
+                            <label for="parentCategory" class="form-label">Parent Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="parentCategory" name="category" required>
+                                <option value="" disabled selected>Select Parent Category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="subCategoryTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="subCategoryTitle" placeholder="e.g. Filter Coffee Powder" name="title" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="subCategoryDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="subCategoryDescription" rows="3" placeholder="Describe this sub category..." name="description"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="subCategoryMetaTitle" class="form-label">Meta Title</label>
+                            <input type="text" class="form-control" id="subCategoryMetaTitle" placeholder="e.g. Buy Filter Coffee Powder Online" name="meta_title">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="subCategoryMetaDescription" class="form-label">Meta Description</label>
+                            <textarea class="form-control" id="subCategoryMetaDescription" rows="2" placeholder="Brief SEO description (150-160 chars recommended)" name="meta_description"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="subCategoryMetaKeywords" class="form-label">Meta Keywords</label>
+                            <input type="text" class="form-control" id="subCategoryMetaKeywords" placeholder="e.g. filter coffee powder, South Indian filter coffee" name="meta_keywords">
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary" type="submit">Create Sub Category</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Help Desk</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="subCategoryFAQ">
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                                    1. What is a Sub Category and when should I create one?
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="faq1" data-bs-parent="#subCategoryFAQ">
+                                <div class="accordion-body">
+                                    A Sub Category sits under a Parent Category and helps organise products more precisely. For example, under <strong>Ground Coffee</strong>, you would create sub categories like <strong>Filter Coffee Powder</strong>, <strong>Espresso Ground Coffee</strong>, or <strong>Cold Brew Ground Coffee</strong>. This improves navigation for customers and helps Google index your pages more accurately.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                    2. How should I title a sub category for SEO?
+                                </button>
+                            </h2>
+                            <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2" data-bs-parent="#subCategoryFAQ">
+                                <div class="accordion-body">
+                                    Use the exact term customers search for. For example, <strong>Filter Coffee Powder</strong> is better than <strong>FC Powder</strong>. Search-friendly sub category titles like <strong>Single Origin Ground Coffee</strong>, <strong>Decaf Ground Coffee</strong>, or <strong>Organic Ground Coffee</strong> drive targeted traffic and rank for specific buyer intent queries.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                    3. What Meta Title should I write for a coffee sub category?
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3" data-bs-parent="#subCategoryFAQ">
+                                <div class="accordion-body">
+                                    Keep it under <strong>60 characters</strong> and include the grind type and your brand. Examples:
+                                    <ul class="mt-2">
+                                        <li><em>Buy Filter Coffee Powder Online – Kapi Today</em></li>
+                                        <li><em>Fresh Espresso Ground Coffee – Kapi Today</em></li>
+                                        <li><em>Single Origin Coffee – Coorg & Chikmagalur | Kapi Today</em></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                    4. What Meta Keywords work best for ground coffee sub categories?
+                                </button>
+                            </h2>
+                            <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faq4" data-bs-parent="#subCategoryFAQ">
+                                <div class="accordion-body">
+                                    Use specific, intent-driven keywords per sub category. Examples:
+                                    <ul class="mt-2">
+                                        <li><strong>Filter Coffee Powder:</strong> filter coffee powder, South Indian filter coffee, decoction coffee powder</li>
+                                        <li><strong>Cold Brew:</strong> cold brew ground coffee, coarse grind coffee, cold brew coffee India</li>
+                                        <li><strong>Single Origin:</strong> Coorg coffee, Chikmagalur ground coffee, Araku valley coffee, single estate coffee India</li>
+                                        <li><strong>Organic:</strong> organic ground coffee India, chemical-free coffee, natural roasted coffee</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq5">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                                    5. What image should I upload for a sub category?
+                                </button>
+                            </h2>
+                            <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="faq5" data-bs-parent="#subCategoryFAQ">
+                                <div class="accordion-body">
+                                    Use a focused product-style image that represents the grind type — e.g., a close-up of fine filter powder for <strong>Filter Coffee Powder</strong>, or a Moka pot with coarse grounds for <strong>Moka Pot Ground Coffee</strong>. Recommended size is <strong>800×600px or larger</strong> in JPG or PNG. A relevant image improves customer trust and time-on-page.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq6">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
+                                    6. Only Enabled parent categories are shown. Why?
+                                </button>
+                            </h2>
+                            <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="faq6" data-bs-parent="#subCategoryFAQ">
+                                <div class="accordion-body">
+                                    Sub categories are filtered to only show <strong>Enabled</strong> parent categories to prevent orphaned sub categories from being accidentally linked to a disabled or inactive category. If you cannot find your parent category in the dropdown, enable it first from the Category list.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock 'body' %}
+{% block 'scripts' %}{% endblock 'scripts' %}

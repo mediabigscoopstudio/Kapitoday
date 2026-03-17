@@ -42,7 +42,6 @@ class SubCategory(models.Model):
     meta_title = models.CharField(max_length=255, blank=True)
     meta_description = models.TextField(blank=True)
     meta_keywords = models.TextField(blank=True)
-    category_image = models.ImageField(upload_to='subcategory_images/', null=True, blank=True)
     slug = models.SlugField(blank=True)
     status = models.CharField(max_length=255,default="Disabled")
 

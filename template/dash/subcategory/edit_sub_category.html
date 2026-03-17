@@ -1,0 +1,150 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Edit {{data.title}}{% endblock 'title' %}
+{% block 'css' %}{% endblock 'css' %}
+{% block 'body' %}
+<div class="container-fluid">
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Edit {{data.title}}</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Edit {{data.title}}</h5>
+                </div>
+                <div class="card-body">
+                    <form class="row g-3" action="" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="col-12">
+                            <label for="parentCategory" class="form-label">Parent Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="parentCategory" name="category" required>
+                                <option value="" disabled>Select Parent Category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if category.id == data.category.id %}selected{% endif %}>{{ category.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="subCategoryTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="subCategoryTitle" placeholder="e.g. Filter Coffee Powder" name="title" value="{{data.title}}" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="subCategoryDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="subCategoryDescription" rows="3" placeholder="Describe this sub category..." name="description">{{data.description}}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="subCategoryMetaTitle" class="form-label">Meta Title</label>
+                            <input type="text" class="form-control" id="subCategoryMetaTitle" placeholder="e.g. Buy Filter Coffee Powder Online" name="meta_title" value="{{data.meta_title}}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="subCategoryMetaDescription" class="form-label">Meta Description</label>
+                            <textarea class="form-control" id="subCategoryMetaDescription" rows="2" placeholder="Brief SEO description (150-160 chars recommended)" name="meta_description">{{data.meta_description}}</textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="subCategoryMetaKeywords" class="form-label">Meta Keywords</label>
+                            <input type="text" class="form-control" id="subCategoryMetaKeywords" placeholder="e.g. filter coffee powder, South Indian filter coffee" name="meta_keywords" value="{{data.meta_keywords}}">
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary" type="submit">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Help Desk</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="subCategoryEditFAQ">
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqEdit1">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit1" aria-expanded="true" aria-controls="collapseEdit1">
+                                    1. Will editing the title change the slug?
+                                </button>
+                            </h2>
+                            <div id="collapseEdit1" class="accordion-collapse collapse show" aria-labelledby="faqEdit1" data-bs-parent="#subCategoryEditFAQ">
+                                <div class="accordion-body">
+                                    No. The slug is locked after creation to protect existing URLs and SEO rankings. If you rename <strong>Filter Coffee Powder</strong> to <strong>South Indian Filter Coffee</strong>, the URL slug stays unchanged. This prevents broken links and preserves your Google ranking for that page.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqEdit2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit2" aria-expanded="false" aria-controls="collapseEdit2">
+                                    2. Can I move a sub category to a different parent category?
+                                </button>
+                            </h2>
+                            <div id="collapseEdit2" class="accordion-collapse collapse" aria-labelledby="faqEdit2" data-bs-parent="#subCategoryEditFAQ">
+                                <div class="accordion-body">
+                                    Yes. Use the <strong>Parent Category</strong> dropdown to reassign it. For example, if <strong>Flavoured Ground Coffee</strong> was under <strong>Ground Coffee</strong> and you want to move it under a new <strong>Specialty Coffee</strong> category, simply select the new parent and save.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqEdit3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                    3. When should I update the Meta Description?
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faqEdit3" data-bs-parent="#subCategoryEditFAQ">
+                                <div class="accordion-body">
+                                    Update it when you add new products, change the grind focus, or run a promotion. Example for <strong>Cold Brew Ground Coffee</strong>: <em>"Shop coarse ground cold brew coffee online at Kapi Today. Sourced from Chikmagalur estates. Smooth, low-acid brew at home."</em> Keep it between <strong>150–160 characters</strong>.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqEdit4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                    4. Can I replace the sub category image?
+                                </button>
+                            </h2>
+                            <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faqEdit4" data-bs-parent="#subCategoryEditFAQ">
+                                <div class="accordion-body">
+                                    Yes. Upload a new image and it will replace the existing one on save. If the field is left empty, the current image is retained. Use a grind-specific image — for example, a pour over setup for <strong>Pour Over Ground Coffee</strong> or a French press for <strong>French Press Ground Coffee</strong>.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqEdit5">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                                    5. Will editing a sub category affect its products?
+                                </button>
+                            </h2>
+                            <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="faqEdit5" data-bs-parent="#subCategoryEditFAQ">
+                                <div class="accordion-body">
+                                    No. Editing the sub category only updates its display and SEO information. All products linked to it — such as those under <strong>Organic Ground Coffee</strong> or <strong>Single Origin Ground Coffee</strong> — remain fully intact and continue to appear under this sub category.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqEdit6">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
+                                    6. Should I refresh Meta Keywords when editing?
+                                </button>
+                            </h2>
+                            <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="faqEdit6" data-bs-parent="#subCategoryEditFAQ">
+                                <div class="accordion-body">
+                                    Yes, especially if you have added new products or want to target new search terms. For <strong>Single Origin Ground Coffee</strong>, keep keywords like: <em>Coorg ground coffee, Chikmagalur coffee powder, Araku valley coffee, single estate ground coffee India, Kapi Today single origin</em>.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock 'body' %}
+{% block 'scripts' %}{% endblock 'scripts' %}

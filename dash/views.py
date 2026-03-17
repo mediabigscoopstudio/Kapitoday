@@ -92,3 +92,66 @@ def disable_category(request,id):
     return redirect('/category')
 
 # Sub-Category Management Section
+def add_sub_category(request):
+    if request.method == 'POST':
+        category_id = request.POST.get('category')
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        meta_title = request.POST.get('meta_title')
+        meta_description = request.POST.get('meta_description')
+        meta_keywords = request.POST.get('meta_keywords')
+
+        SubCategory.objects.create(
+            category_id=category_id,
+            title=title,
+            description=description,
+            meta_title=meta_title,
+            meta_description=meta_description,
+            meta_keywords=meta_keywords,
+        )
+        return redirect('/sub_category_list')
+
+    categories = Category.objects.filter(status='Enabled').order_by('-id')
+    return render(request, 'dash/subcategory/add_sub_category.html', {'categories': categories})
+
+
+def edit_sub_category(request, pk):
+    sub_category = get_object_or_404(SubCategory, pk=pk)
+
+    if request.method == 'POST':
+        sub_category.category_id = request.POST.get('category')
+        sub_category.title = request.POST.get('title')
+        sub_category.description = request.POST.get('description')
+        sub_category.meta_title = request.POST.get('meta_title')
+        sub_category.meta_description = request.POST.get('meta_description')
+        sub_category.meta_keywords = request.POST.get('meta_keywords')
+        sub_category.save()
+        return redirect('/sub_category_list')
+
+    categories = Category.objects.filter(status='Enabled').order_by('-id')
+    return render(request, 'dash/subcategory/edit_sub_category.html', {'data': sub_category, 'categories': categories})
+
+
+def sub_category_list(request):
+    sub_categories = SubCategory.objects.all().order_by('-id')
+    return render(request, 'dash/subcategory/sub_category_list.html', {'sub_categories': sub_categories})
+
+
+def enable_sub_category(request, pk):
+    sub_category = get_object_or_404(SubCategory, pk=pk)
+    sub_category.status = 'Enabled'
+    sub_category.save()
+    return redirect('/sub_category_list')
+
+
+def disable_sub_category(request, pk):
+    sub_category = get_object_or_404(SubCategory, pk=pk)
+    sub_category.status = 'Disabled'
+    sub_category.save()
+    return redirect('/sub_category_list')
+
+
+def delete_sub_category(request, pk):
+    sub_category = get_object_or_404(SubCategory, pk=pk)
+    sub_category.delete()
+    return redirect('/sub_category_list')

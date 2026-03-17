@@ -16,6 +16,13 @@ urlpatterns = [
     path("delete_category/<id>",views.delete_category,name='delete_category'),
     path("enable_category/<id>",views.enable_category,name='enable_category'),
     path("disable_category/<id>",views.disable_category,name='disable_category'),
+    #subcategory Management urls
+    path('add_sub_category/', views.add_sub_category, name='add_sub_category'),
+    path('edit_sub_category/<int:pk>/', views.edit_sub_category, name='edit_sub_category'),
+    path('sub_category_list/', views.sub_category_list, name='sub_category_list'),
+    path('enable_sub_category/<int:pk>/', views.enable_sub_category, name='enable_sub_category'),
+    path('disable_sub_category/<int:pk>/', views.disable_sub_category, name='disable_sub_category'),
+    path('delete_sub_category/<int:pk>/', views.delete_sub_category, name='delete_sub_category'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
