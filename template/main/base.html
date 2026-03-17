@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kapi Today — From South India to World</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <style>
+    /* ==========================================
+       DESIGN TOKENS
+       ========================================== */
+    :root {
+      --kapi-espresso:        #2C1810;
+      --kapi-dark-roast:      #3E2218;
+      --kapi-red-oxide:       #8B3A2A;
+      --kapi-red-oxide-light: #A64B38;
+      --kapi-terracotta:      #C05A3E;
+      --kapi-sienna:          #B8602A;
+
+      --kapi-brass:           #B8860B;
+      --kapi-brass-light:     #D4A634;
+      --kapi-brass-dark:      #8B6914;
+      --kapi-gold-accent:     #C9A84C;
+      --kapi-gold-muted:      #A89060;
+
+      --kapi-plantation:      #2D5A3D;
+      --kapi-plantation-dark: #1B3A28;
+      --kapi-plantation-light:#3D7A52;
+      --kapi-leaf:            #4A8B5E;
+      --kapi-leaf-muted:      #6B9E7A;
+
+      --kapi-cream:           #FAF6F0;
+      --kapi-cream-warm:      #F5EDE0;
+      --kapi-cream-dark:      #EBE0D0;
+      --kapi-parchment:       #E8DCC8;
+      --kapi-sand:            #D4C4AA;
+      --kapi-stone:           #9C8E78;
+      --kapi-charcoal:        #4A3F35;
+      --kapi-ink:             #1A1412;
+
+      --font-heading:         'Merriweather', Georgia, 'Times New Roman', serif;
+      --font-body:            'Montserrat', 'Segoe UI', Tahoma, sans-serif;
+
+      --text-xs:   0.75rem;
+      --text-sm:   0.875rem;
+      --text-base: 1rem;
+      --text-md:   1.125rem;
+      --text-lg:   1.25rem;
+      --text-xl:   1.5rem;
+      --text-2xl:  2rem;
+
+      --space-xs:  0.25rem;
+      --space-sm:  0.5rem;
+      --space-md:  1rem;
+      --space-lg:  1.5rem;
+      --space-xl:  2rem;
+      --space-2xl: 3rem;
+      --space-3xl: 4rem;
+      --space-4xl: 6rem;
+
+      --radius-sm:   4px;
+      --radius-md:   8px;
+      --radius-lg:   12px;
+      --radius-pill: 9999px;
+
+      --shadow-sm:  0 1px 3px rgba(44,24,16,0.06);
+      --shadow-md:  0 4px 12px rgba(44,24,16,0.08);
+      --shadow-lg:  0 8px 24px rgba(44,24,16,0.12);
+
+      --transition-fast:   150ms ease;
+      --transition-base:   250ms ease;
+      --transition-slow:   400ms ease;
+
+      --navbar-height: 72px;
+      --navbar-height-mobile: 60px;
+      --ticker-height: 36px;
+    }
+
+    /* ==========================================
+       BASE RESET
+       ========================================== */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--kapi-charcoal);
+      background-color: var(--kapi-cream);
+      -webkit-font-smoothing: antialiased;
+      margin: 0;
+    }
+
+    h1,h2,h3,h4,h5,h6 {
+      font-family: var(--font-heading);
+      color: var(--kapi-dark-roast);
+      line-height: 1.2;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ==========================================
+       OFFER TICKER BAR
+       ========================================== */
+    .ticker-bar {
+      background: var(--kapi-espresso);
+      height: var(--ticker-height);
+      overflow: hidden;
+      position: relative;
+      z-index: 1050;
+    }
+
+    .ticker-track {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      animation: ticker-scroll 32s linear infinite;
+      width: max-content;
+    }
+
+    .ticker-track:hover {
+      animation-play-state: paused;
+    }
+
+    .ticker-item {
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--kapi-cream-dark);
+      white-space: nowrap;
+      padding: 0 var(--space-2xl);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .ticker-item .dot {
+      width: 4px;
+      height: 4px;
+      background: var(--kapi-brass);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .ticker-item strong {
+      color: var(--kapi-brass-light);
+      font-weight: 600;
+    }
+
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ==========================================
+       TOP UTILITY BAR
+       ========================================== */
+    .utility-bar {
+      background: var(--kapi-cream);
+      border-bottom: 1px solid var(--kapi-parchment);
+      padding: var(--space-sm) 0;
+    }
+
+    .utility-bar .util-link {
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--kapi-charcoal);
+      transition: color var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .utility-bar .util-link:hover {
+      color: var(--kapi-brass);
+    }
+
+    .cart-count {
+      background: var(--kapi-red-oxide);
+      color: var(--kapi-cream);
+      font-size: 10px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    /* ==========================================
+       MAIN NAVBAR
+       ========================================== */
+    .navbar-kapi {
+      background: var(--kapi-cream);
+      border-bottom: 1px solid var(--kapi-parchment);
+      padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 1040;
+      transition: box-shadow var(--transition-base);
+    }
+
+    .navbar-kapi.scrolled {
+      box-shadow: var(--shadow-md);
+    }
+
+    .navbar-kapi .navbar-brand {
+      padding: 0;
+      margin: 0;
+    }
+
+    .navbar-kapi .navbar-brand img {
+      height: 64px;
+      width: auto;
+      transition: transform var(--transition-base);
+    }
+
+    .navbar-kapi .navbar-brand:hover img {
+      transform: scale(1.03);
+    }
+
+    .nav-kapi-link {
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: var(--text-sm);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--kapi-charcoal);
+      padding: 26px 20px;
+      position: relative;
+      transition: color var(--transition-base);
+      display: block;
+    }
+
+    .nav-kapi-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 20px;
+      right: 20px;
+      height: 2.5px;
+      background: linear-gradient(90deg, var(--kapi-brass), var(--kapi-gold-accent));
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform var(--transition-base);
+      border-radius: 2px;
+    }
+
+    .nav-kapi-link:hover,
+    .nav-kapi-link.active {
+      color: var(--kapi-dark-roast);
+    }
+
+    .nav-kapi-link:hover::after,
+    .nav-kapi-link.active::after {
+      transform: scaleX(1);
+    }
+
+    /* Center layout */
+    .navbar-center-layout {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: var(--navbar-height);
+    }
+
+    .nav-left, .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex: 1;
+    }
+
+    .nav-left { justify-content: flex-end; }
+    .nav-right { justify-content: flex-start; }
+
+    .nav-center-logo {
+      flex-shrink: 0;
+      padding: 0 var(--space-xl);
+      display: flex;
+      align-items: center;
+    }
+
+    /* ==========================================
+       MEGA MENU — SHOP
+       ========================================== */
+    .nav-mega-wrapper {
+      position: relative;
+    }
+
+    .mega-menu {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 860px;
+      background: var(--kapi-cream);
+      border: 1px solid var(--kapi-parchment);
+      border-top: 3px solid var(--kapi-brass);
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      padding: var(--space-xl) var(--space-2xl);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-50%) translateY(8px);
+      transition: opacity var(--transition-base), transform var(--transition-base), visibility var(--transition-base);
+      z-index: 1060;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 220px;
+      gap: var(--space-xl);
+    }
+
+    .nav-mega-wrapper:hover .mega-menu,
+    .nav-mega-wrapper:focus-within .mega-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Keep brass underline on parent when mega open */
+    .nav-mega-wrapper:hover > .nav-kapi-link::after {
+      transform: scaleX(1);
+    }
+
+    .mega-col-title {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--kapi-dark-roast);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-sm);
+      border-bottom: 2px solid var(--kapi-parchment);
+      position: relative;
+    }
+
+    .mega-col-title::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 32px;
+      height: 2px;
+      background: var(--kapi-brass);
+    }
+
+    .mega-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .mega-links li {
+      margin-bottom: 2px;
+    }
+
+    .mega-links a {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 400;
+      color: var(--kapi-charcoal);
+      padding: 6px 0;
+      display: block;
+      transition: color var(--transition-fast), padding-left var(--transition-fast);
+    }
+
+    .mega-links a:hover {
+      color: var(--kapi-brass);
+      padding-left: 6px;
+    }
+
+    .mega-links .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      margin-left: 6px;
+      position: relative;
+      top: -1px;
+    }
+
+    .mega-links .tag-new {
+      background: var(--kapi-plantation);
+      color: var(--kapi-cream);
+    }
+
+    .mega-links .tag-sale {
+      background: var(--kapi-red-oxide);
+      color: var(--kapi-cream);
+    }
+
+    /* Featured product card inside mega menu */
+    .mega-featured {
+      background: var(--kapi-cream-warm);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--kapi-parchment);
+      transition: transform var(--transition-base), box-shadow var(--transition-base);
+    }
+
+    .mega-featured:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .mega-featured-img {
+      width: 100%;
+      height: 140px;
+      background: var(--kapi-cream-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .mega-featured-img::before {
+      content: '';
+      display: block;
+      height: 3px;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: linear-gradient(90deg, var(--kapi-brass), var(--kapi-gold-accent));
+    }
+
+    .mega-featured-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .mega-featured-img .img-placeholder {
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      color: var(--kapi-stone);
+      text-align: center;
+    }
+
+    .mega-featured-body {
+      padding: var(--space-md);
+    }
+
+    .mega-featured-label {
+      font-family: var(--font-body);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--kapi-red-oxide);
+      margin-bottom: 4px;
+    }
+
+    .mega-featured-name {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--kapi-dark-roast);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .mega-featured-price {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--kapi-red-oxide);
+    }
+
+    .mega-featured-cta {
+      display: block;
+      margin-top: var(--space-sm);
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--kapi-brass);
+      transition: color var(--transition-fast);
+    }
+
+    .mega-featured-cta:hover {
+      color: var(--kapi-brass-dark);
+    }
+
+    /* Position the mega menu relative to the navbar, not the link */
+    .navbar-kapi {
+      position: sticky;
+      top: 0;
+      z-index: 1040;
+    }
+
+    .navbar-kapi .nav-left {
+      position: static;
+    }
+
+    .nav-mega-wrapper {
+      position: static;
+    }
+
+    .mega-menu {
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+    }
+
+    .nav-mega-wrapper:hover .mega-menu,
+    .nav-mega-wrapper:focus-within .mega-menu {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ==========================================
+       MOBILE OFFCANVAS
+       ========================================== */
+    .mobile-header {
+      display: none;
+      background: var(--kapi-cream);
+      border-bottom: 1px solid var(--kapi-parchment);
+      padding: var(--space-sm) var(--space-md);
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1040;
+      min-height: var(--navbar-height-mobile);
+    }
+
+    .mobile-header .logo-mobile img {
+      height: 48px;
+      width: auto;
+    }
+
+    .mobile-header .btn-hamburger {
+      background: none;
+      border: none;
+      padding: 8px;
+      color: var(--kapi-espresso);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .mobile-header .mobile-icons {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    .mobile-header .mobile-icons a {
+      color: var(--kapi-charcoal);
+      font-size: 20px;
+      position: relative;
+    }
+
+    /* Offcanvas overrides */
+    .offcanvas-kapi {
+      background: var(--kapi-cream);
+      border-right: 3px solid var(--kapi-brass) !important;
+      max-width: 300px;
+    }
+
+    .offcanvas-kapi .offcanvas-header {
+      border-bottom: 1px solid var(--kapi-parchment);
+      padding: var(--space-lg);
+    }
+
+    .offcanvas-kapi .offcanvas-header img {
+      height: 48px;
+    }
+
+    .offcanvas-kapi .btn-close {
+      filter: none;
+      opacity: 0.6;
+    }
+
+    .offcanvas-kapi .nav-mobile-link {
+      display: block;
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: var(--text-base);
+      letter-spacing: 0.04em;
+      color: var(--kapi-charcoal);
+      padding: var(--space-md) var(--space-lg);
+      border-bottom: 1px solid var(--kapi-parchment);
+      transition: all var(--transition-fast);
+    }
+
+    .offcanvas-kapi .nav-mobile-link:hover,
+    .offcanvas-kapi .nav-mobile-link.active {
+      color: var(--kapi-brass);
+      background: var(--kapi-cream-warm);
+      padding-left: var(--space-xl);
+    }
+
+    .offcanvas-kapi .mobile-util-links {
+      padding: var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .offcanvas-kapi .mobile-util-links a {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--kapi-stone);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      transition: color var(--transition-fast);
+    }
+
+    .offcanvas-kapi .mobile-util-links a:hover {
+      color: var(--kapi-brass);
+    }
+
+    /* ==========================================
+       RESPONSIVE
+       ========================================== */
+    @media (max-width: 991px) {
+      .desktop-nav { display: none !important; }
+      .utility-bar { display: none; }
+      .mobile-header { display: flex; }
+    }
+
+    @media (min-width: 992px) {
+      .mobile-header { display: none !important; }
+      .offcanvas-kapi { display: none !important; }
+    }
+
+    /* ==========================================
+       FOOTER
+       ========================================== */
+    .footer-kapi {
+      background: var(--kapi-espresso);
+      color: var(--kapi-cream-dark);
+      padding: 0;
+      margin-top: auto;
+    }
+
+    /* Kolam-inspired top border */
+    .footer-kapi .footer-top-border {
+      height: 6px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--kapi-brass) 0px,
+        var(--kapi-brass) 4px,
+        transparent 4px,
+        transparent 8px,
+        var(--kapi-red-oxide) 8px,
+        var(--kapi-red-oxide) 12px,
+        transparent 12px,
+        transparent 16px
+      );
+    }
+
+    .footer-main {
+      padding: var(--space-4xl) 0 var(--space-2xl);
+    }
+
+    .footer-kapi h5 {
+      color: var(--kapi-cream);
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      margin-bottom: var(--space-lg);
+      position: relative;
+      padding-bottom: var(--space-sm);
+    }
+
+    .footer-kapi h5::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 40px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--kapi-brass), var(--kapi-gold-accent));
+    }
+
+    .footer-kapi .footer-about p {
+      font-size: var(--text-sm);
+      line-height: 1.7;
+      color: var(--kapi-sand);
+      margin-top: var(--space-md);
+    }
+
+    .footer-kapi .footer-logo img {
+      height: 72px;
+      width: auto;
+      filter: brightness(1.1);
+    }
+
+    .footer-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-links li { margin-bottom: var(--space-sm); }
+
+    .footer-links a {
+      color: var(--kapi-sand);
+      font-size: var(--text-sm);
+      font-weight: 400;
+      transition: color var(--transition-fast), padding-left var(--transition-fast);
+      display: inline-block;
+    }
+
+    .footer-links a:hover {
+      color: var(--kapi-brass-light);
+      padding-left: 6px;
+    }
+
+    /* Newsletter */
+    .footer-newsletter .input-group {
+      border: 1px solid rgba(212,196,170,0.3);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .footer-newsletter input {
+      background: rgba(250,246,240,0.08);
+      border: none;
+      color: var(--kapi-cream);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      padding: 12px 16px;
+    }
+
+    .footer-newsletter input::placeholder {
+      color: var(--kapi-stone);
+    }
+
+    .footer-newsletter input:focus {
+      outline: none;
+      background: rgba(250,246,240,0.12);
+      box-shadow: none;
+    }
+
+    .footer-newsletter .btn-subscribe {
+      background: var(--kapi-brass);
+      color: var(--kapi-cream);
+      border: none;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: var(--text-xs);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 12px 20px;
+      transition: background var(--transition-fast);
+      cursor: pointer;
+    }
+
+    .footer-newsletter .btn-subscribe:hover {
+      background: var(--kapi-brass-light);
+    }
+
+    .footer-social {
+      display: flex;
+      gap: var(--space-md);
+      margin-top: var(--space-lg);
+    }
+
+    .footer-social a {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid rgba(212,196,170,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--kapi-sand);
+      font-size: 16px;
+      transition: all var(--transition-fast);
+    }
+
+    .footer-social a:hover {
+      background: var(--kapi-brass);
+      border-color: var(--kapi-brass);
+      color: var(--kapi-cream);
+      transform: translateY(-2px);
+    }
+
+    /* Bottom Bar */
+    .footer-bottom {
+      background: var(--kapi-ink);
+      padding: var(--space-md) 0;
+    }
+
+    .footer-bottom p {
+      font-size: var(--text-xs);
+      color: var(--kapi-stone);
+      margin: 0;
+    }
+
+    .footer-bottom a {
+      color: var(--kapi-stone);
+      font-size: var(--text-xs);
+      transition: color var(--transition-fast);
+    }
+
+    .footer-bottom a:hover {
+      color: var(--kapi-brass-light);
+    }
+
+    /* ==========================================
+       CART DRAWER (Offcanvas Right)
+       ========================================== */
+    .cart-drawer {
+      background: var(--kapi-cream) !important;
+      border-left: 3px solid var(--kapi-brass) !important;
+      width: 420px !important;
+      max-width: 92vw !important;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cart-drawer .offcanvas-header {
+      border-bottom: 1px solid var(--kapi-parchment);
+      padding: var(--space-lg) var(--space-xl);
+      flex-shrink: 0;
+    }
+
+    .cart-drawer .offcanvas-title {
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--kapi-dark-roast);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .cart-drawer .offcanvas-title .cart-title-count {
+      background: var(--kapi-red-oxide);
+      color: var(--kapi-cream);
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 700;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cart-drawer .btn-close {
+      filter: none;
+      opacity: 0.5;
+    }
+
+    .cart-drawer .btn-close:hover {
+      opacity: 0.9;
+    }
+
+    /* Offers strip */
+    .cart-offers {
+      background: var(--kapi-cream-warm);
+      border-bottom: 1px solid var(--kapi-parchment);
+      padding: var(--space-md) var(--space-xl);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .cart-offers-track {
+      display: flex;
+      gap: var(--space-md);
+      animation: cart-offers-slide 16s linear infinite;
+      width: max-content;
+    }
+
+    .cart-offers-track:hover {
+      animation-play-state: paused;
+    }
+
+    .cart-offer-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      padding: 6px 14px;
+      background: var(--kapi-cream);
+      border: 1px solid var(--kapi-parchment);
+      border-radius: var(--radius-pill);
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--kapi-charcoal);
+      flex-shrink: 0;
+    }
+
+    .cart-offer-chip i {
+      color: var(--kapi-brass);
+      font-size: 14px;
+    }
+
+    .cart-offer-chip strong {
+      color: var(--kapi-red-oxide);
+      font-weight: 700;
+    }
+
+    @keyframes cart-offers-slide {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Cart items list */
+    .cart-items-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-md) var(--space-xl);
+    }
+
+    .cart-items-wrapper::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .cart-items-wrapper::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .cart-items-wrapper::-webkit-scrollbar-thumb {
+      background: var(--kapi-sand);
+      border-radius: 4px;
+    }
+
+    /* Empty cart state */
+    .cart-empty {
+      text-align: center;
+      padding: var(--space-3xl) var(--space-xl);
+    }
+
+    .cart-empty i {
+      font-size: 48px;
+      color: var(--kapi-sand);
+      margin-bottom: var(--space-lg);
+      display: block;
+    }
+
+    .cart-empty p {
+      font-family: var(--font-heading);
+      font-size: var(--text-md);
+      color: var(--kapi-stone);
+      margin-bottom: var(--space-lg);
+    }
+
+    .cart-empty .btn-kapi-browse {
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: var(--text-xs);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 12px 28px;
+      background: var(--kapi-brass);
+      color: var(--kapi-cream);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .cart-empty .btn-kapi-browse:hover {
+      background: var(--kapi-brass-light);
+    }
+
+    /* Single cart item */
+    .cart-item {
+      display: flex;
+      gap: var(--space-md);
+      padding: var(--space-md) 0;
+      border-bottom: 1px solid var(--kapi-parchment);
+      position: relative;
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .cart-item-img {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius-md);
+      background: var(--kapi-cream-warm);
+      border: 1px solid var(--kapi-parchment);
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cart-item-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cart-item-img i {
+      font-size: 24px;
+      color: var(--kapi-sand);
+    }
+
+    .cart-item-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cart-item-name {
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--kapi-dark-roast);
+      line-height: 1.3;
+      margin-bottom: 2px;
+    }
+
+    .cart-item-meta {
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      color: var(--kapi-stone);
+      margin-bottom: 8px;
+    }
+
+    .cart-item-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cart-item-price {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--kapi-red-oxide);
+    }
+
+    /* Qty controls */
+    .cart-qty {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--kapi-parchment);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .cart-qty button {
+      background: var(--kapi-cream-warm);
+      border: none;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--kapi-charcoal);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+
+    .cart-qty button:hover {
+      background: var(--kapi-cream-dark);
+    }
+
+    .cart-qty span {
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--kapi-dark-roast);
+      width: 30px;
+      text-align: center;
+    }
+
+    /* Remove btn */
+    .cart-item-remove {
+      position: absolute;
+      top: var(--space-md);
+      right: 0;
+      background: none;
+      border: none;
+      color: var(--kapi-sand);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px;
+      transition: color var(--transition-fast);
+      line-height: 1;
+    }
+
+    .cart-item-remove:hover {
+      color: var(--kapi-red-oxide);
+    }
+
+    /* Cart footer */
+    .cart-footer {
+      flex-shrink: 0;
+      border-top: 1px solid var(--kapi-parchment);
+      padding: var(--space-lg) var(--space-xl);
+      background: var(--kapi-cream-warm);
+    }
+
+    .cart-subtotal {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .cart-subtotal-label {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--kapi-charcoal);
+    }
+
+    .cart-subtotal-value {
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--kapi-dark-roast);
+    }
+
+    .cart-tax-note {
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      color: var(--kapi-stone);
+      margin-bottom: var(--space-md);
+    }
+
+    .cart-savings {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--kapi-plantation);
+      background: rgba(45,90,61,0.08);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-md);
+    }
+
+    .btn-checkout {
+      display: block;
+      width: 100%;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: var(--text-sm);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 14px 24px;
+      background: var(--kapi-brass);
+      color: var(--kapi-cream);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      text-decoration: none;
+    }
+
+    .btn-checkout:hover {
+      background: var(--kapi-brass-light);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+      color: var(--kapi-cream);
+    }
+
+    .cart-continue {
+      display: block;
+      text-align: center;
+      margin-top: var(--space-sm);
+      font-family: var(--font-body);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--kapi-stone);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color var(--transition-fast);
+    }
+
+    .cart-continue:hover {
+      color: var(--kapi-brass);
+    }
+
+    /* ==========================================
+       BODY WRAPPER (for Django block)
+       ========================================== */
+    .page-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex: 1;
+    }
+  </style>
+
+  
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <!-- ============================
+         OFFER TICKER BAR
+         ============================ -->
+    <div class="ticker-bar">
+      <div class="ticker-track" id="tickerTrack">
+        <!-- Set 1 (duplicated for seamless loop) -->
+        <div class="ticker-item"><span class="dot"></span> Free Shipping on orders above <strong>₹499</strong></div>
+        <div class="ticker-item"><span class="dot"></span> Use code <strong>KAPI10</strong> for 10% off your first order</div>
+        <div class="ticker-item"><span class="dot"></span> Fresh roasted beans shipped within <strong>24 hours</strong></div>
+        <div class="ticker-item"><span class="dot"></span> Estate-grown specialty coffee — <strong>Single Origin</strong></div>
+        <div class="ticker-item"><span class="dot"></span> Now delivering to <strong>50+ countries</strong> worldwide</div>
+        <!-- Set 2 (duplicate) -->
+        <div class="ticker-item"><span class="dot"></span> Free Shipping on orders above <strong>₹499</strong></div>
+        <div class="ticker-item"><span class="dot"></span> Use code <strong>KAPI10</strong> for 10% off your first order</div>
+        <div class="ticker-item"><span class="dot"></span> Fresh roasted beans shipped within <strong>24 hours</strong></div>
+        <div class="ticker-item"><span class="dot"></span> Estate-grown specialty coffee — <strong>Single Origin</strong></div>
+        <div class="ticker-item"><span class="dot"></span> Now delivering to <strong>50+ countries</strong> worldwide</div>
+      </div>
+    </div>
+
+    <!-- ============================
+         UTILITY BAR (Account + Cart) — Desktop
+         ============================ -->
+    <div class="utility-bar desktop-nav">
+      <div class="container">
+        <div class="d-flex justify-content-end align-items-center gap-4">
+          <a href="#" class="util-link">
+            <i class="bi bi-person"></i> My Account
+          </a>
+          <button class="util-link" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-label="Open cart" style="background:none;border:none;cursor:pointer;">
+            <i class="bi bi-bag"></i> Cart
+            <span class="cart-count">3</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================
+         MAIN NAVBAR — Desktop (Logo Center)
+         ============================ -->
+    <nav class="navbar-kapi desktop-nav" id="mainNav">
+      <div class="container">
+        <div class="navbar-center-layout">
+          <!-- Left Nav -->
+          <div class="nav-left">
+            <div class="nav-mega-wrapper">
+              <a href="#" class="nav-kapi-link active">Shop</a>
+
+              <!-- Mega Menu -->
+              <div class="mega-menu">
+                <!-- Column 1: By Type -->
+                <div class="mega-col">
+                  <div class="mega-col-title">By Type</div>
+                  <ul class="mega-links">
+                    <li><a href="#">Filter Coffee</a></li>
+                    <li><a href="#">Espresso Blends</a></li>
+                    <li><a href="#">Pour Over</a></li>
+                    <li><a href="#">Cold Brew</a></li>
+                    <li><a href="#">Instant Coffee <span class="tag tag-new">New</span></a></li>
+                  </ul>
+                </div>
+
+                <!-- Column 2: By Origin -->
+                <div class="mega-col">
+                  <div class="mega-col-title">By Origin</div>
+                  <ul class="mega-links">
+                    <li><a href="#">Coorg</a></li>
+                    <li><a href="#">Chikmagalur</a></li>
+                    <li><a href="#">Wayanad</a></li>
+                    <li><a href="#">Nilgiris</a></li>
+                    <li><a href="#">Araku Valley <span class="tag tag-new">New</span></a></li>
+                  </ul>
+                </div>
+
+                <!-- Column 3: Brew Gear -->
+                <div class="mega-col">
+                  <div class="mega-col-title">Brew Gear</div>
+                  <ul class="mega-links">
+                    <li><a href="#">Brass Davara Set</a></li>
+                    <li><a href="#">South Indian Filter</a></li>
+                    <li><a href="#">Pour Over Kit</a></li>
+                    <li><a href="#">Gift Boxes <span class="tag tag-sale">Sale</span></a></li>
+                    <li><a href="#">All Products →</a></li>
+                  </ul>
+                </div>
+
+                <!-- Column 4: Featured Product -->
+                <div class="mega-col">
+                  <a href="#" class="mega-featured">
+                    <div class="mega-featured-img">
+                      <!-- Replace with real product image -->
+                      <span class="img-placeholder"><i class="bi bi-cup-hot" style="font-size:32px;color:var(--kapi-sand);"></i></span>
+                    </div>
+                    <div class="mega-featured-body">
+                      <div class="mega-featured-label">Featured</div>
+                      <div class="mega-featured-name">Monsoon Malabar Single Origin</div>
+                      <div class="mega-featured-price">₹549</div>
+                      <span class="mega-featured-cta">Shop Now →</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <a href="#" class="nav-kapi-link active">Learn</a>
+          </div>
+
+          <!-- Center Logo -->
+          <div class="nav-center-logo">
+            <a href="#" class="navbar-brand">
+              <img src="logo.png" alt="Kapi Today — From South India to World">
+            </a>
+          </div>
+
+          <!-- Right Nav -->
+          <div class="nav-right">
+            <a href="#" class="nav-kapi-link active">About</a>
+            <a href="#" class="nav-kapi-link active">Experience</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ============================
+         MOBILE HEADER
+         ============================ -->
+    <header class="mobile-header">
+      <button class="btn-hamburger" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-label="Open menu">
+        <i class="bi bi-list"></i>
+      </button>
+
+      <a href="#" class="logo-mobile">
+        <img src="logo.png" alt="Kapi Today">
+      </a>
+
+      <div class="mobile-icons">
+        <a href="#" aria-label="Account"><i class="bi bi-person"></i></a>
+        <button type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-label="Cart" style="background:none;border:none;padding:0;color:var(--kapi-charcoal);font-size:20px;position:relative;cursor:pointer;">
+          <i class="bi bi-bag"></i>
+          <span class="cart-count" style="position:absolute;top:-6px;right:-10px;font-size:9px;width:16px;height:16px;">3</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Mobile Offcanvas Menu -->
+    <div class="offcanvas offcanvas-start offcanvas-kapi" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+      <div class="offcanvas-header">
+        <a href="#">
+          <img src="logo.png" alt="Kapi Today">
+        </a>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <nav>
+          <a href="#" class="nav-mobile-link active">Shop</a>
+          <a href="#" class="nav-mobile-link active">Learn</a>
+          <a href="#" class="nav-mobile-link active">About</a>
+          <a href="#" class="nav-mobile-link active">Experience</a>
+        </nav>
+        <div class="mobile-util-links">
+          <a href="#"><i class="bi bi-person"></i> My Account</a>
+          <a href="#"><i class="bi bi-bag"></i> Cart (3)</a>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ============================
+         CART DRAWER (Offcanvas Right)
+         ============================ -->
+    <div class="offcanvas offcanvas-end cart-drawer" tabindex="-1" id="cartDrawer" aria-labelledby="cartDrawerLabel">
+
+      <!-- Header -->
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="cartDrawerLabel">
+          <i class="bi bi-bag" style="font-size:20px;"></i>
+          Your Cart
+          <span class="cart-title-count" id="cartTitleCount">3</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+
+      <!-- Offers rolling strip -->
+      <div class="cart-offers">
+        <div class="cart-offers-track">
+          <div class="cart-offer-chip"><i class="bi bi-gift"></i> Use <strong>KAPI10</strong> — 10% off first order</div>
+          <div class="cart-offer-chip"><i class="bi bi-truck"></i> Free shipping above <strong>₹499</strong></div>
+          <div class="cart-offer-chip"><i class="bi bi-cup-hot"></i> Buy 2 bags, get <strong>1 free filter</strong></div>
+          <div class="cart-offer-chip"><i class="bi bi-star"></i> Subscribe & save <strong>15% monthly</strong></div>
+          <!-- Duplicate set for seamless loop -->
+          <div class="cart-offer-chip"><i class="bi bi-gift"></i> Use <strong>KAPI10</strong> — 10% off first order</div>
+          <div class="cart-offer-chip"><i class="bi bi-truck"></i> Free shipping above <strong>₹499</strong></div>
+          <div class="cart-offer-chip"><i class="bi bi-cup-hot"></i> Buy 2 bags, get <strong>1 free filter</strong></div>
+          <div class="cart-offer-chip"><i class="bi bi-star"></i> Subscribe & save <strong>15% monthly</strong></div>
+        </div>
+      </div>
+
+      <!-- Cart Items (scrollable) -->
+      <div class="cart-items-wrapper" id="cartItemsWrapper">
+
+        <!-- === DEMO ITEMS (replace with Django template loop) === -->
+        <!--  -->
+        <div class="cart-item">
+          <div class="cart-item-img">
+            <i class="bi bi-cup-hot"></i>
+            <!-- <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"> -->
+          </div>
+          <div class="cart-item-details">
+            <div class="cart-item-name">Monsoon Malabar Single Origin</div>
+            <div class="cart-item-meta">250g · Whole Beans</div>
+            <div class="cart-item-bottom">
+              <div class="cart-qty">
+                <button type="button" aria-label="Decrease">−</button>
+                <span>1</span>
+                <button type="button" aria-label="Increase">+</button>
+              </div>
+              <div class="cart-item-price">₹549</div>
+            </div>
+          </div>
+          <button class="cart-item-remove" type="button" aria-label="Remove item"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <div class="cart-item">
+          <div class="cart-item-img">
+            <i class="bi bi-cup-hot"></i>
+          </div>
+          <div class="cart-item-details">
+            <div class="cart-item-name">Coorg Estate Dark Roast</div>
+            <div class="cart-item-meta">500g · Ground</div>
+            <div class="cart-item-bottom">
+              <div class="cart-qty">
+                <button type="button" aria-label="Decrease">−</button>
+                <span>2</span>
+                <button type="button" aria-label="Increase">+</button>
+              </div>
+              <div class="cart-item-price">₹1,298</div>
+            </div>
+          </div>
+          <button class="cart-item-remove" type="button" aria-label="Remove item"><i class="bi bi-x-lg"></i></button>
+        </div>
+
+        <div class="cart-item">
+          <div class="cart-item-img">
+            <i class="bi bi-funnel"></i>
+          </div>
+          <div class="cart-item-details">
+            <div class="cart-item-name">Brass Davara-Tumbler Set</div>
+            <div class="cart-item-meta">Traditional · Handcrafted</div>
+            <div class="cart-item-bottom">
+              <div class="cart-qty">
+                <button type="button" aria-label="Decrease">−</button>
+                <span>1</span>
+                <button type="button" aria-label="Increase">+</button>
+              </div>
+              <div class="cart-item-price">₹899</div>
+            </div>
+          </div>
+          <button class="cart-item-remove" type="button" aria-label="Remove item"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <!--  -->
+
+        <!-- === EMPTY STATE (show when cart is empty) === -->
+        <!-- 
+        <div class="cart-empty">
+          <i class="bi bi-bag-x"></i>
+          <p>Your cart is empty</p>
+          <a href="#" class="btn-kapi-browse">Browse Coffee</a>
+        </div>
+         -->
+
+      </div>
+
+      <!-- Cart Footer: Subtotal + Checkout -->
+      <div class="cart-footer" id="cartFooter">
+        <div class="cart-savings">
+          <i class="bi bi-tag"></i> You're saving ₹150 on this order!
+        </div>
+        <div class="cart-subtotal">
+          <span class="cart-subtotal-label">Subtotal</span>
+          <span class="cart-subtotal-value">₹2,746</span>
+        </div>
+        <div class="cart-tax-note">Taxes & shipping calculated at checkout</div>
+        <a href="#" class="btn-checkout">
+          Proceed to Checkout <i class="bi bi-arrow-right" style="margin-left:6px;"></i>
+        </a>
+        <button class="cart-continue" type="button" data-bs-dismiss="offcanvas">Continue Shopping</button>
+      </div>
+    </div>
+
+
+    <!-- ============================
+         MAIN CONTENT
+         ============================ -->
+    <main class="main-content">
+      <div style="padding:120px 0;text-align:center;"><h2 style="font-family:Merriweather,serif;color:#3E2218;">Page Content Goes Here</h2><p style="font-family:Montserrat,sans-serif;color:#9C8E78;margin-top:16px;">Click the Cart icon (top right) to see the cart drawer</p></div>
+    </main>
+
+
+    <!-- ============================
+         FOOTER
+         ============================ -->
+    <footer class="footer-kapi">
+      <div class="footer-top-border"></div>
+
+      <div class="footer-main">
+        <div class="container">
+          <div class="row g-4 g-lg-5">
+
+            <!-- Column 1: About -->
+            <div class="col-lg-4 col-md-6">
+              <div class="footer-about">
+                <div class="footer-logo">
+                  <a href="#">
+                    <img src="logo.png" alt="Kapi Today">
+                  </a>
+                </div>
+                <p>Authentic, artisanal, estate-grown specialty coffee from the Western Ghats of South India. Every cup tells the story of our land, our farmers, and our heritage.</p>
+                <div class="footer-social">
+                  <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                  <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                  <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                  <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column 2: Quick Links -->
+            <div class="col-lg-2 col-md-6">
+              <h5>Quick Links</h5>
+              <ul class="footer-links">
+                <li><a href="#">Shop Coffee</a></li>
+                <li><a href="#">Our Story</a></li>
+                <li><a href="#">Brew Guides</a></li>
+                <li><a href="#">Experience</a></li>
+                <li><a href="#">Contact Us</a></li>
+              </ul>
+            </div>
+
+            <!-- Column 3: Coffee Origins -->
+            <div class="col-lg-2 col-md-6">
+              <h5>Our Origins</h5>
+              <ul class="footer-links">
+                <li><a href="#">Coorg</a></li>
+                <li><a href="#">Chikmagalur</a></li>
+                <li><a href="#">Wayanad</a></li>
+                <li><a href="#">Nilgiris</a></li>
+                <li><a href="#">Araku Valley</a></li>
+              </ul>
+            </div>
+
+            <!-- Column 4: Newsletter -->
+            <div class="col-lg-4 col-md-6">
+              <h5>Stay Brewed</h5>
+              <p style="font-size:var(--text-sm);color:var(--kapi-sand);margin-bottom:var(--space-lg);">
+                Join our newsletter for brew tips, new arrivals, and stories from the plantations.
+              </p>
+              <div class="footer-newsletter">
+                <div class="input-group">
+                  <input type="email" class="form-control" placeholder="Your email address" aria-label="Email">
+                  <button class="btn-subscribe" type="button">Subscribe</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom">
+        <div class="container">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <p>© 2026 Kapi Today. All rights reserved.</p>
+            <div class="d-flex gap-3">
+              <a href="#">Privacy Policy</a>
+              <a href="#">Terms of Service</a>
+              <a href="#">Shipping & Returns</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  </div> <!-- /.page-wrapper -->
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Sticky navbar shadow on scroll
+    const mainNav = document.getElementById('mainNav');
+    if (mainNav) {
+      window.addEventListener('scroll', () => {
+        mainNav.classList.toggle('scrolled', window.scrollY > 10);
+      });
+    }
+  </script>
+
+  
+</body>
+</html>
