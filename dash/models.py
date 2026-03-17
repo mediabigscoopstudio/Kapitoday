@@ -24,7 +24,7 @@ class Category(models.Model):
     meta_keywords = models.TextField(blank=True)
     category_image = models.ImageField(upload_to='category_images/', null=True, blank=True)
     slug = models.SlugField(unique=True, blank=True)
-    status = models.CharField(max_length=255)
+    status = models.CharField(max_length=255,default="Disabled")
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -44,7 +44,7 @@ class SubCategory(models.Model):
     meta_keywords = models.TextField(blank=True)
     category_image = models.ImageField(upload_to='subcategory_images/', null=True, blank=True)
     slug = models.SlugField(blank=True)
-    status = models.CharField(max_length=255)
+    status = models.CharField(max_length=255,default="Disabled")
 
     class Meta:
         unique_together = ('category', 'slug')
@@ -68,7 +68,7 @@ class Product(models.Model):
     meta_description = models.TextField(blank=True)
     meta_keywords = models.TextField(blank=True)
     meta_image = models.ImageField(upload_to='product_meta_images/', null=True, blank=True)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(unique=True, blank=True,default="Disabled")
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
