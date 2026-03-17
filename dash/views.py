@@ -24,6 +24,10 @@ def logout_view(request):
     logout(request)
     return redirect('/login_view')
 
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def index(request):
+    return render(request,'dash/index.html')
+
 # Category Management Section
 @user_passes_test(superadmin_required, login_url=('/login_view'))
 def category(request):
