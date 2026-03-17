@@ -97,7 +97,7 @@ class Variant(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     gst = models.DecimalField(max_digits=5, decimal_places=2)
     image = models.ImageField(upload_to='variant_images/', null=True, blank=True)
-    status = models.CharField(max_length=255)
+    status = models.CharField(max_length=255,default="Disabled")
 
     def __str__(self):
         return self.name
