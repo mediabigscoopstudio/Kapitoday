@@ -1,0 +1,568 @@
+{% extends "main/base.html" %}
+{% block 'title' %}{% endblock 'title' %}
+{% block 'meta' %}{% endblock 'meta' %}
+{% block 'css' %}
+  <style>
+    /* ── NAVBAR ── */
+    .kt-navbar {
+      border-bottom: 2px solid var(--kt-black);
+      background: var(--kt-white);
+      padding: 1rem 0;
+    }
+    .kt-logo {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--kt-black);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .kt-logo span { font-weight: 500; color: var(--kt-muted); }
+    .kt-nav-link {
+      font-size: 0.8125rem;
+      color: var(--kt-muted);
+      text-decoration: none;
+      font-weight: 400;
+      transition: color 0.15s;
+    }
+    .kt-nav-link:hover,
+    .kt-nav-link.active {
+      color: var(--kt-black);
+      font-weight: 500;
+    }
+ 
+    /* ── FEATURED ── */
+    .kt-featured {
+      border-bottom: 1px solid var(--kt-border);
+      padding: 2.5rem 0;
+    }
+    .kt-featured-img {
+      background: var(--kt-surface);
+      border-radius: 6px;
+      aspect-ratio: 16/9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .kt-featured-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .kt-featured-img .placeholder-icon {
+      opacity: 0.2;
+    }
+    .kt-label {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--kt-tag-bg);
+      color: var(--kt-tag-text);
+      padding: 3px 10px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+    .kt-label.politics  { background: #E6F1FB; color: #0C447C; }
+    .kt-label.culture   { background: #FBEAF0; color: #72243E; }
+    .kt-label.business  { background: #FAEEDA; color: #633806; }
+    .kt-label.tech      { background: #EEEDFE; color: #3C3489; }
+    .kt-label.sports    { background: #E1F5EE; color: #085041; }
+    .kt-label.opinion   { background: #FAECE7; color: #712B13; }
+    .kt-label.featured  { background: #E6F1FB; color: #0C447C; }
+ 
+    .kt-feat-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--kt-black);
+    }
+    .kt-feat-excerpt {
+      font-size: 0.9375rem;
+      color: var(--kt-muted);
+      line-height: 1.7;
+    }
+    .kt-feat-meta {
+      font-size: 0.75rem;
+      color: var(--kt-muted);
+    }
+    .kt-read-link {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--kt-black);
+      text-decoration: none;
+      border-bottom: 1.5px solid var(--kt-black);
+      padding-bottom: 1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .kt-read-link:hover {
+      color: var(--kt-accent);
+      border-color: var(--kt-accent);
+    }
+ 
+    /* ── CATEGORY FILTERS ── */
+    .kt-filters { padding: 1.5rem 0; }
+    .kt-filter-btn {
+      font-size: 0.8125rem;
+      padding: 5px 18px;
+      border: 1px solid var(--kt-border);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--kt-muted);
+      cursor: pointer;
+      transition: all 0.12s;
+      font-family: var(--font-body);
+    }
+    .kt-filter-btn:hover {
+      border-color: var(--kt-black);
+      color: var(--kt-black);
+    }
+    .kt-filter-btn.active {
+      background: var(--kt-black);
+      color: var(--kt-white);
+      border-color: var(--kt-black);
+    }
+ 
+    /* ── ARTICLE LIST ── */
+    .kt-article-item {
+      display: grid;
+      grid-template-columns: 1fr 96px;
+      gap: 1rem;
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--kt-border);
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .kt-article-item:first-of-type { border-top: 1px solid var(--kt-border); }
+    .kt-article-item:hover .kt-art-title { text-decoration: underline; }
+ 
+    .kt-art-tag {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--kt-muted);
+      margin-bottom: 5px;
+    }
+    .kt-art-title {
+      font-family: var(--font-display);
+      font-size: 1.0625rem;
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--kt-black);
+      margin-bottom: 6px;
+    }
+    .kt-art-excerpt {
+      font-size: 0.8125rem;
+      color: var(--kt-muted);
+      line-height: 1.65;
+      margin-bottom: 8px;
+    }
+    .kt-art-meta { font-size: 0.75rem; color: var(--kt-muted); }
+    .kt-art-thumb {
+      width: 96px;
+      height: 70px;
+      background: var(--kt-surface);
+      border-radius: 5px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .kt-art-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .kt-art-thumb .ph { opacity: 0.2; }
+ 
+    /* ── PAGINATION ── */
+    .kt-pagination { display: flex; gap: 6px; }
+    .kt-pg-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--kt-border);
+      border-radius: 5px;
+      background: transparent;
+      color: var(--kt-muted);
+      font-size: 0.8125rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all 0.12s;
+    }
+    .kt-pg-btn:hover { border-color: var(--kt-black); color: var(--kt-black); }
+    .kt-pg-btn.active { background: var(--kt-black); color: var(--kt-white); border-color: var(--kt-black); }
+    .kt-load-more {
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 9px 24px;
+      border: 1px solid var(--kt-black);
+      border-radius: 5px;
+      background: transparent;
+      color: var(--kt-black);
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: background 0.12s;
+    }
+    .kt-load-more:hover { background: var(--kt-surface); }
+ 
+    /* ── SIDEBAR ── */
+    .kt-sidebar-block {
+      padding-bottom: 2rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--kt-border);
+    }
+    .kt-sidebar-block:last-child { border-bottom: none; }
+    .kt-sb-heading {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--kt-muted);
+      margin-bottom: 1rem;
+    }
+    .kt-trending-item {
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--kt-border);
+      cursor: pointer;
+    }
+    .kt-trending-item:last-child { border-bottom: none; }
+    .kt-trend-num {
+      font-family: var(--font-display);
+      font-size: 1.375rem;
+      font-weight: 700;
+      color: var(--kt-border);
+      min-width: 28px;
+      line-height: 1;
+    }
+    .kt-trend-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--kt-black);
+      line-height: 1.4;
+      margin-bottom: 3px;
+    }
+    .kt-trend-meta { font-size: 0.75rem; color: var(--kt-muted); }
+ 
+    .kt-tag {
+      font-size: 0.75rem;
+      padding: 5px 13px;
+      border: 1px solid var(--kt-border);
+      border-radius: 20px;
+      color: var(--kt-muted);
+      cursor: pointer;
+      background: transparent;
+      font-family: var(--font-body);
+      transition: all 0.12s;
+      display: inline-block;
+      margin: 3px;
+    }
+    .kt-tag:hover { border-color: var(--kt-black); color: var(--kt-black); }
+ 
+    .kt-newsletter {
+      background: var(--kt-surface);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+    .kt-nl-title {
+      font-family: var(--font-display);
+      font-size: 1.0625rem;
+      font-weight: 700;
+      color: var(--kt-black);
+      margin-bottom: 6px;
+    }
+    .kt-nl-sub {
+      font-size: 0.8125rem;
+      color: var(--kt-muted);
+      margin-bottom: 12px;
+      line-height: 1.55;
+    }
+    .kt-nl-input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--kt-border);
+      border-radius: 5px;
+      background: var(--kt-white);
+      color: var(--kt-black);
+      font-size: 0.8125rem;
+      font-family: var(--font-body);
+      margin-bottom: 8px;
+      outline: none;
+      transition: border-color 0.12s;
+    }
+    .kt-nl-input:focus { border-color: var(--kt-black); }
+    .kt-nl-btn {
+      width: 100%;
+      padding: 9px;
+      background: var(--kt-black);
+      color: var(--kt-white);
+      border: none;
+      border-radius: 5px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .kt-nl-btn:hover { background: var(--kt-accent); }
+ 
+    /* ── FOOTER ── */
+    .kt-footer {
+      border-top: 2px solid var(--kt-black);
+      padding: 2rem 0;
+      margin-top: 3rem;
+    }
+    .kt-footer-logo {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--kt-black);
+    }
+    .kt-footer-link {
+      font-size: 0.8125rem;
+      color: var(--kt-muted);
+      text-decoration: none;
+    }
+    .kt-footer-link:hover { color: var(--kt-black); }
+    .kt-footer-copy {
+      font-size: 0.75rem;
+      color: var(--kt-muted);
+      margin-top: 1rem;
+    }
+ 
+    /* ── HIDDEN FILTER STATE ── */
+    .kt-article-item.hidden { display: none; }
+ 
+    @media (max-width: 767px) {
+      .kt-feat-title { font-size: 1.5rem; }
+      .kt-article-item { grid-template-columns: 1fr 72px; }
+      .kt-art-thumb { width: 72px; height: 54px; }
+    }
+  </style>
+{% endblock 'css' %}
+{% block 'body' %}
+  <div class="container">
+ 
+    <!-- FEATURED ARTICLE -->
+    <div class="kt-featured">
+      <div class="row align-items-center g-4">
+        <div class="col-md-7">
+          <div class="kt-featured-img">
+            <!-- Replace with <img src="..." alt="..."> -->
+            <svg class="placeholder-icon" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+            </svg>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="d-flex flex-column gap-3">
+            <span class="kt-label featured">Featured</span>
+            <h1 class="kt-feat-title">The quiet revolution reshaping how local stories get told</h1>
+            <p class="kt-feat-excerpt">Independent newsrooms across the country are finding new ways to fund, report, and distribute journalism that the big players have abandoned.</p>
+            <p class="kt-feat-meta">By Ananya Pillai &middot; March 18, 2026 &middot; 8 min read</p>
+            <a href="#" class="kt-read-link">Read story &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- CATEGORY FILTERS -->
+    <div class="kt-filters d-flex flex-wrap gap-2">
+      <button class="kt-filter-btn active" data-cat="all">All</button>
+      <button class="kt-filter-btn" data-cat="politics">Politics</button>
+      <button class="kt-filter-btn" data-cat="culture">Culture</button>
+      <button class="kt-filter-btn" data-cat="business">Business</button>
+      <button class="kt-filter-btn" data-cat="tech">Tech</button>
+      <button class="kt-filter-btn" data-cat="sports">Sports</button>
+      <button class="kt-filter-btn" data-cat="opinion">Opinion</button>
+    </div>
+ 
+    <!-- MAIN CONTENT + SIDEBAR -->
+    <div class="row g-5">
+ 
+      <!-- ARTICLE LIST -->
+      <div class="col-lg-8">
+        <div id="article-list">
+ 
+          <div class="kt-article-item" data-cat="politics">
+            <div>
+              <p class="kt-art-tag">Politics</p>
+              <h3 class="kt-art-title">What the new municipal budget means for your neighbourhood</h3>
+              <p class="kt-art-excerpt">Breaking down the key spending shifts and what residents can expect over the next fiscal year.</p>
+              <p class="kt-art-meta">Rohan Mehta &middot; March 17, 2026 &middot; 5 min read</p>
+            </div>
+            <div class="kt-art-thumb">
+              <!-- <img src="..." alt="..."> -->
+              <svg class="ph" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            </div>
+          </div>
+ 
+          <div class="kt-article-item" data-cat="culture">
+            <div>
+              <p class="kt-art-tag">Culture</p>
+              <h3 class="kt-art-title">The art collective bringing forgotten murals back to life</h3>
+              <p class="kt-art-excerpt">A group of young artists is documenting and restoring street art that would otherwise disappear forever.</p>
+              <p class="kt-art-meta">Priya Nair &middot; March 16, 2026 &middot; 6 min read</p>
+            </div>
+            <div class="kt-art-thumb">
+              <svg class="ph" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+            </div>
+          </div>
+ 
+          <div class="kt-article-item" data-cat="tech">
+            <div>
+              <p class="kt-art-tag">Tech</p>
+              <h3 class="kt-art-title">How a small startup is using AI to translate regional dialects</h3>
+              <p class="kt-art-excerpt">A Pune-based team is building tools that preserve linguistic diversity while making content universally accessible.</p>
+              <p class="kt-art-meta">Kiran Das &middot; March 15, 2026 &middot; 4 min read</p>
+            </div>
+            <div class="kt-art-thumb">
+              <svg class="ph" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+          </div>
+ 
+          <div class="kt-article-item" data-cat="business">
+            <div>
+              <p class="kt-art-tag">Business</p>
+              <h3 class="kt-art-title">The women-led cooperative redefining textile trade in the South</h3>
+              <p class="kt-art-excerpt">Over 400 weavers have joined a model that cuts out middlemen and puts profit directly in artisan hands.</p>
+              <p class="kt-art-meta">Sanya Roy &middot; March 14, 2026 &middot; 7 min read</p>
+            </div>
+            <div class="kt-art-thumb">
+              <svg class="ph" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+          </div>
+ 
+          <div class="kt-article-item" data-cat="opinion">
+            <div>
+              <p class="kt-art-tag">Opinion</p>
+              <h3 class="kt-art-title">We need to stop calling every protest a movement</h3>
+              <p class="kt-art-excerpt">Words shape reality. When journalism inflates the language of civic action, it dilutes the real thing.</p>
+              <p class="kt-art-meta">Nikhil Varma &middot; March 13, 2026 &middot; 5 min read</p>
+            </div>
+            <div class="kt-art-thumb">
+              <svg class="ph" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+          </div>
+ 
+          <div class="kt-article-item" data-cat="sports">
+            <div>
+              <p class="kt-art-tag">Sports</p>
+              <h3 class="kt-art-title">The grassroots football league quietly producing state champions</h3>
+              <p class="kt-art-excerpt">No sponsorships, no floodlights, no problem. This league runs on community trust and weekend enthusiasm.</p>
+              <p class="kt-art-meta">Aman Tiwari &middot; March 12, 2026 &middot; 4 min read</p>
+            </div>
+            <div class="kt-art-thumb">
+              <svg class="ph" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            </div>
+          </div>
+ 
+        </div>
+ 
+        <!-- PAGINATION -->
+        <div class="d-flex align-items-center justify-content-between mt-4">
+          <div class="kt-pagination">
+            <button class="kt-pg-btn active">1</button>
+            <button class="kt-pg-btn">2</button>
+            <button class="kt-pg-btn">3</button>
+            <span class="d-flex align-items-center px-1" style="font-size:0.8125rem;color:var(--kt-muted);">&hellip;</span>
+            <button class="kt-pg-btn">9</button>
+          </div>
+          <button class="kt-load-more">Load more &darr;</button>
+        </div>
+      </div>
+ 
+      <!-- SIDEBAR -->
+      <aside class="col-lg-4">
+ 
+        <!-- Trending -->
+        <div class="kt-sidebar-block">
+          <p class="kt-sb-heading">Trending now</p>
+          <div class="kt-trending-item">
+            <span class="kt-trend-num">01</span>
+            <div>
+              <p class="kt-trend-title">Inside the push to rename three city wards</p>
+              <p class="kt-trend-meta">4.2k reads</p>
+            </div>
+          </div>
+          <div class="kt-trending-item">
+            <span class="kt-trend-num">02</span>
+            <div>
+              <p class="kt-trend-title">Why the rains came late and what farmers lost</p>
+              <p class="kt-trend-meta">3.8k reads</p>
+            </div>
+          </div>
+          <div class="kt-trending-item">
+            <span class="kt-trend-num">03</span>
+            <div>
+              <p class="kt-trend-title">Meet the 24-year-old running for ward councillor</p>
+              <p class="kt-trend-meta">3.1k reads</p>
+            </div>
+          </div>
+          <div class="kt-trending-item">
+            <span class="kt-trend-num">04</span>
+            <div>
+              <p class="kt-trend-title">The coffee shop that became a community archive</p>
+              <p class="kt-trend-meta">2.7k reads</p>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- Tags -->
+        <div class="kt-sidebar-block">
+          <p class="kt-sb-heading">Browse by topic</p>
+          <div>
+            <span class="kt-tag">Local governance</span>
+            <span class="kt-tag">Environment</span>
+            <span class="kt-tag">Education</span>
+            <span class="kt-tag">Health</span>
+            <span class="kt-tag">Infrastructure</span>
+            <span class="kt-tag">Arts</span>
+            <span class="kt-tag">Youth</span>
+            <span class="kt-tag">Economy</span>
+            <span class="kt-tag">Housing</span>
+            <span class="kt-tag">Transport</span>
+          </div>
+        </div>
+ 
+        <!-- Newsletter -->
+        <div class="kt-sidebar-block">
+          <div class="kt-newsletter">
+            <p class="kt-nl-title">Stay in the loop</p>
+            <p class="kt-nl-sub">Get the best of Kapi Today delivered to your inbox every morning.</p>
+            <input class="kt-nl-input" type="email" placeholder="your@email.com" />
+            <button class="kt-nl-btn">Subscribe</button>
+          </div>
+        </div>
+ 
+      </aside>
+    </div>
+    <br><br>
+  </div>
+ 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.querySelectorAll('.kt-filter-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.kt-filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const cat = this.dataset.cat;
+        document.querySelectorAll('.kt-article-item').forEach(item => {
+          item.classList.toggle('hidden', cat !== 'all' && item.dataset.cat !== cat);
+        });
+      });
+    });
+ 
+    document.querySelectorAll('.kt-pg-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.kt-pg-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+
+{% endblock 'body' %}
+{% block 'script' %}
+  
+{% endblock 'script' %}
