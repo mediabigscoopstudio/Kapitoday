@@ -24,6 +24,7 @@ class Category(models.Model):
     meta_keywords = models.TextField(blank=True)
     category_image = models.ImageField(upload_to='category_images/', null=True, blank=True)
     slug = models.SlugField(unique=True, blank=True)
+    status = models.CharField(max_length=255)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -43,6 +44,7 @@ class SubCategory(models.Model):
     meta_keywords = models.TextField(blank=True)
     category_image = models.ImageField(upload_to='subcategory_images/', null=True, blank=True)
     slug = models.SlugField(blank=True)
+    status = models.CharField(max_length=255)
 
     class Meta:
         unique_together = ('category', 'slug')
@@ -95,7 +97,7 @@ class Variant(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     gst = models.DecimalField(max_digits=5, decimal_places=2)
     image = models.ImageField(upload_to='variant_images/', null=True, blank=True)
-    status = models.BooleanField(default=True)
+    status = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
