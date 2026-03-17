@@ -9,44 +9,52 @@
         </div>
     </div>
     <div class="row">
-        <!-- User Account Creation Form -->
         <div class="col-xl-6">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Edit {{data.title}}</h5>
                 </div>
-
                 <div class="card-body">
-                    <form class="row g-3" action="" method="POST">
+                    <form class="row g-3" action="" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="col-12">
-                            <label for="categoryTitle" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="categoryTitle" placeholder="Category Title" name="title" value="{{data.title}}" required>
+                            <label for="categoryTitle" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="categoryTitle" placeholder="e.g. Single Origin Beans" name="title" value="{{data.title}}" required>
                         </div>
                         <div class="col-12">
                             <label for="categoryDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="categoryDescription" rows="3" placeholder="Category Description" name="description">{{data.description}}</textarea>
+                            <textarea class="form-control" id="categoryDescription" rows="3" placeholder="Describe this coffee category..." name="description">{{data.description}}</textarea>
+                        </div>
+                        <div class="col-12">
+                            <label for="categoryImage" class="form-label">Category Image</label>
+                            {% if data.category_image %}
+                                <div class="mb-2">
+                                    <img src="{{data.category_image.url}}" alt="{{data.title}}" height="80" class="rounded">
+                                    <small class="text-muted d-block mt-1">Upload a new image to replace the existing one.</small>
+                                </div>
+                            {% endif %}
+                            <input type="file" class="form-control" id="categoryImage" name="category_image" accept="image/*">
                         </div>
                         <div class="col-md-6">
                             <label for="categoryMetaTitle" class="form-label">Meta Title</label>
-                            <input type="text" class="form-control" id="categoryMetaTitle" placeholder="Meta Title" name="meta_title" value="{{data.meta_title}}">
+                            <input type="text" class="form-control" id="categoryMetaTitle" placeholder="e.g. Buy Single Origin Coffee Beans" name="meta_title" value="{{data.meta_title}}">
                         </div>
                         <div class="col-md-6">
                             <label for="categoryMetaDescription" class="form-label">Meta Description</label>
-                            <textarea class="form-control" id="categoryMetaDescription" rows="2" placeholder="Meta Description" name="meta_description">{{data.meta_description}}</textarea>
+                            <textarea class="form-control" id="categoryMetaDescription" rows="2" placeholder="Brief SEO description (150-160 chars recommended)" name="meta_description">{{data.meta_description}}</textarea>
                         </div>
                         <div class="col-12">
                             <label for="categoryMetaKeywords" class="form-label">Meta Keywords</label>
-                            <input type="text" class="form-control" id="categoryMetaKeywords" placeholder="Comma-separated keywords" name="meta_keywords" value="{{data.meta_keywords}}">
+                            <input type="text" class="form-control" id="categoryMetaKeywords" placeholder="e.g. single origin coffee, arabica beans, specialty coffee" name="meta_keywords" value="{{data.meta_keywords}}">
                         </div>
                         <div class="col-12">
-                            <button class="btn btn-primary" type="submit">Create Category</button>
+                            <button class="btn btn-primary" type="submit">Save Changes</button>
                         </div>
                     </form>
                 </div> 
             </div>
-        </div> 
-        <!--FAQ Sections-->
+        </div>
+
         <div class="col-xl-6">
             <div class="card">
                 <div class="card-header">
@@ -56,71 +64,84 @@
                     <div class="accordion" id="categoryEditFAQ">
 
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="faqEdit1">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit1" aria-expanded="true" aria-controls="collapseEdit1">
-                              1. What fields can I edit for a category?
-                            </button>
-                          </h2>
-                          <div id="collapseEdit1" class="accordion-collapse collapse show" aria-labelledby="faqEdit1" data-bs-parent="#categoryEditFAQ">
-                            <div class="accordion-body">
-                              You can edit the **Title**, **Description**, **Meta Title**, **Meta Description**, **Meta Keywords**, and **Status** of the category.
+                            <h2 class="accordion-header" id="faqEdit1">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit1" aria-expanded="true" aria-controls="collapseEdit1">
+                                    1. Will editing the Title change the URL slug?
+                                </button>
+                            </h2>
+                            <div id="collapseEdit1" class="accordion-collapse collapse show" aria-labelledby="faqEdit1" data-bs-parent="#categoryEditFAQ">
+                                <div class="accordion-body">
+                                    No. The slug is generated only when the category is first created. Editing the title will <strong>not</strong> update the slug automatically. This protects existing URLs from breaking and preserves your SEO ranking for that category page.
+                                </div>
                             </div>
-                          </div>
                         </div>
-                    
+
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="faqEdit2">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit2" aria-expanded="false" aria-controls="collapseEdit2">
-                              2. Is the Category Title required?
-                            </button>
-                          </h2>
-                          <div id="collapseEdit2" class="accordion-collapse collapse" aria-labelledby="faqEdit2" data-bs-parent="#categoryEditFAQ">
-                            <div class="accordion-body">
-                              Yes, the **Title** field is mandatory. You need to provide a title to identify the category.
+                            <h2 class="accordion-header" id="faqEdit2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit2" aria-expanded="false" aria-controls="collapseEdit2">
+                                    2. Should I update the Meta Title when I rename a category?
+                                </button>
+                            </h2>
+                            <div id="collapseEdit2" class="accordion-collapse collapse" aria-labelledby="faqEdit2" data-bs-parent="#categoryEditFAQ">
+                                <div class="accordion-body">
+                                    Yes. If you rename the category, update the <strong>Meta Title</strong> to reflect the new name. Keep it under <strong>60 characters</strong> and include the primary keyword — e.g., <em>"Buy Filter Coffee Powder Online – Kapi Today"</em>. An outdated Meta Title can hurt your click-through rate on Google.
+                                </div>
                             </div>
-                          </div>
                         </div>
-                    
+
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="faqEdit3">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit3" aria-expanded="false" aria-controls="collapseEdit3">
-                              3. What are Meta Title, Description, and Keywords for?
-                            </button>
-                          </h2>
-                          <div id="collapseEdit3" class="accordion-collapse collapse" aria-labelledby="faqEdit3" data-bs-parent="#categoryEditFAQ">
-                            <div class="accordion-body">
-                              These fields (**Meta Title**, **Meta Description**, and **Meta Keywords**) are important for Search Engine Optimization (SEO). They help search engines understand the content of pages associated with this category.
+                            <h2 class="accordion-header" id="faqEdit3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit3" aria-expanded="false" aria-controls="collapseEdit3">
+                                    3. How often should I update the Meta Description?
+                                </button>
+                            </h2>
+                            <div id="collapseEdit3" class="accordion-collapse collapse" aria-labelledby="faqEdit3" data-bs-parent="#categoryEditFAQ">
+                                <div class="accordion-body">
+                                    Update it whenever you add new products, run seasonal promotions, or change the category focus. Keep it between <strong>150–160 characters</strong> and include a call-to-action. Example: <em>"Shop our freshly ground Coorg coffee powder. Perfect for South Indian filter brew. Order online at Kapi Today."</em>
+                                </div>
                             </div>
-                          </div>
                         </div>
-                    
+
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="faqEdit4">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit4" aria-expanded="false" aria-controls="collapseEdit4">
-                              4. What does the 'Status' field control?
-                            </button>
-                          </h2>
-                          <div id="collapseEdit4" class="accordion-collapse collapse" aria-labelledby="faqEdit4" data-bs-parent="#categoryEditFAQ">
-                            <div class="accordion-body">
-                              The **Status** field allows you to control whether the category is currently active and visible on your website. You can set it to "Enabled" or "Disabled".
+                            <h2 class="accordion-header" id="faqEdit4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit4" aria-expanded="false" aria-controls="collapseEdit4">
+                                    4. Can I replace the category image?
+                                </button>
+                            </h2>
+                            <div id="collapseEdit4" class="accordion-collapse collapse" aria-labelledby="faqEdit4" data-bs-parent="#categoryEditFAQ">
+                                <div class="accordion-body">
+                                    Yes. Upload a new image and it will replace the existing one on save. If you leave the image field empty, the current image is retained. Use high-quality images of at least <strong>800×600px</strong> in JPG or PNG format for best display across devices.
+                                </div>
                             </div>
-                          </div>
                         </div>
-                    
+
                         <div class="accordion-item">
-                          <h2 class="accordion-header" id="faqEdit5">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit5" aria-expanded="false" aria-controls="collapseEdit5">
-                              5. Will changing the Title automatically update the Slug?
-                            </button>
-                          </h2>
-                          <div id="collapseEdit5" class="accordion-collapse collapse" aria-labelledby="faqEdit5" data-bs-parent="#categoryEditFAQ">
-                            <div class="accordion-body">
-                              Typically, the **Slug** (the URL-friendly version of the title) is generated automatically when the category is created. Depending on your system, changing the Title *might* not automatically update the Slug. You might have a separate process to regenerate slugs if needed.
+                            <h2 class="accordion-header" id="faqEdit5">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit5" aria-expanded="false" aria-controls="collapseEdit5">
+                                    5. What happens to products if I edit a category?
+                                </button>
+                            </h2>
+                            <div id="collapseEdit5" class="accordion-collapse collapse" aria-labelledby="faqEdit5" data-bs-parent="#categoryEditFAQ">
+                                <div class="accordion-body">
+                                    Editing a category only updates its display information — title, description, image, and SEO fields. All products linked to this category remain unchanged and continue to appear under it.
+                                </div>
                             </div>
-                          </div>
                         </div>
-                    
-                      </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqEdit6">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEdit6" aria-expanded="false" aria-controls="collapseEdit6">
+                                    6. Should I update Meta Keywords when editing?
+                                </button>
+                            </h2>
+                            <div id="collapseEdit6" class="accordion-collapse collapse" aria-labelledby="faqEdit6" data-bs-parent="#categoryEditFAQ">
+                                <div class="accordion-body">
+                                    Review and refresh your Meta Keywords if the category scope changes or if you want to target new search terms. Use comma-separated terms your customers are searching for — e.g., <em>ground coffee India, filter coffee powder, fresh roasted coffee beans, Kapi Today coffee</em>.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
         </div>

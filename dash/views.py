@@ -69,7 +69,7 @@ def edit_category(request,id):
             category.category_image = request.FILES.get('category_image')
         category.save()
         return redirect('/category')
-    return render(request,'dash/category/edit_category.html')
+    return render(request,'dash/category/edit_category.html',{'data':category})
 
 @user_passes_test(superadmin_required, login_url=('/login_view'))
 def delete_category(request,id):
