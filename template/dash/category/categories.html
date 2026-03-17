@@ -42,18 +42,18 @@
                                     </td>
                                     {% endif %}
                                     {% if i.status == "Enabled" %}
-                                    <td>
-                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Disable Category" href="/dash/disable_category/{{i.id}}">Disable</a>
-                                        <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Category" href="/dash/edit_category/{{i.id}}">Edit</a>
-                                        <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Category" href="/dash/delete_category/{{i.id}}">Delete</a>
-                                    </td>
-                                    {% elif i.status == "Disabled" %}
-                                    <td>
-                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Enable Category" href="/dash/enable_category/{{i.id}}">Enable</a>
-                                        <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Category" href="/dash/edit_category/{{i.id}}">Edit</a>
-                                        <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Category" href="/dash/delete_category/{{i.id}}">Delete</a>
-                                    </td>
-                                    {% endif %}
+<td>
+    <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Disable Category" href="/disable_category/{{i.id}}"><i class="mdi mdi-cancel fs-16 align-middle"></i></a>
+    <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Category" href="/edit_category/{{i.id}}"><i class="mdi mdi-pencil fs-16 align-middle"></i></a>
+    <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Category" href="/delete_category/{{i.id}}"><i class="mdi mdi-delete fs-16 align-middle"></i></a>
+</td>
+{% elif i.status == "Disabled" %}
+<td>
+    <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Enable Category" href="/enable_category/{{i.id}}"><i class="mdi mdi-check-circle fs-16 align-middle"></i></a>
+    <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Category" href="/edit_category/{{i.id}}"><i class="mdi mdi-pencil fs-16 align-middle"></i></a>
+    <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Category" href="/delete_category/{{i.id}}"><i class="mdi mdi-delete fs-16 align-middle"></i></a>
+</td>
+{% endif %}
                                 </tr>
                                 {% endfor %}
                                 
