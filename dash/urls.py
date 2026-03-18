@@ -30,6 +30,7 @@ urlpatterns = [
     path('add_product/', views.add_product, name='add_product'),
     path('edit_product/<id>', views.edit_product, name='edit_product'),
     path('get_subcategories/', views.get_subcategories, name='get_subcategories'),
+    
     #Offer Management urls
     path('offers', views.offers, name='offers'),
     path('add_offer', views.add_offer, name='add_offer'),
@@ -49,6 +50,10 @@ urlpatterns = [
     path('update_order_status/<int:id>', views.update_order_status, name='update_order_status'),
     path('revoke_order/<int:id>',      views.revoke_order,        name='revoke_order'),
     path('fulfill_order/<int:id>',     views.fulfill_order,       name='fulfill_order'),
+    path('create_order',              views.create_order,         name='create_order'),
+    path('search_customers',          views.search_customers,     name='search_customers'),
+    path('get_product_variants',      views.get_product_variants, name='get_product_variants'),
+    path('validate_coupon',           views.validate_coupon,      name='validate_coupon'),
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

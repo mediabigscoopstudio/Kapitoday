@@ -1,0 +1,684 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Create Manual Order{% endblock 'title' %}
+{% block 'css' %}
+<style>
+    :root {
+        --coffee-dark:  #1a0a00;
+        --coffee-warm:  #6b3a1f;
+        --coffee-gold:  #c8882a;
+        --coffee-cream: #f5efe6;
+        --coffee-light: #faf7f3;
+    }
+
+    .create-order-page { display: flex; gap: 24px; align-items: flex-start; }
+    .order-main    { flex: 1; min-width: 0; }
+    .order-sidebar { width: 300px; flex-shrink: 0; position: sticky; top: 80px; }
+
+    .oblock {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #eee;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .oblock-head {
+        padding: 14px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .oblock-icon {
+        width: 32px; height: 32px; border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px; color: #fff; flex-shrink: 0;
+    }
+    .oblock-head h6 { margin: 0; font-size: 13.5px; font-weight: 700; color: var(--coffee-dark); }
+    .oblock-head p  { margin: 0; font-size: 11px; color: #bbb; }
+    .oblock-body { padding: 20px; }
+
+    .form-label {
+        font-size: 11.5px; font-weight: 600; color: var(--coffee-warm);
+        text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 5px;
+    }
+    .form-control, .form-select {
+        border: 1.5px solid #e5e0db; border-radius: 8px;
+        font-size: 13.5px; padding: 9px 12px;
+        color: var(--coffee-dark); background: #faf8f6;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--coffee-gold);
+        box-shadow: 0 0 0 3px rgba(200,136,42,0.1);
+        background: #fff; outline: none;
+    }
+    .form-control::placeholder { color: #c0b8b0; font-size: 13px; }
+
+    /* Customer Search */
+    .customer-search-wrap { position: relative; }
+    .customer-results {
+        position: absolute; top: 100%; left: 0; right: 0;
+        background: #fff; border: 1.5px solid #e5e0db;
+        border-radius: 0 0 8px 8px; z-index: 100;
+        max-height: 200px; overflow-y: auto; display: none;
+    }
+    .customer-result-item {
+        padding: 10px 14px; cursor: pointer;
+        border-bottom: 1px solid #f5f5f5; font-size: 13px;
+    }
+    .customer-result-item:last-child { border: none; }
+    .customer-result-item:hover { background: var(--coffee-cream); }
+    .customer-result-item strong { display: block; color: var(--coffee-dark); font-weight: 600; }
+    .customer-result-item span   { color: #aaa; font-size: 11.5px; }
+
+    .selected-customer {
+        background: #f0fdf4; border: 1.5px solid #bbf7d0;
+        border-radius: 8px; padding: 12px 14px;
+        display: none; font-size: 13px;
+    }
+    .selected-customer strong { color: #16a34a; font-weight: 700; display: block; }
+    .selected-customer span   { color: #666; font-size: 12px; }
+
+    /* Product Rows */
+    .product-row {
+        background: #faf8f6; border: 1.5px solid #e5e0db;
+        border-radius: 10px; padding: 14px;
+        margin-bottom: 10px; position: relative;
+    }
+    .product-row-label {
+        font-size: 11px; font-weight: 700; color: var(--coffee-gold);
+        text-transform: uppercase; letter-spacing: 0.5px;
+        margin-bottom: 10px; display: flex;
+        align-items: center; justify-content: space-between;
+    }
+    .btn-del-row {
+        width: 26px; height: 26px; background: #fee2e2; color: #dc2626;
+        border: none; border-radius: 6px; cursor: pointer; font-size: 13px;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.15s; padding: 0;
+    }
+    .btn-del-row:hover { background: #dc2626; color: #fff; }
+
+    .btn-add-product {
+        border: 2px dashed #ddd; background: transparent; color: #aaa;
+        border-radius: 8px; padding: 9px; font-size: 13px; font-weight: 600;
+        width: 100%; cursor: pointer; transition: all 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        margin-top: 4px;
+    }
+    .btn-add-product:hover { border-color: var(--coffee-gold); color: var(--coffee-gold); background: #fff9f5; }
+
+    .line-total {
+        background: var(--coffee-cream); border-radius: 6px;
+        padding: 8px 12px; text-align: right;
+        font-size: 14px; font-weight: 800; color: var(--coffee-dark);
+    }
+
+    /* Price Summary */
+    .price-row {
+        display: flex; justify-content: space-between;
+        padding: 8px 0; font-size: 13px;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    .price-row:last-child { border: none; }
+    .price-label { color: #888; }
+    .price-value { font-weight: 600; color: var(--coffee-dark); }
+    .price-total {
+        display: flex; justify-content: space-between;
+        padding: 12px 0 0; font-size: 17px; font-weight: 800;
+        color: var(--coffee-dark); border-top: 2px solid #f0ebe5; margin-top: 4px;
+    }
+
+    /* Coupon */
+    .coupon-result {
+        font-size: 12px; font-weight: 600; margin-top: 6px;
+        padding: 6px 10px; border-radius: 6px; display: none;
+    }
+    .coupon-valid   { background: #dcfce7; color: #16a34a; }
+    .coupon-invalid { background: #fee2e2; color: #dc2626; }
+
+    /* Sidebar */
+    .sblock {
+        background: #fff; border-radius: 12px;
+        border: 1px solid #eee; margin-bottom: 16px; overflow: hidden;
+    }
+    .sblock-head {
+        background: var(--coffee-dark); padding: 11px 16px;
+        color: #fff; font-size: 12.5px; font-weight: 700; letter-spacing: 0.3px;
+    }
+    .sblock-body { padding: 16px; }
+
+    .btn-save-order {
+        background: linear-gradient(135deg, var(--coffee-gold) 0%, #a86e1a 100%);
+        border: none; color: #fff; padding: 12px 16px;
+        border-radius: 8px; font-size: 14px; font-weight: 700;
+        width: 100%; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all 0.2s;
+    }
+    .btn-save-order:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .btn-cancel-link {
+        display: block; text-align: center; color: #aaa;
+        font-size: 12.5px; margin-top: 10px; text-decoration: none;
+    }
+    .btn-cancel-link:hover { color: #dc2626; }
+
+    .summary-line {
+        display: flex; justify-content: space-between;
+        font-size: 12.5px; padding: 5px 0;
+        border-bottom: 1px solid #f5f5f5; color: #666;
+    }
+    .summary-line:last-child { border: none; }
+    .summary-line strong { color: var(--coffee-dark); }
+</style>
+{% endblock 'css' %}
+
+{% block 'body' %}
+<div class="container-fluid">
+
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column mb-1">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Create Manual Order</h4>
+            <p class="text-muted mb-0" style="font-size:13px;">Place an order on behalf of a customer</p>
+        </div>
+        <a href="/orders" class="btn btn-sm btn-light">
+            <i class="mdi mdi-arrow-left me-1"></i> Back to Orders
+        </a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger" style="border-radius:10px; font-size:13px;">
+        <i class="mdi mdi-alert-circle me-2"></i>{{ error }}
+    </div>
+    {% endif %}
+
+    <form action="" method="POST" id="createOrderForm">
+        {% csrf_token %}
+
+        <div class="create-order-page">
+
+            <!-- ════ MAIN COLUMN ════ -->
+            <div class="order-main">
+
+                <!-- 1. CUSTOMER -->
+                <div class="oblock">
+                    <div class="oblock-head">
+                        <div class="oblock-icon" style="background:#2563eb;"><i class="mdi mdi-account-search"></i></div>
+                        <div>
+                            <h6>Customer</h6>
+                            <p>Search existing or enter new customer details</p>
+                        </div>
+                    </div>
+                    <div class="oblock-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Search Customer</label>
+                                <div class="customer-search-wrap">
+                                    <input type="text" class="form-control" id="customerSearch"
+                                        placeholder="Type name, email or phone..." autocomplete="off">
+                                    <div class="customer-results" id="customerResults"></div>
+                                </div>
+                                <div class="selected-customer mt-2" id="selectedCustomer">
+                                    <strong id="selectedName"></strong>
+                                    <span id="selectedEmail"></span> &nbsp;·&nbsp; <span id="selectedPhone"></span>
+                                    <a href="#" onclick="clearCustomer(); return false;"
+                                       style="float:right; font-size:11px; color:#dc2626;">✕ Clear</a>
+                                </div>
+                                <input type="hidden" name="customer_id" id="customerId">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="full_name" id="fullName"
+                                    placeholder="e.g. Rahul Sharma" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" name="email" id="custEmail"
+                                    placeholder="e.g. rahul@email.com" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Phone <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="phone" id="custPhone"
+                                    placeholder="e.g. 9876543210" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. ADDRESS -->
+                <div class="oblock">
+                    <div class="oblock-head">
+                        <div class="oblock-icon" style="background:#16a34a;"><i class="mdi mdi-map-marker"></i></div>
+                        <div>
+                            <h6>Shipping Address</h6>
+                            <p>Auto-filled when customer is selected</p>
+                        </div>
+                    </div>
+                    <div class="oblock-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Address Line 1 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="address_line_1" id="addrLine1"
+                                    placeholder="House / Flat No, Street" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Address Line 2</label>
+                                <input type="text" class="form-control" name="address_line_2" id="addrLine2"
+                                    placeholder="Landmark, Area (optional)">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">City <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="city" id="addrCity"
+                                    placeholder="e.g. Bengaluru" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">State <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="state" id="addrState"
+                                    placeholder="e.g. Karnataka" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Pincode <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="pincode" id="addrPincode"
+                                    placeholder="560001" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Country</label>
+                                <input type="text" class="form-control" name="country" value="India">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. PRODUCTS -->
+                <div class="oblock">
+                    <div class="oblock-head">
+                        <div class="oblock-icon" style="background:#c8882a;"><i class="mdi mdi-coffee"></i></div>
+                        <div>
+                            <h6>Products</h6>
+                            <p>Add products and select variants</p>
+                        </div>
+                    </div>
+                    <div class="oblock-body">
+                        <div id="productsContainer"></div>
+                        <button type="button" class="btn-add-product" onclick="addProductRow()">
+                            <i class="mdi mdi-plus"></i> Add Product
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. COUPON -->
+                <div class="oblock">
+                    <div class="oblock-head">
+                        <div class="oblock-icon" style="background:#7c3aed;"><i class="mdi mdi-ticket-percent"></i></div>
+                        <div>
+                            <h6>Coupon Code</h6>
+                            <p>Optional — applies discount automatically</p>
+                        </div>
+                    </div>
+                    <div class="oblock-body">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-5">
+                                <label class="form-label">Coupon Code</label>
+                                <input type="text" class="form-control" name="coupon_code" id="couponInput"
+                                    placeholder="e.g. KAPI10, FREESAMPLE"
+                                    style="text-transform:uppercase; font-family:monospace; font-weight:700;">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-outline-secondary w-100"
+                                    style="border-radius:8px; font-size:13px;" onclick="validateCoupon()">
+                                    <i class="mdi mdi-check me-1"></i> Apply
+                                </button>
+                            </div>
+                        </div>
+                        <div class="coupon-result" id="couponResult"></div>
+                        <input type="hidden" id="discountAmount" name="discount_amount" value="0">
+                    </div>
+                </div>
+
+                <!-- 5. PAYMENT -->
+                <div class="oblock">
+                    <div class="oblock-head">
+                        <div class="oblock-icon" style="background:#7c3aed;"><i class="mdi mdi-credit-card"></i></div>
+                        <div>
+                            <h6>Payment</h6>
+                            <p>Set payment method and status</p>
+                        </div>
+                    </div>
+                    <div class="oblock-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Payment Method</label>
+                                <select class="form-select" name="payment_method">
+                                    <option value="razorpay">Razorpay</option>
+                                    <option value="cod">Cash on Delivery</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Payment Status</label>
+                                <select class="form-select" name="payment_status">
+                                    <option value="pending">Pending</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Shipping Charge (₹)</label>
+                                <input type="number" class="form-control" name="shipping_charge"
+                                    id="shippingCharge" value="0" min="0" step="0.01"
+                                    onchange="recalculate()">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Razorpay Order ID</label>
+                                <input type="text" class="form-control" name="razorpay_order_id"
+                                    placeholder="Optional — if payment done externally"
+                                    style="font-family:monospace; font-size:12px;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Razorpay Payment ID</label>
+                                <input type="text" class="form-control" name="razorpay_payment_id"
+                                    placeholder="Optional"
+                                    style="font-family:monospace; font-size:12px;">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Internal Notes</label>
+                                <textarea class="form-control" name="notes" rows="2"
+                                    placeholder="e.g. VIP customer, called in order, paid via bank transfer..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /order-main -->
+
+            <!-- ════ SIDEBAR ════ -->
+            <div class="order-sidebar">
+
+                <!-- Save -->
+                <div class="sblock">
+                    <div class="sblock-head">Place Order</div>
+                    <div class="sblock-body">
+                        <button type="submit" class="btn-save-order">
+                            <i class="mdi mdi-check-circle"></i> Save Order
+                        </button>
+                        <a href="/orders" class="btn-cancel-link">
+                            <i class="mdi mdi-close me-1"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Live Price Summary -->
+                <div class="sblock">
+                    <div class="sblock-head">Order Summary</div>
+                    <div class="sblock-body">
+                        <div class="summary-line">
+                            <span>Items</span>
+                            <strong id="summaryItems">0</strong>
+                        </div>
+                        <div class="summary-line">
+                            <span>Subtotal</span>
+                            <strong id="summarySubtotal">₹0</strong>
+                        </div>
+                        <div class="summary-line">
+                            <span>Discount</span>
+                            <strong id="summaryDiscount" style="color:#16a34a;">−₹0</strong>
+                        </div>
+                        <div class="summary-line">
+                            <span>GST</span>
+                            <strong id="summaryGST">₹0</strong>
+                        </div>
+                        <div class="summary-line">
+                            <span>Shipping</span>
+                            <strong id="summaryShipping">₹0</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; padding-top:10px; border-top:2px solid #f0ebe5; margin-top:4px; font-size:16px; font-weight:800; color:#1a0a00;">
+                            <span>Total</span>
+                            <span id="summaryTotal">₹0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips -->
+                <div class="sblock">
+                    <div class="sblock-head">Tips</div>
+                    <div class="sblock-body">
+                        <p style="font-size:12px; color:#888; margin:0; line-height:1.7;">
+                            <i class="mdi mdi-lightbulb-outline me-1" style="color:#c8882a;"></i> Search by name, email or phone to find existing customers.<br>
+                            <i class="mdi mdi-lightbulb-outline me-1" style="color:#c8882a;"></i> Stock is deducted automatically when order is saved.<br>
+                            <i class="mdi mdi-lightbulb-outline me-1" style="color:#c8882a;"></i> Set payment status to Paid if payment is already collected.<br>
+                            <i class="mdi mdi-lightbulb-outline me-1" style="color:#c8882a;"></i> Set shipping to 0 for VIP free delivery.
+                        </p>
+                    </div>
+                </div>
+
+            </div><!-- /sidebar -->
+
+        </div>
+    </form>
+</div>
+{% endblock 'body' %}
+
+{% block 'script' %}
+<script>
+// ── Product data from Django ──
+const allProducts = [
+    {% for p in products %}
+    { id: {{ p.id }}, name: "{{ p.name|escapejs }}" },
+    {% endfor %}
+];
+
+let productRowCount = 0;
+let discount = 0;
+
+// ── Add Product Row ──
+function addProductRow() {
+    productRowCount++;
+    const n = productRowCount;
+    const options = allProducts.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    const div = document.createElement('div');
+    div.className = 'product-row';
+    div.id = `prow-${n}`;
+    div.innerHTML = `
+        <div class="product-row-label">
+            <span>Item #${n}</span>
+            <button type="button" class="btn-del-row" onclick="removeProductRow(${n})">
+                <i class="mdi mdi-close"></i>
+            </button>
+        </div>
+        <div class="row g-2">
+            <div class="col-md-4">
+                <label class="form-label">Product</label>
+                <select class="form-select" id="product-${n}" onchange="loadVariants(${n}, this.value)">
+                    <option value="">— Select Product —</option>
+                    ${options}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Variant</label>
+                <select class="form-select" id="variant-${n}" name="variant_id" onchange="updateLineTotal(${n})">
+                    <option value="">— Select product first —</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Qty</label>
+                <input type="number" class="form-control" id="qty-${n}" name="quantity"
+                    value="1" min="1" onchange="updateLineTotal(${n})">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Line Total</label>
+                <div class="line-total" id="linetotal-${n}">₹0.00</div>
+            </div>
+        </div>
+    `;
+    document.getElementById('productsContainer').appendChild(div);
+}
+
+// ── Remove Product Row ──
+function removeProductRow(n) {
+    const row = document.getElementById(`prow-${n}`);
+    if (row) row.remove();
+    recalculate();
+}
+
+// ── Load Variants ──
+function loadVariants(n, productId) {
+    if (!productId) return;
+    fetch(`/get_product_variants/?product_id=${productId}`)
+        .then(r => r.json())
+        .then(data => {
+            const sel = document.getElementById(`variant-${n}`);
+            sel.innerHTML = '<option value="">— Select Variant —</option>';
+            data.forEach(v => {
+                sel.innerHTML += `<option value="${v.id}" data-price="${v.price}" data-gst="${v.gst}" data-stock="${v.quantity}">
+                    ${v.name} — ₹${v.price} (Stock: ${v.quantity})
+                </option>`;
+            });
+        });
+}
+
+// ── Update Line Total ──
+function updateLineTotal(n) {
+    const variantSel = document.getElementById(`variant-${n}`);
+    const qty        = parseInt(document.getElementById(`qty-${n}`).value) || 1;
+    const option     = variantSel.selectedOptions[0];
+    if (!option || !option.dataset.price) {
+        document.getElementById(`linetotal-${n}`).textContent = '₹0.00';
+        recalculate();
+        return;
+    }
+    const price = parseFloat(option.dataset.price);
+    const total = (price * qty).toFixed(2);
+    document.getElementById(`linetotal-${n}`).textContent = `₹${total}`;
+    recalculate();
+}
+
+// ── Recalculate Summary ──
+function recalculate() {
+    let subtotal  = 0;
+    let gstTotal  = 0;
+    let itemCount = 0;
+
+    document.querySelectorAll('.product-row').forEach(row => {
+        const n   = row.id.replace('prow-', '');
+        const sel = document.getElementById(`variant-${n}`);
+        const qty = parseInt(document.getElementById(`qty-${n}`)?.value) || 1;
+        if (!sel) return;
+        const opt = sel.selectedOptions[0];
+        if (!opt || !opt.dataset.price) return;
+        const price = parseFloat(opt.dataset.price);
+        const gst   = parseFloat(opt.dataset.gst || 0);
+        subtotal  += price * qty;
+        gstTotal  += (price * gst / 100) * qty;
+        itemCount += qty;
+    });
+
+    const shipping = parseFloat(document.getElementById('shippingCharge').value) || 0;
+    const total    = subtotal - discount + gstTotal + shipping;
+
+    document.getElementById('summaryItems').textContent    = itemCount;
+    document.getElementById('summarySubtotal').textContent = `₹${subtotal.toFixed(2)}`;
+    document.getElementById('summaryDiscount').textContent = `−₹${discount.toFixed(2)}`;
+    document.getElementById('summaryGST').textContent      = `₹${gstTotal.toFixed(2)}`;
+    document.getElementById('summaryShipping').textContent = `₹${shipping.toFixed(2)}`;
+    document.getElementById('summaryTotal').textContent    = `₹${total.toFixed(2)}`;
+}
+
+// ── Validate Coupon ──
+function validateCoupon() {
+    const code = document.getElementById('couponInput').value.trim().toUpperCase();
+    if (!code) return;
+
+    let subtotal = 0;
+    document.querySelectorAll('.product-row').forEach(row => {
+        const n   = row.id.replace('prow-', '');
+        const sel = document.getElementById(`variant-${n}`);
+        const qty = parseInt(document.getElementById(`qty-${n}`)?.value) || 1;
+        if (!sel) return;
+        const opt = sel.selectedOptions[0];
+        if (!opt || !opt.dataset.price) return;
+        subtotal += parseFloat(opt.dataset.price) * qty;
+    });
+
+    fetch(`/validate_coupon/?code=${code}&subtotal=${subtotal.toFixed(2)}`)
+        .then(r => r.json())
+        .then(data => {
+            const el = document.getElementById('couponResult');
+            el.style.display = 'block';
+            if (data.valid) {
+                el.className = 'coupon-result coupon-valid';
+                el.innerHTML = `<i class="mdi mdi-check-circle me-1"></i>${data.message}`;
+                discount = parseFloat(data.discount || 0);
+                document.getElementById('discountAmount').value = discount;
+            } else {
+                el.className = 'coupon-result coupon-invalid';
+                el.innerHTML = `<i class="mdi mdi-close-circle me-1"></i>${data.message}`;
+                discount = 0;
+                document.getElementById('discountAmount').value = 0;
+            }
+            recalculate();
+        });
+}
+
+// ── Customer Search ──
+let searchTimeout;
+document.getElementById('customerSearch').addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    const q = this.value.trim();
+    if (q.length < 2) {
+        document.getElementById('customerResults').style.display = 'none';
+        return;
+    }
+    searchTimeout = setTimeout(() => {
+        fetch(`/search_customers/?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('customerResults');
+                if (!data.length) {
+                    container.style.display = 'none';
+                    return;
+                }
+                container.innerHTML = data.map(c => `
+                    <div class="customer-result-item" onclick="selectCustomer(${c.id}, '${c.name.replace(/'/g,"\\'")}', '${c.email}', '${c.phone}', '${c.address.replace(/'/g,"\\'").replace(/\n/g,' ')}')">
+                        <strong>${c.name}</strong>
+                        <span>${c.email} · ${c.phone}</span>
+                    </div>
+                `).join('');
+                container.style.display = 'block';
+            });
+    }, 300);
+});
+
+function selectCustomer(id, name, email, phone, address) {
+    document.getElementById('customerId').value  = id;
+    document.getElementById('fullName').value    = name;
+    document.getElementById('custEmail').value   = email;
+    document.getElementById('custPhone').value   = phone;
+    document.getElementById('addrLine1').value   = address;
+
+    document.getElementById('selectedName').textContent  = name;
+    document.getElementById('selectedEmail').textContent = email;
+    document.getElementById('selectedPhone').textContent = phone;
+    document.getElementById('selectedCustomer').style.display = 'block';
+    document.getElementById('customerResults').style.display  = 'none';
+    document.getElementById('customerSearch').value = '';
+}
+
+function clearCustomer() {
+    document.getElementById('customerId').value   = '';
+    document.getElementById('fullName').value     = '';
+    document.getElementById('custEmail').value    = '';
+    document.getElementById('custPhone').value    = '';
+    document.getElementById('addrLine1').value    = '';
+    document.getElementById('selectedCustomer').style.display = 'none';
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.customer-search-wrap')) {
+        document.getElementById('customerResults').style.display = 'none';
+    }
+});
+
+// Add first product row on load
+addProductRow();
+</script>
+{% endblock 'script' %}

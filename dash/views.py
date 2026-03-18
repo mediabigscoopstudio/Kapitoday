@@ -754,3 +754,252 @@ def fulfill_order(request, id):
 
     order.save()
     return redirect(f'/order_detail/{id}')
+
+from decimal import Decimal
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def create_order(request):
+    if request.method == 'POST':
+ 
+        # ── Customer ──
+        customer_id  = request.POST.get('customer_id') or None
+        full_name    = request.POST.get('full_name')
+        email        = request.POST.get('email')
+        phone        = request.POST.get('phone')
+ 
+        # ── Address ──
+        address_line_1 = request.POST.get('address_line_1')
+        address_line_2 = request.POST.get('address_line_2', '')
+        city           = request.POST.get('city')
+        state          = request.POST.get('state')
+        pincode        = request.POST.get('pincode')
+        country        = request.POST.get('country', 'India')
+ 
+        # ── Payment ──
+        payment_method = request.POST.get('payment_method', 'razorpay')
+        payment_status = request.POST.get('payment_status', 'pending')
+        razorpay_order_id   = request.POST.get('razorpay_order_id', '')
+        razorpay_payment_id = request.POST.get('razorpay_payment_id', '')
+ 
+        # ── Coupon ──
+        coupon_code = request.POST.get('coupon_code', '').strip().upper()
+ 
+        # ── Shipping ──
+        shipping_charge = Decimal(request.POST.get('shipping_charge') or 0)
+ 
+        # ── Notes ──
+        notes = request.POST.get('notes', '')
+ 
+        # ── Order Items ──
+        variant_ids = request.POST.getlist('variant_id')
+        quantities  = request.POST.getlist('quantity')
+ 
+        if not variant_ids:
+            return render(request, 'dash/order/create_order.html', {
+                'error':       'Please add at least one product.',
+                'products':    Product.objects.all().order_by('name'),
+                'customers':   Customers.objects.all().order_by('user__first_name'),
+                'offers':      Offer.objects.filter(status='Active'),
+            })
+ 
+        # ── Resolve Customer ──
+        customer = None
+        if customer_id:
+            customer = Customers.objects.filter(id=customer_id).first()
+ 
+        # ── Calculate Pricing ──
+        subtotal  = Decimal('0.00')
+        gst_total = Decimal('0.00')
+        items_data = []
+ 
+        total_weight  = Decimal('0.00')
+        total_length  = Decimal('0.00')
+        total_breadth = Decimal('0.00')
+        total_height  = Decimal('0.00')
+ 
+        for i, vid in enumerate(variant_ids):
+            if not vid:
+                continue
+            variant  = get_object_or_404(Variant, id=vid)
+            qty      = int(quantities[i]) if i < len(quantities) else 1
+            price    = variant.price
+            gst_amt  = (price * variant.gst / 100).quantize(Decimal('0.01'))
+            line_total = (price * qty).quantize(Decimal('0.01'))
+            gst_line   = (gst_amt * qty).quantize(Decimal('0.01'))
+ 
+            subtotal  += line_total
+            gst_total += gst_line
+ 
+            total_weight  += variant.weight * qty
+            total_height  += variant.height * qty
+            total_length   = max(total_length, variant.length)
+            total_breadth  = max(total_breadth, variant.breadth)
+ 
+            items_data.append({
+                'variant':      variant,
+                'product':      variant.product,
+                'qty':          qty,
+                'price':        price,
+                'gst':          variant.gst,
+                'line_total':   line_total,
+            })
+ 
+        # ── Apply Coupon ──
+        discount = Decimal('0.00')
+        offer    = None
+        if coupon_code:
+            try:
+                offer = Offer.objects.get(
+                    coupon_code=coupon_code,
+                    status='Active',
+                    trigger='coupon'
+                )
+                if offer.is_valid() and not offer.is_usage_limit_reached():
+                    if offer.action_type == 'percentage_off':
+                        discount = (subtotal * offer.discount_value / 100).quantize(Decimal('0.01'))
+                        if offer.max_discount_cap:
+                            discount = min(discount, offer.max_discount_cap)
+                    elif offer.action_type == 'flat_off':
+                        discount = min(offer.discount_value, subtotal)
+                    elif offer.action_type == 'free_shipping':
+                        shipping_charge = Decimal('0.00')
+            except Offer.DoesNotExist:
+                pass
+ 
+        total = (subtotal - discount + gst_total + shipping_charge).quantize(Decimal('0.01'))
+ 
+        # ── Create Order ──
+        order = Order.objects.create(
+            customer       = customer,
+            full_name      = full_name,
+            email          = email,
+            phone          = phone,
+            address_line_1 = address_line_1,
+            address_line_2 = address_line_2,
+            city           = city,
+            state          = state,
+            pincode        = pincode,
+            country        = country,
+            subtotal       = subtotal,
+            discount       = discount,
+            gst_total      = gst_total,
+            shipping_charge = shipping_charge,
+            total          = total,
+            offer          = offer,
+            coupon_code    = coupon_code,
+            payment_method      = payment_method,
+            payment_status      = payment_status,
+            razorpay_order_id   = razorpay_order_id,
+            razorpay_payment_id = razorpay_payment_id,
+            total_weight   = total_weight,
+            total_length   = total_length,
+            total_breadth  = total_breadth,
+            total_height   = total_height,
+            status         = 'paid' if payment_status == 'paid' else 'pending',
+            notes          = f'[Manual Order]\n{notes}',
+        )
+ 
+        # ── Create Order Items + Deduct Stock ──
+        for item in items_data:
+            OrderItem.objects.create(
+                order        = order,
+                product      = item['product'],
+                variant      = item['variant'],
+                product_name = item['product'].name,
+                variant_name = item['variant'].name,
+                price        = item['price'],
+                gst          = item['gst'],
+                quantity     = item['qty'],
+                total        = item['line_total'],
+                weight       = item['variant'].weight,
+                length       = item['variant'].length,
+                breadth      = item['variant'].breadth,
+                height       = item['variant'].height,
+            )
+            # Deduct stock
+            item['variant'].quantity = max(0, item['variant'].quantity - item['qty'])
+            item['variant'].save()
+ 
+        # ── Mark Coupon Used ──
+        if offer:
+            offer.used_count += 1
+            offer.save()
+ 
+        return redirect(f'/order_detail/{order.id}')
+ 
+    context = {
+        'products':  Product.objects.all().order_by('name'),
+        'customers': Customers.objects.all().order_by('user__first_name'),
+        'offers':    Offer.objects.filter(status='Active'),
+    }
+    return render(request, 'dash/orders/create_order.html', context)
+ 
+ 
+# ── AJAX: Search Customers ──
+def search_customers(request):
+    query = request.GET.get('q', '')
+    customers = Customers.objects.filter(
+        user__first_name__icontains=query
+    ) | Customers.objects.filter(
+        user__last_name__icontains=query
+    ) | Customers.objects.filter(
+        user__email__icontains=query
+    ) | Customers.objects.filter(
+        phone_number__icontains=query
+    )
+    data = []
+    for c in customers[:10]:
+        data.append({
+            'id':      c.id,
+            'name':    c.user.get_full_name(),
+            'email':   c.user.email,
+            'phone':   c.phone_number,
+            'address': c.address,
+        })
+    return JsonResponse(data, safe=False)
+ 
+ 
+# ── AJAX: Get Variants for a Product ──
+def get_product_variants(request):
+    product_id = request.GET.get('product_id')
+    variants = Variant.objects.filter(
+        product_id=product_id, status='Enabled'
+    ).values('id', 'name', 'price', 'gst', 'quantity')
+    return JsonResponse(list(variants), safe=False)
+ 
+ 
+# ── AJAX: Validate Coupon ──
+def validate_coupon(request):
+    code    = request.GET.get('code', '').strip().upper()
+    subtotal = Decimal(request.GET.get('subtotal', '0'))
+    try:
+        offer = Offer.objects.get(coupon_code=code, status='Active', trigger='coupon')
+        if not offer.is_valid():
+            return JsonResponse({'valid': False, 'message': 'Offer has expired.'})
+        if offer.is_usage_limit_reached():
+            return JsonResponse({'valid': False, 'message': 'Usage limit reached.'})
+        if offer.condition_type == 'min_order' and subtotal < offer.min_order_amount:
+            return JsonResponse({'valid': False, 'message': f'Minimum order ₹{offer.min_order_amount} required.'})
+ 
+        discount = Decimal('0.00')
+        message  = ''
+        if offer.action_type == 'percentage_off':
+            discount = (subtotal * offer.discount_value / 100).quantize(Decimal('0.01'))
+            if offer.max_discount_cap:
+                discount = min(discount, offer.max_discount_cap)
+            message = f'{offer.discount_value}% off applied'
+        elif offer.action_type == 'flat_off':
+            discount = min(offer.discount_value, subtotal)
+            message  = f'₹{discount} off applied'
+        elif offer.action_type == 'free_shipping':
+            message  = 'Free shipping applied'
+ 
+        return JsonResponse({
+            'valid':    True,
+            'discount': str(discount),
+            'message':  message,
+            'type':     offer.action_type,
+        })
+    except Offer.DoesNotExist:
+        return JsonResponse({'valid': False, 'message': 'Invalid coupon code.'})
+ 
