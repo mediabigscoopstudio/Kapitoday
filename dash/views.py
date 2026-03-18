@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
-from .models import Category,SubCategory,Product,ProductImage,Highlight,APlusContent,Variant
+from .models import Category,SubCategory,Product,ProductImage,Highlight,APlusContent,Variant,Offer,Customers,Support
 
 def superadmin_required(user):
     return user.is_superuser 
@@ -346,3 +346,199 @@ def get_subcategories(request):
         category_id=category_id, status='Enabled'
     ).values('id', 'title')
     return JsonResponse(list(subcategories), safe=False)
+
+#Offer Management System 
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def offers(request):
+    all_offers = Offer.objects.all().order_by('-created_at')
+    context = {
+        'offers':          all_offers,
+        'scheduled_count': all_offers.filter(status='Scheduled').count(),
+        'expired_count':   all_offers.filter(status='Expired').count(),
+        'total_used':      sum(o.used_count for o in all_offers),
+    }
+    return render(request,'dash/offers/offers.html',context)
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def add_offer(request):
+    if request.method == 'POST':
+ 
+        # ── Core ──
+        title       = request.POST.get('title')
+        description = request.POST.get('description')
+        trigger     = request.POST.get('trigger')
+        status      = request.POST.get('status')
+ 
+        # ── Coupon ──
+        coupon_code      = request.POST.get('coupon_code') or None
+        usage_limit      = request.POST.get('usage_limit') or None
+        one_per_customer = request.POST.get('one_per_customer') == 'True'
+ 
+        # ── Condition ──
+        condition_type = request.POST.get('condition_type')
+        min_order_amount   = request.POST.get('min_order_amount') or None
+        min_quantity       = request.POST.get('min_quantity') or None
+        condition_product_id     = request.POST.get('condition_product') or None
+        condition_category_id    = request.POST.get('condition_category') or None
+        condition_sub_category_id = request.POST.get('condition_sub_category') or None
+ 
+        # ── Action ──
+        action_type      = request.POST.get('action_type')
+        discount_value   = request.POST.get('discount_value') or 0
+        max_discount_cap = request.POST.get('max_discount_cap') or None
+        free_product_id  = request.POST.get('free_product') or None
+        free_variant_id  = request.POST.get('free_variant') or None
+        bundle_price     = request.POST.get('bundle_price') or None
+        bundle_products  = request.POST.getlist('bundle_products')
+        buy_quantity     = request.POST.get('buy_quantity') or None
+        get_quantity     = request.POST.get('get_quantity') or None
+ 
+        # ── Validity ──
+        valid_from = request.POST.get('valid_from')
+        valid_to   = request.POST.get('valid_to')
+        stackable  = request.POST.get('stackable') == 'True'
+        priority   = request.POST.get('priority') or 0
+ 
+        offer = Offer.objects.create(
+            title=title,
+            description=description,
+            trigger=trigger,
+            status=status,
+            coupon_code=coupon_code,
+            usage_limit=usage_limit,
+            one_per_customer=one_per_customer,
+            condition_type=condition_type,
+            min_order_amount=min_order_amount,
+            min_quantity=min_quantity,
+            condition_product_id=condition_product_id,
+            condition_category_id=condition_category_id,
+            condition_sub_category_id=condition_sub_category_id,
+            action_type=action_type,
+            discount_value=discount_value,
+            max_discount_cap=max_discount_cap,
+            free_product_id=free_product_id,
+            free_variant_id=free_variant_id,
+            bundle_price=bundle_price,
+            buy_quantity=buy_quantity,
+            get_quantity=get_quantity,
+            valid_from=valid_from,
+            valid_to=valid_to,
+            stackable=stackable,
+            priority=priority,
+        )
+ 
+        # ManyToMany bundle products
+        if bundle_products:
+            offer.bundle_products.set(bundle_products)
+ 
+        return redirect('/offers')
+ 
+    context = {
+        'products':     Product.objects.all().order_by('name'),
+        'variants':     Variant.objects.all().order_by('product__name'),
+        'categories':   Category.objects.filter(status='Enabled').order_by('title'),
+        'subcategories': SubCategory.objects.filter(status='Enabled').order_by('title'),
+    }
+    return render(request, 'dash/offers/add_offer.html', context)
+ 
+ 
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def delete_offer(request, id):
+    offer = get_object_or_404(Offer, id=id)
+    offer.delete()
+    return redirect('/offers')
+ 
+ 
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def activate_offer(request, id):
+    offer = get_object_or_404(Offer, id=id)
+    offer.status = 'Active'
+    offer.save()
+    return redirect('/offers')
+ 
+ 
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def deactivate_offer(request, id):
+    offer = get_object_or_404(Offer, id=id)
+    offer.status = 'Inactive'
+    offer.save()
+    return redirect('/offers')
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def edit_offer(request, id):
+    offer = get_object_or_404(Offer, id=id)
+ 
+    if request.method == 'POST':
+ 
+        # ── Core ──
+        offer.title       = request.POST.get('title')
+        offer.description = request.POST.get('description')
+        offer.trigger     = request.POST.get('trigger')
+        offer.status      = request.POST.get('status')
+ 
+        # ── Coupon ──
+        offer.coupon_code      = request.POST.get('coupon_code') or None
+        offer.usage_limit      = request.POST.get('usage_limit') or None
+        offer.one_per_customer = request.POST.get('one_per_customer') == 'True'
+ 
+        # ── Condition ──
+        offer.condition_type              = request.POST.get('condition_type')
+        offer.min_order_amount            = request.POST.get('min_order_amount') or None
+        offer.min_quantity                = request.POST.get('min_quantity') or None
+        offer.condition_product_id        = request.POST.get('condition_product') or None
+        offer.condition_category_id       = request.POST.get('condition_category') or None
+        offer.condition_sub_category_id   = request.POST.get('condition_sub_category') or None
+ 
+        # ── Action ──
+        offer.action_type      = request.POST.get('action_type')
+        offer.discount_value   = request.POST.get('discount_value') or 0
+        offer.max_discount_cap = request.POST.get('max_discount_cap') or None
+        offer.free_product_id  = request.POST.get('free_product') or None
+        offer.free_variant_id  = request.POST.get('free_variant') or None
+        offer.bundle_price     = request.POST.get('bundle_price') or None
+        offer.buy_quantity     = request.POST.get('buy_quantity') or None
+        offer.get_quantity     = request.POST.get('get_quantity') or None
+ 
+        # ── Validity ──
+        offer.valid_from = request.POST.get('valid_from')
+        offer.valid_to   = request.POST.get('valid_to')
+        offer.stackable  = request.POST.get('stackable') == 'True'
+        offer.priority   = request.POST.get('priority') or 0
+ 
+        offer.save()
+ 
+        # ManyToMany bundle products
+        bundle_products = request.POST.getlist('bundle_products')
+        offer.bundle_products.set(bundle_products)
+ 
+        return redirect('/offers')
+ 
+    context = {
+        'data':          offer,
+        'products':      Product.objects.all().order_by('name'),
+        'variants':      Variant.objects.all().order_by('product__name'),
+        'categories':    Category.objects.filter(status='Enabled').order_by('title'),
+        'subcategories': SubCategory.objects.filter(status='Enabled').order_by('title'),
+    }
+    return render(request, 'dash/offers/edit_offer.html', context)
+
+# Customers Management
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def customers(request):
+    customers = Customers.objects.all().order_by('-id')
+    return render(request, 'dash/customer/customers.html', {'customers': customers})
+
+# Support Management
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def support(request):
+    enquiries = Support.objects.all().order_by('-created_at')
+    return render(request, 'dash/support/support.html', {'enquiries': enquiries})
+
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def resolve_enquiry(request, id):
+    enquiry = get_object_or_404(Support, id=id)
+    enquiry.status = 'Resolved'
+    enquiry.save()
+    return redirect('/support')

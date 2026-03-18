@@ -1,0 +1,77 @@
+{% extends "dash/main.html" %}
+{% block 'title' %}Support Enquiries{% endblock 'title' %}
+{% block 'css' %}{% endblock 'css' %}
+{% block 'body' %}
+<div class="container-fluid">
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Support Enquiries</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table datatable" id="datatable_1">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Subject</th>
+                                    <th>Message</th>
+                                    <th>Status</th>
+                                    <th>Received</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in enquiries %}
+                                <tr>
+                                    <td style="font-size:13px; font-weight:600;">{{ i.name }}</td>
+                                    <td style="font-size:12px;">{{ i.email }}</td>
+                                    <td style="font-size:12px;">{{ i.phone|default:"—" }}</td>
+                                    <td>
+                                        <span style="font-size:13px; max-width:150px; display:inline-block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ i.subject }}">
+                                            {{ i.subject }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span style="font-size:12px; max-width:200px; display:inline-block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#666;" title="{{ i.message }}">
+                                            {{ i.message }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if i.status == 'Pending' %}
+                                        <span class="badge bg-warning-subtle text-warning">Pending</span>
+                                        {% else %}
+                                        <span class="badge bg-success-subtle text-success">Resolved</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="font-size:12px; color:#888;">{{ i.created_at|date:"d M Y, h:i A" }}</td>
+                                    <td>
+                                        {% if i.status == 'Pending' %}
+                                        <a href="/resolve_enquiry/{{ i.id }}" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Mark as Resolved">
+                                            <i class="mdi mdi-check-circle fs-16 align-middle"></i> Resolve
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted" style="font-size:12px;"><i class="mdi mdi-check-all me-1"></i>Resolved</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">No enquiries found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock 'body' %}
+{% block 'script' %}{% endblock 'script' %}

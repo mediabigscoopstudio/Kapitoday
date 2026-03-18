@@ -1,0 +1,502 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Add Offer{% endblock 'title' %}
+{% block 'css' %}
+<style>
+    .form-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b3a1f;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+    .form-control, .form-select {
+        border: 1.5px solid #e5e0db;
+        border-radius: 8px;
+        font-size: 13.5px;
+        padding: 9px 12px;
+        color: #1a0a00;
+        background: #faf8f6;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #c8882a;
+        box-shadow: 0 0 0 3px rgba(200,136,42,0.1);
+        background: #fff;
+        outline: none;
+    }
+    .form-control::placeholder { color: #c0b8b0; font-size: 13px; }
+
+    /* Conditional sections */
+    .conditional-section {
+        display: none;
+        background: #faf8f6;
+        border: 1.5px dashed #e0d8d0;
+        border-radius: 10px;
+        padding: 16px;
+        margin-top: 8px;
+    }
+    .conditional-section.visible { display: block; }
+
+    .section-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: #c8882a;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .section-tag::after {
+        content: '';
+        flex: 1;
+        border-top: 1px dashed #e0d8d0;
+    }
+</style>
+{% endblock 'css' %}
+{% block 'body' %}
+<div class="container-fluid">
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Create Offer</h4>
+        </div>
+        <a href="/offers" class="btn btn-sm btn-light">
+            <i class="mdi mdi-arrow-left me-1"></i> Back to Offers
+        </a>
+    </div>
+    <div class="row">
+
+        <!-- ── FORM ── -->
+        <div class="col-xl-7">
+            <form action="" method="POST" id="offerForm">
+                {% csrf_token %}
+
+                <!-- Core -->
+                <div class="card mb-3">
+                    <div class="card-header"><h5 class="card-title mb-0">Basic Information</h5></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Offer Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="title"
+                                    placeholder="e.g. Weekend 10% Off, Free Shipping Above ₹499" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="description" rows="2"
+                                    placeholder="Internal note about this offer..."></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Trigger Type <span class="text-danger">*</span></label>
+                                <select class="form-select" name="trigger" required onchange="handleTrigger(this.value)">
+                                    <option value="" disabled selected>Select Trigger</option>
+                                    <option value="coupon">Coupon Code — customer enters a code</option>
+                                    <option value="automatic">Automatic — applied when conditions are met</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Status <span class="text-danger">*</span></label>
+                                <select class="form-select" name="status" required>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                    <option value="Scheduled">Scheduled</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Coupon Fields — shown only when trigger = coupon -->
+                        <div class="conditional-section" id="coupon-section">
+                            <div class="section-tag"><i class="mdi mdi-ticket-percent"></i> Coupon Settings</div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Coupon Code <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="coupon_code"
+                                        placeholder="e.g. KAPI10, FIRSTORDER, WELCOME20"
+                                        style="text-transform:uppercase; font-family:monospace; font-weight:700;">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Usage Limit</label>
+                                    <input type="number" class="form-control" name="usage_limit"
+                                        placeholder="∞ Unlimited" min="1">
+                                    <div class="form-text">Leave blank for unlimited</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">One Per Customer</label>
+                                    <select class="form-select" name="one_per_customer">
+                                        <option value="False">No</option>
+                                        <option value="True">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Condition -->
+                <div class="card mb-3">
+                    <div class="card-header"><h5 class="card-title mb-0">Condition <span class="text-muted fw-normal" style="font-size:12px;">— when should this offer apply?</span></h5></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Condition Type <span class="text-danger">*</span></label>
+                                <select class="form-select" name="condition_type" required onchange="handleCondition(this.value)">
+                                    <option value="none">No Condition — always applies</option>
+                                    <option value="min_order">Minimum Order Amount</option>
+                                    <option value="min_quantity">Minimum Quantity in Cart</option>
+                                    <option value="product">Specific Product in Cart</option>
+                                    <option value="category">Specific Category in Cart</option>
+                                    <option value="sub_category">Specific Sub Category in Cart</option>
+                                    <option value="first_order">First Order Only</option>
+                                </select>
+                            </div>
+
+                            <!-- Min Order -->
+                            <div class="conditional-section col-12" id="cond-min_order">
+                                <div class="section-tag"><i class="mdi mdi-currency-inr"></i> Minimum Order</div>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Minimum Order Amount (₹)</label>
+                                        <input type="number" class="form-control" name="min_order_amount"
+                                            placeholder="e.g. 499" step="0.01" min="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Min Quantity -->
+                            <div class="conditional-section col-12" id="cond-min_quantity">
+                                <div class="section-tag"><i class="mdi mdi-counter"></i> Minimum Quantity</div>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Minimum Quantity</label>
+                                        <input type="number" class="form-control" name="min_quantity"
+                                            placeholder="e.g. 2" min="1">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Specific Product -->
+                            <div class="conditional-section col-12" id="cond-product">
+                                <div class="section-tag"><i class="mdi mdi-coffee"></i> Specific Product</div>
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <label class="form-label">Select Product</label>
+                                        <select class="form-select" name="condition_product">
+                                            <option value="">— Select Product —</option>
+                                            {% for p in products %}
+                                            <option value="{{ p.id }}">{{ p.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Specific Category -->
+                            <div class="conditional-section col-12" id="cond-category">
+                                <div class="section-tag"><i class="mdi mdi-tag"></i> Specific Category</div>
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <label class="form-label">Select Category</label>
+                                        <select class="form-select" name="condition_category">
+                                            <option value="">— Select Category —</option>
+                                            {% for c in categories %}
+                                            <option value="{{ c.id }}">{{ c.title }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Specific Sub Category -->
+                            <div class="conditional-section col-12" id="cond-sub_category">
+                                <div class="section-tag"><i class="mdi mdi-tag-outline"></i> Specific Sub Category</div>
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <label class="form-label">Select Sub Category</label>
+                                        <select class="form-select" name="condition_sub_category">
+                                            <option value="">— Select Sub Category —</option>
+                                            {% for s in subcategories %}
+                                            <option value="{{ s.id }}">{{ s.category.title }} → {{ s.title }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action -->
+                <div class="card mb-3">
+                    <div class="card-header"><h5 class="card-title mb-0">Action <span class="text-muted fw-normal" style="font-size:12px;">— what does this offer do?</span></h5></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Action Type <span class="text-danger">*</span></label>
+                                <select class="form-select" name="action_type" required onchange="handleAction(this.value)">
+                                    <option value="" disabled selected>Select Action</option>
+                                    <option value="percentage_off">Percentage Off — e.g. 10% off</option>
+                                    <option value="flat_off">Flat Amount Off — e.g. ₹100 off</option>
+                                    <option value="free_shipping">Free Shipping</option>
+                                    <option value="free_product">Free Product Added to Cart</option>
+                                    <option value="bundle_price">Fixed Bundle Price</option>
+                                    <option value="bogo">Buy X Get Y Free</option>
+                                </select>
+                            </div>
+
+                            <!-- Percentage / Flat Off -->
+                            <div class="conditional-section col-12" id="action-discount">
+                                <div class="section-tag"><i class="mdi mdi-percent"></i> Discount Value</div>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Discount Value</label>
+                                        <input type="number" class="form-control" name="discount_value"
+                                            placeholder="e.g. 10 or 100" step="0.01" min="0">
+                                        <div class="form-text">Enter % for percentage off, ₹ for flat off</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Max Discount Cap (₹)</label>
+                                        <input type="number" class="form-control" name="max_discount_cap"
+                                            placeholder="e.g. 200" step="0.01" min="0">
+                                        <div class="form-text">Optional — for percentage off only</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Free Product -->
+                            <div class="conditional-section col-12" id="action-free_product">
+                                <div class="section-tag"><i class="mdi mdi-gift"></i> Free Product</div>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Free Product</label>
+                                        <select class="form-select" name="free_product">
+                                            <option value="">— Select Product —</option>
+                                            {% for p in products %}
+                                            <option value="{{ p.id }}">{{ p.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Free Variant</label>
+                                        <select class="form-select" name="free_variant">
+                                            <option value="">— Select Variant —</option>
+                                            {% for v in variants %}
+                                            <option value="{{ v.id }}">{{ v.product.name }} — {{ v.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bundle Price -->
+                            <div class="conditional-section col-12" id="action-bundle_price">
+                                <div class="section-tag"><i class="mdi mdi-package-variant"></i> Bundle</div>
+                                <div class="row g-2">
+                                    <div class="col-md-5">
+                                        <label class="form-label">Bundle Price (₹)</label>
+                                        <input type="number" class="form-control" name="bundle_price"
+                                            placeholder="e.g. 599" step="0.01" min="0">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Bundle Products</label>
+                                        <select class="form-select" name="bundle_products" multiple
+                                            style="height:120px;">
+                                            {% for p in products %}
+                                            <option value="{{ p.id }}">{{ p.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="form-text">Hold Ctrl / Cmd to select multiple products</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BOGO -->
+                            <div class="conditional-section col-12" id="action-bogo">
+                                <div class="section-tag"><i class="mdi mdi-gift-outline"></i> Buy X Get Y Free</div>
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Buy Quantity (X)</label>
+                                        <input type="number" class="form-control" name="buy_quantity"
+                                            placeholder="e.g. 2" min="1">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Get Quantity (Y)</label>
+                                        <input type="number" class="form-control" name="get_quantity"
+                                            placeholder="e.g. 1" min="1">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Validity & Stacking -->
+                <div class="card mb-3">
+                    <div class="card-header"><h5 class="card-title mb-0">Validity & Rules</h5></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Valid From <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" name="valid_from" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Valid To <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" name="valid_to" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Stackable</label>
+                                <select class="form-select" name="stackable">
+                                    <option value="False">No — cannot stack with other discounts</option>
+                                    <option value="True">Yes — can stack with other discounts</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Priority</label>
+                                <input type="number" class="form-control" name="priority"
+                                    placeholder="0" min="0" value="0">
+                                <div class="form-text">Higher number = applied first</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary w-100" type="submit">
+                    <i class="mdi mdi-check-circle me-1"></i> Create Offer
+                </button>
+            </form>
+        </div>
+
+        <!-- ── HELP DESK ── -->
+        <div class="col-xl-5">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Help Desk</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="offerFAQ">
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                                    1. What is the difference between Coupon and Automatic?
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="faq1" data-bs-parent="#offerFAQ">
+                                <div class="accordion-body">
+                                    A <strong>Coupon</strong> requires the customer to enter a code at checkout — e.g. <code>KAPI10</code>. An <strong>Automatic</strong> offer is applied silently when the cart meets the condition — e.g. free shipping when cart is above ₹499. Use coupons for marketing campaigns and automatics for always-on deals.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                    2. How do I set up a Free Shipping offer?
+                                </button>
+                            </h2>
+                            <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2" data-bs-parent="#offerFAQ">
+                                <div class="accordion-body">
+                                    Set <strong>Trigger</strong> to Automatic, <strong>Condition</strong> to Minimum Order Amount (e.g. ₹499), and <strong>Action</strong> to Free Shipping. This will automatically waive shipping for any cart above ₹499 — no code needed from the customer.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                                    3. How does BOGO (Buy X Get Y) work?
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3" data-bs-parent="#offerFAQ">
+                                <div class="accordion-body">
+                                    Set <strong>Action</strong> to Buy X Get Y Free. Enter the buy quantity (e.g. 2) and get quantity (e.g. 1). For example — Buy 2 packs of Mysore Nuggets, Get 1 Sample Pack Free. Use <strong>Condition</strong> to restrict it to a specific product or category if needed.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                    4. What is a Bundle Price offer?
+                                </button>
+                            </h2>
+                            <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faq4" data-bs-parent="#offerFAQ">
+                                <div class="accordion-body">
+                                    A Bundle lets you group specific products and sell them together at a fixed price. For example — select Filter Coffee Powder, Cold Brew Ground Coffee, and Espresso Blend, then set a bundle price of ₹599 instead of the combined ₹749. Select multiple products using Ctrl or Cmd.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq5">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                                    5. What does Stackable mean?
+                                </button>
+                            </h2>
+                            <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="faq5" data-bs-parent="#offerFAQ">
+                                <div class="accordion-body">
+                                    If <strong>Stackable</strong> is set to Yes, this offer can combine with other active offers on the same order. For example, a Free Shipping offer can stack with a 10% off coupon. Set to No to prevent double discounting. Priority determines which offer is applied first when stacking.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq6">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
+                                    6. What is the Max Discount Cap?
+                                </button>
+                            </h2>
+                            <div id="collapse6" class="accordion-collapse collapse" aria-labelledby="faq6" data-bs-parent="#offerFAQ">
+                                <div class="accordion-body">
+                                    The Max Discount Cap limits how much a percentage discount can give. For example, if you set 20% off with a cap of ₹200 — a ₹1500 order would normally get ₹300 off, but the cap limits it to ₹200. This protects your margins on high value orders.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock 'body' %}
+{% block 'script' %}
+<script>
+// ── Trigger ──
+function handleTrigger(val) {
+    document.getElementById('coupon-section').classList.toggle('visible', val === 'coupon');
+}
+
+// ── Condition ──
+const condSections = ['min_order', 'min_quantity', 'product', 'category', 'sub_category'];
+function handleCondition(val) {
+    condSections.forEach(s => {
+        document.getElementById(`cond-${s}`).classList.remove('visible');
+    });
+    if (val && val !== 'none' && val !== 'first_order') {
+        document.getElementById(`cond-${val}`).classList.add('visible');
+    }
+}
+
+// ── Action ──
+const actionSections = ['discount', 'free_product', 'bundle_price', 'bogo'];
+function handleAction(val) {
+    actionSections.forEach(s => {
+        document.getElementById(`action-${s}`).classList.remove('visible');
+    });
+    if (val === 'percentage_off' || val === 'flat_off') {
+        document.getElementById('action-discount').classList.add('visible');
+    } else if (val === 'free_product') {
+        document.getElementById('action-free_product').classList.add('visible');
+    } else if (val === 'bundle_price') {
+        document.getElementById('action-bundle_price').classList.add('visible');
+    } else if (val === 'bogo') {
+        document.getElementById('action-bogo').classList.add('visible');
+    }
+}
+</script>
+{% endblock 'script' %}

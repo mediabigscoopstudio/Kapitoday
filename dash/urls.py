@@ -28,6 +28,18 @@ urlpatterns = [
     path('add_product/', views.add_product, name='add_product'),
     path('edit_product/<id>', views.edit_product, name='edit_product'),
     path('get_subcategories/', views.get_subcategories, name='get_subcategories'),
+    #Offer Management urls
+    path('offers', views.offers, name='offers'),
+    path('add_offer', views.add_offer, name='add_offer'),
+    path('edit_offer/<id>', views.edit_offer, name='edit_offer'),
+    path('delete_offer/<id>', views.delete_offer, name='delete_offer'),
+    path('activate_offer/<id>', views.activate_offer, name='activate_offer'),
+    path('deactivate_offer/<id>', views.deactivate_offer, name='deactivate_offer'),
+    #Customers Management urls
+    path('customers', views.customers, name='customers'),
+    #Support Management urls
+    path('support', views.support, name='support'),
+    path('resolve_enquiry', views.resolve_enquiry, name='resolve_enquiry'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

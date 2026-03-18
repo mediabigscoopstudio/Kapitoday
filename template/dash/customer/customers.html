@@ -1,0 +1,71 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Our Customers{% endblock 'title' %}
+{% block 'css' %}{% endblock 'css' %}
+{% block 'body' %}
+<div class="container-fluid">
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Customers</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table datatable" id="datatable_1">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Phone</th>
+                                    <th>Date of Birth</th>
+                                    <th>Address</th>
+                                    <th>Verified</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in customers %}
+                                <tr>
+                                    <td>
+                                        {% if i.profile_image %}
+                                        <img src="{{ i.profile_image.url }}" style="height:32px; width:32px; border-radius:50%; object-fit:cover;" class="me-2">
+                                        {% else %}
+                                        <span style="display:inline-flex; align-items:center; justify-content:center; height:32px; width:32px; border-radius:50%; background:#f0ebe5; color:#c8882a; font-size:13px; font-weight:700; margin-right:8px;">
+                                            {{ i.user.first_name|first|upper }}{{ i.user.last_name|first|upper }}
+                                        </span>
+                                        {% endif %}
+                                        <span style="font-size:13px; font-weight:600;">{{ i.user.get_full_name }}</span>
+                                        <span class="d-block text-muted" style="font-size:11px; margin-left:40px;">{{ i.user.email }}</span>
+                                    </td>
+                                    <td style="font-size:13px;">{{ i.phone_number|default:"—" }}</td>
+                                    <td style="font-size:13px;">{{ i.date_of_birth|date:"d M Y"|default:"—" }}</td>
+                                    <td>
+                                        <span style="font-size:12px; max-width:160px; display:inline-block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ i.address }}">
+                                            {{ i.address|default:"—" }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if i.is_verified %}
+                                        <span class="badge bg-success-subtle text-success"><i class="mdi mdi-check-circle me-1"></i>Verified</span>
+                                        {% else %}
+                                        <span class="badge bg-warning-subtle text-warning"><i class="mdi mdi-clock-outline me-1"></i>Unverified</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="font-size:12px; color:#888;">{{ i.user.date_joined|date:"d M Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No customers found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock 'body' %}
+{% block 'script' %}{% endblock 'script' %}

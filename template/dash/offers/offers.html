@@ -1,0 +1,197 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Offer Manager{% endblock 'title' %}
+{% block 'css' %}{% endblock 'css' %}
+{% block 'body' %}
+<div class="container-fluid">
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Offers & Discounts</h4>
+        </div>
+        <a aria-label="Add Offer" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Add Offer" href="/add_offer">
+            <i class="mdi mdi-plus fs-16 align-middle"></i> Add Offer
+        </a>
+    </div>
+
+    <!-- Summary Bar -->
+    <div class="row mb-3 g-2">
+        <div class="col-6 col-md-3">
+            <div class="card mb-0" style="border-left: 3px solid #16a34a;">
+                <div class="card-body py-2 px-3">
+                    <p class="mb-0" style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.4px;">Active</p>
+                    <h5 class="mb-0 fw-bold">{{ offers|dictsort:"status"|length }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card mb-0" style="border-left: 3px solid #2563eb;">
+                <div class="card-body py-2 px-3">
+                    <p class="mb-0" style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.4px;">Scheduled</p>
+                    <h5 class="mb-0 fw-bold">{{ scheduled_count }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card mb-0" style="border-left: 3px solid #dc2626;">
+                <div class="card-body py-2 px-3">
+                    <p class="mb-0" style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.4px;">Expired</p>
+                    <h5 class="mb-0 fw-bold">{{ expired_count }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card mb-0" style="border-left: 3px solid #c8882a;">
+                <div class="card-body py-2 px-3">
+                    <p class="mb-0" style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.4px;">Total Uses</p>
+                    <h5 class="mb-0 fw-bold">{{ total_used }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table datatable" id="datatable_1">
+                            <thead>
+                                <tr>
+                                    <th>Offer</th>
+                                    <th>Code</th>
+                                    <th>Type</th>
+                                    <th>Value</th>
+                                    <th>Condition</th>
+                                    <th>Usage</th>
+                                    <th>Validity</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in offers %}
+                                <tr>
+
+                                    <!-- Offer Title + Trigger Badge -->
+                                    <td>
+                                        <span style="font-size:13px; font-weight:600; display:block; max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ i.title }}">{{ i.title }}</span>
+                                        {% if i.trigger == 'coupon' %}
+                                        <span class="badge bg-primary-subtle text-primary" style="font-size:10px;">Coupon</span>
+                                        {% else %}
+                                        <span class="badge bg-info-subtle text-info" style="font-size:10px;">Automatic</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Coupon Code -->
+                                    <td>
+                                        {% if i.coupon_code %}
+                                        <code style="background:#f0ebe5; padding:2px 8px; border-radius:5px; font-size:12px; font-weight:700; color:#6b3a1f;">{{ i.coupon_code }}</code>
+                                        {% else %}
+                                        <span class="text-muted" style="font-size:12px;">—</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Action Type -->
+                                    <td>
+                                        <span style="font-size:12px;">{{ i.get_action_type_display }}</span>
+                                    </td>
+
+                                    <!-- Discount Value -->
+                                    <td>
+                                        {% if i.action_type == 'percentage_off' %}
+                                        <span style="font-size:13px; font-weight:600; color:#16a34a;">{{ i.discount_value }}% off</span>
+                                        {% elif i.action_type == 'flat_off' %}
+                                        <span style="font-size:13px; font-weight:600; color:#16a34a;">₹{{ i.discount_value }} off</span>
+                                        {% elif i.action_type == 'free_shipping' %}
+                                        <span style="font-size:13px; font-weight:600; color:#2563eb;">Free Shipping</span>
+                                        {% elif i.action_type == 'bundle_price' %}
+                                        <span style="font-size:13px; font-weight:600; color:#7c3aed;">₹{{ i.bundle_price }}</span>
+                                        {% elif i.action_type == 'bogo' %}
+                                        <span style="font-size:13px; font-weight:600; color:#c8882a;">Buy {{ i.buy_quantity }} Get {{ i.get_quantity }}</span>
+                                        {% elif i.action_type == 'free_product' %}
+                                        <span style="font-size:13px; font-weight:600; color:#c8882a;">Free Product</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Condition -->
+                                    <td>
+                                        {% if i.condition_type == 'min_order' %}
+                                        <span style="font-size:12px;">Min ₹{{ i.min_order_amount }}</span>
+                                        {% elif i.condition_type == 'min_quantity' %}
+                                        <span style="font-size:12px;">Min Qty {{ i.min_quantity }}</span>
+                                        {% elif i.condition_type == 'first_order' %}
+                                        <span style="font-size:12px;">First Order</span>
+                                        {% elif i.condition_type == 'product' %}
+                                        <span style="font-size:12px;" title="{{ i.condition_product.name }}">Specific Product</span>
+                                        {% elif i.condition_type == 'category' %}
+                                        <span style="font-size:12px;">{{ i.condition_category.title }}</span>
+                                        {% elif i.condition_type == 'sub_category' %}
+                                        <span style="font-size:12px;">{{ i.condition_sub_category.title }}</span>
+                                        {% else %}
+                                        <span class="text-muted" style="font-size:12px;">No Condition</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Usage -->
+                                    <td>
+                                        {% if i.trigger == 'coupon' %}
+                                            {% if i.usage_limit %}
+                                            <span style="font-size:12px;">{{ i.used_count }} / {{ i.usage_limit }}</span>
+                                            {% else %}
+                                            <span style="font-size:12px;">{{ i.used_count }} / ∞</span>
+                                            {% endif %}
+                                        {% else %}
+                                        <span class="text-muted" style="font-size:12px;">—</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Validity -->
+                                    <td style="font-size:12px;">
+                                        <span>{{ i.valid_from|date:"d M Y" }}</span>
+                                        <span class="text-muted"> – </span>
+                                        <span>{{ i.valid_to|date:"d M Y" }}</span>
+                                    </td>
+
+                                    <!-- Status Badge -->
+                                    <td>
+                                        {% if i.status == 'Active' %}
+                                        <span class="badge bg-success-subtle text-success">Active</span>
+                                        {% elif i.status == 'Inactive' %}
+                                        <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                                        {% elif i.status == 'Expired' %}
+                                        <span class="badge bg-danger-subtle text-danger">Expired</span>
+                                        {% elif i.status == 'Scheduled' %}
+                                        <span class="badge bg-primary-subtle text-primary">Scheduled</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Actions -->
+                                    {% if i.status == 'Active' %}
+                                    <td>
+                                        <a aria-label="anchor" class="btn btn-sm bg-warning-subtle" data-bs-toggle="tooltip" data-bs-original-title="Deactivate Offer" href="/deactivate_offer/{{ i.id }}"><i class="mdi mdi-cancel fs-16 align-middle"></i></a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Offer" href="/edit_offer/{{ i.id }}"><i class="mdi mdi-pencil fs-16 align-middle"></i></a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Offer" href="/delete_offer/{{ i.id }}"><i class="mdi mdi-delete fs-16 align-middle"></i></a>
+                                    </td>
+                                    {% else %}
+                                    <td>
+                                        <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Activate Offer" href="/activate_offer/{{ i.id }}"><i class="mdi mdi-check-circle fs-16 align-middle"></i></a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Offer" href="/edit_offer/{{ i.id }}"><i class="mdi mdi-pencil fs-16 align-middle"></i></a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Offer" href="/delete_offer/{{ i.id }}"><i class="mdi mdi-delete fs-16 align-middle"></i></a>
+                                    </td>
+                                    {% endif %}
+
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted">No offers found. <a href="/add_offer">Create your first offer.</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock 'body' %}
+{% block 'script' %}{% endblock 'script' %}
