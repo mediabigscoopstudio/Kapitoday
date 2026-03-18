@@ -1,0 +1,827 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Add Product{% endblock 'title' %}
+
+{% block 'css' %}
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+    /* ── PAGE LAYOUT ── */
+    .product-page { display: flex; gap: 24px; align-items: flex-start; }
+    .product-main { flex: 1; min-width: 0; }
+    .product-sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 80px;
+    }
+
+    /* ── SECTION BLOCKS ── */
+    .pblock {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #eee;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .pblock-head {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .pblock-head-left { display: flex; align-items: center; gap: 10px; }
+    .pblock-icon {
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; color: #fff; flex-shrink: 0;
+    }
+    .icon-brown  { background: #6b3a1f; }
+    .icon-gold   { background: #c8882a; }
+    .icon-green  { background: #16a34a; }
+    .icon-blue   { background: #2563eb; }
+    .icon-purple { background: #7c3aed; }
+    .icon-rose   { background: #e11d48; }
+
+    .pblock-head h6 { margin: 0; font-size: 14px; font-weight: 700; color: #1a0a00; }
+    .pblock-head p  { margin: 0; font-size: 11.5px; color: #999; }
+    .pblock-body { padding: 20px; }
+
+    /* ── FORM CONTROLS ── */
+    .form-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b3a1f;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+    .form-control, .form-select {
+        border: 1.5px solid #e5e0db;
+        border-radius: 8px;
+        font-size: 13.5px;
+        padding: 9px 12px;
+        color: #1a0a00;
+        background: #faf8f6;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #c8882a;
+        box-shadow: 0 0 0 3px rgba(200,136,42,0.1);
+        background: #fff;
+        outline: none;
+    }
+    .form-control::placeholder { color: #c0b8b0; font-size: 13px; }
+
+    /* ── QUILL EDITOR ── */
+    .quill-wrapper {
+        border: 1.5px solid #e5e0db;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .quill-wrapper:focus-within {
+        border-color: #c8882a;
+        box-shadow: 0 0 0 3px rgba(200,136,42,0.1);
+    }
+    .quill-wrapper .ql-toolbar {
+        border: none;
+        border-bottom: 1.5px solid #f0ebe5;
+        background: #faf8f6;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+    }
+    .quill-wrapper .ql-container {
+        border: none;
+        font-size: 14px;
+        font-family: inherit;
+    }
+    .quill-wrapper .ql-editor {
+        min-height: 200px;
+        padding: 14px 16px;
+        color: #1a0a00;
+    }
+    .quill-wrapper .ql-editor.ql-blank::before {
+        color: #c0b8b0;
+        font-style: normal;
+        font-size: 13px;
+    }
+    /* Quill toolbar button colours */
+    .ql-toolbar .ql-stroke { stroke: #6b3a1f; }
+    .ql-toolbar .ql-fill   { fill: #6b3a1f; }
+    .ql-toolbar button:hover .ql-stroke,
+    .ql-toolbar .ql-picker-label:hover .ql-stroke { stroke: #c8882a; }
+    .ql-toolbar button.ql-active .ql-stroke { stroke: #c8882a; }
+    .ql-toolbar button.ql-active .ql-fill   { fill: #c8882a; }
+
+    /* ── THUMBNAIL UPLOAD ── */
+    .thumb-upload {
+        border: 2px dashed #e0d8d0;
+        border-radius: 10px;
+        height: 180px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #faf8f6;
+        position: relative;
+        overflow: hidden;
+    }
+    .thumb-upload:hover { border-color: #c8882a; background: #fff9f5; }
+    .thumb-upload input[type=file] { display: none; }
+    .thumb-upload i { font-size: 32px; color: #c8882a; margin-bottom: 8px; }
+    .thumb-upload span { font-size: 12.5px; color: #aaa; }
+    .thumb-upload strong { font-size: 13px; color: #888; }
+    .thumb-upload img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: cover; display: none;
+        border-radius: 8px;
+    }
+    .thumb-upload .overlay-change {
+        position: absolute; inset: 0;
+        background: rgba(0,0,0,0.45);
+        display: none;
+        align-items: center; justify-content: center;
+        border-radius: 8px;
+        color: #fff; font-size: 13px; font-weight: 600; gap: 6px;
+    }
+    .thumb-upload:hover .overlay-change { display: flex; }
+
+    /* ── DYNAMIC ROWS ── */
+    .dyn-container { display: flex; flex-direction: column; gap: 10px; }
+    .dyn-row {
+        background: #faf8f6;
+        border: 1.5px solid #ede8e3;
+        border-radius: 10px;
+        padding: 14px 14px 14px 16px;
+        position: relative;
+    }
+    .dyn-row-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #c8882a;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .btn-del-row {
+        width: 26px; height: 26px;
+        background: #fee2e2;
+        color: #dc2626;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.15s;
+        padding: 0;
+    }
+    .btn-del-row:hover { background: #dc2626; color: #fff; }
+
+    .btn-add-dyn {
+        border: 2px dashed #ddd;
+        background: transparent;
+        color: #aaa;
+        border-radius: 8px;
+        padding: 9px;
+        font-size: 13px;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        margin-top: 4px;
+    }
+    .btn-add-dyn:hover { border-color: #c8882a; color: #c8882a; background: #fff9f5; }
+
+    /* mini image upload inside dyn row */
+    .mini-upload {
+        border: 1.5px dashed #ddd;
+        border-radius: 8px;
+        height: 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background: #fff;
+        transition: border-color 0.15s;
+        overflow: hidden;
+        position: relative;
+    }
+    .mini-upload:hover { border-color: #c8882a; }
+    .mini-upload input[type=file] { display: none; }
+    .mini-upload i { font-size: 20px; color: #c8882a; }
+    .mini-upload span { font-size: 11px; color: #bbb; }
+    .mini-upload img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: cover; display: none;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar-block {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #eee;
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+    .sidebar-block-head {
+        background: #1a0a00;
+        padding: 12px 16px;
+        color: #fff;
+        font-size: 12.5px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+    .sidebar-block-body { padding: 16px; }
+
+    .nav-steps { display: flex; flex-direction: column; gap: 4px; }
+    .nav-step {
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #666;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+    .nav-step:hover, .nav-step.active {
+        background: #fff5eb;
+        color: #c8882a;
+        text-decoration: none;
+    }
+    .nav-step i { font-size: 15px; width: 18px; }
+    .nav-step .step-count {
+        margin-left: auto;
+        background: #c8882a;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 1px 7px;
+        border-radius: 10px;
+        display: none;
+    }
+    .nav-step .step-count.visible { display: inline-block; }
+
+    /* ── PUBLISH BUTTON ── */
+    .btn-publish {
+        background: #1a0a00;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 11px 16px;
+        font-size: 13.5px;
+        font-weight: 700;
+        width: 100%;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all 0.2s;
+    }
+    .btn-publish:hover { background: #c8882a; }
+
+    .btn-cancel-link {
+        display: block;
+        text-align: center;
+        color: #aaa;
+        font-size: 12.5px;
+        margin-top: 10px;
+        text-decoration: none;
+    }
+    .btn-cancel-link:hover { color: #dc2626; }
+
+    /* ── TIPS ── */
+    .tip-item {
+        display: flex; gap: 8px;
+        font-size: 12px; color: #666;
+        padding: 6px 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    .tip-item:last-child { border: none; }
+    .tip-item i { color: #c8882a; flex-shrink: 0; margin-top: 1px; }
+
+    /* count badge in section header */
+    .cnt {
+        background: #c8882a; color: #fff;
+        font-size: 10px; font-weight: 700;
+        padding: 2px 8px; border-radius: 10px;
+        margin-left: 6px;
+    }
+</style>
+{% endblock 'css' %}
+
+{% block 'body' %}
+<div class="container-fluid">
+
+    <!-- Page Title -->
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column mb-1">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Add New Product</h4>
+            <p class="text-muted mb-0" style="font-size:13px;">Fill in all sections and publish your coffee product.</p>
+        </div>
+        <div>
+            <a href="/products" class="btn btn-sm btn-light">
+                <i class="mdi mdi-arrow-left me-1"></i> Back to Products
+            </a>
+        </div>
+    </div>
+
+    <form action="" method="POST" enctype="multipart/form-data" id="productForm">
+        {% csrf_token %}
+
+        <div class="product-page">
+
+            <!-- ════ MAIN COLUMN ════ -->
+            <div class="product-main">
+
+                <!-- 1. CORE INFO -->
+                <div class="pblock" id="sec-core">
+                    <div class="pblock-head">
+                        <div class="pblock-head-left">
+                            <div class="pblock-icon icon-brown"><i class="mdi mdi-coffee"></i></div>
+                            <div>
+                                <h6>Core Information</h6>
+                                <p>Product name, category, description and thumbnail</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pblock-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Category <span class="text-danger">*</span></label>
+                                <select class="form-select" name="category" required onchange="loadSubs(this.value)">
+                                    <option value="" disabled selected>Select Category</option>
+                                    {% for c in categories %}
+                                    <option value="{{ c.id }}">{{ c.title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+    <label class="form-label">Sub Category</label>
+    <select class="form-select" name="sub_category" id="subCatSelect">
+        <option value="">— Select category first —</option>
+    </select>
+</div>
+                            <div class="col-12">
+                                <label class="form-label">Product Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="name"
+                                    placeholder="e.g. Kapi Today Classic Filter Coffee Powder" required>
+                            </div>
+
+                            <!-- Quill Description -->
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <div class="quill-wrapper">
+                                    <div id="quill-editor"></div>
+                                </div>
+                                <textarea name="description" id="descriptionInput" style="display:none;"></textarea>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label class="form-label">Thumbnail <span class="text-danger">*</span></label>
+                                <div class="thumb-upload" onclick="document.getElementById('thumbInput').click()">
+                                    <input type="file" id="thumbInput" name="thumbnail" accept="image/*"
+                                        onchange="previewThumb(this,'thumbImg','thumbOverlay')">
+                                    <i class="mdi mdi-image-plus"></i>
+                                    <strong>Click to upload</strong>
+                                    <span>800×800px · JPG or PNG</span>
+                                    <img id="thumbImg">
+                                    <div class="overlay-change" id="thumbOverlay">
+                                        <i class="mdi mdi-pencil"></i> Change
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. SEO -->
+                <div class="pblock" id="sec-seo">
+                    <div class="pblock-head">
+                        <div class="pblock-head-left">
+                            <div class="pblock-icon icon-gold"><i class="mdi mdi-magnify"></i></div>
+                            <div>
+                                <h6>SEO Information</h6>
+                                <p>Help customers find this product on Google</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pblock-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Meta Title</label>
+                                <input type="text" class="form-control" name="meta_title"
+                                    placeholder="e.g. Buy Filter Coffee Powder Online – Kapi Today">
+                                <div class="form-text">Keep under 60 characters</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Meta Description</label>
+                                <textarea class="form-control" name="meta_description" rows="2"
+                                    placeholder="150–160 chars for Google search results"></textarea>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Meta Keywords</label>
+                                <input type="text" class="form-control" name="meta_keywords"
+                                    placeholder="filter coffee, Coorg coffee, South Indian filter, Kapi Today">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Meta Image</label>
+                                <div class="thumb-upload" style="height:80px" onclick="document.getElementById('metaImgInput').click()">
+                                    <input type="file" id="metaImgInput" name="meta_image" accept="image/*"
+                                        onchange="previewThumb(this,'metaImg','metaOverlay')">
+                                    <i class="mdi mdi-image fs-20"></i>
+                                    <span>1200×630px</span>
+                                    <img id="metaImg">
+                                    <div class="overlay-change" id="metaOverlay">
+                                        <i class="mdi mdi-pencil"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. PRODUCT IMAGES -->
+                <div class="pblock" id="sec-images">
+                    <div class="pblock-head">
+                        <div class="pblock-head-left">
+                            <div class="pblock-icon icon-blue"><i class="mdi mdi-image-multiple"></i></div>
+                            <div>
+                                <h6>Product Images <span class="cnt" id="cnt-images">0</span></h6>
+                                <p>Gallery images shown on the product page</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pblock-body">
+                        <div class="dyn-container" id="images-container"></div>
+                        <button type="button" class="btn-add-dyn" onclick="addImage()">
+                            <i class="mdi mdi-plus"></i> Add Image
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. VARIANTS -->
+                <div class="pblock" id="sec-variants">
+                    <div class="pblock-head">
+                        <div class="pblock-head-left">
+                            <div class="pblock-icon icon-green"><i class="mdi mdi-package-variant"></i></div>
+                            <div>
+                                <h6>Variants <span class="cnt" id="cnt-variants">0</span></h6>
+                                <p>Size / weight options with price and stock</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pblock-body">
+                        <div class="dyn-container" id="variants-container"></div>
+                        <button type="button" class="btn-add-dyn" onclick="addVariant()">
+                            <i class="mdi mdi-plus"></i> Add Variant
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 5. HIGHLIGHTS -->
+                <div class="pblock" id="sec-highlights">
+                    <div class="pblock-head">
+                        <div class="pblock-head-left">
+                            <div class="pblock-icon icon-purple"><i class="mdi mdi-star-outline"></i></div>
+                            <div>
+                                <h6>Product Highlights <span class="cnt" id="cnt-highlights">0</span></h6>
+                                <p>Key selling points shown on the product page</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pblock-body">
+                        <div class="dyn-container" id="highlights-container"></div>
+                        <button type="button" class="btn-add-dyn" onclick="addHighlight()">
+                            <i class="mdi mdi-plus"></i> Add Highlight
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 6. A+ CONTENT -->
+                <div class="pblock" id="sec-aplus">
+                    <div class="pblock-head">
+                        <div class="pblock-head-left">
+                            <div class="pblock-icon icon-rose"><i class="mdi mdi-image-frame"></i></div>
+                            <div>
+                                <h6>A+ Content <span class="cnt" id="cnt-aplus">0</span></h6>
+                                <p>Rich visual content — roasting, brew guides, farm-to-cup</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pblock-body">
+                        <div class="dyn-container" id="aplus-container"></div>
+                        <button type="button" class="btn-add-dyn" onclick="addAplus()">
+                            <i class="mdi mdi-plus"></i> Add A+ Image
+                        </button>
+                    </div>
+                </div>
+
+            </div><!-- /product-main -->
+
+            <!-- ════ SIDEBAR ════ -->
+            <div class="product-sidebar">
+
+                <!-- Publish -->
+                <div class="sidebar-block">
+                    <div class="sidebar-block-head">Publish Product</div>
+                    <div class="sidebar-block-body">
+                        <button type="submit" class="btn-publish">
+                            <i class="mdi mdi-check-circle"></i> Publish Now
+                        </button>
+                        <a href="/products" class="btn-cancel-link">
+                            <i class="mdi mdi-close me-1"></i>Cancel
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Page Navigation -->
+                <div class="sidebar-block">
+                    <div class="sidebar-block-head">Jump to Section</div>
+                    <div class="sidebar-block-body" style="padding:10px 12px;">
+                        <div class="nav-steps">
+                            <a href="#sec-core"       class="nav-step active"><i class="mdi mdi-coffee"></i> Core Info</a>
+                            <a href="#sec-seo"        class="nav-step"><i class="mdi mdi-magnify"></i> SEO</a>
+                            <a href="#sec-images"     class="nav-step"><i class="mdi mdi-image-multiple"></i> Images <span class="step-count" id="snav-images">0</span></a>
+                            <a href="#sec-variants"   class="nav-step"><i class="mdi mdi-package-variant"></i> Variants <span class="step-count" id="snav-variants">0</span></a>
+                            <a href="#sec-highlights" class="nav-step"><i class="mdi mdi-star-outline"></i> Highlights <span class="step-count" id="snav-highlights">0</span></a>
+                            <a href="#sec-aplus"      class="nav-step"><i class="mdi mdi-image-frame"></i> A+ Content <span class="step-count" id="snav-aplus">0</span></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips -->
+                <div class="sidebar-block">
+                    <div class="sidebar-block-head">Quick Tips</div>
+                    <div class="sidebar-block-body">
+                        <div class="tip-item"><i class="mdi mdi-lightbulb-outline"></i> Slug is auto-generated from the product name on save.</div>
+                        <div class="tip-item"><i class="mdi mdi-lightbulb-outline"></i> Add at least one variant with price and stock before publishing.</div>
+                        <div class="tip-item"><i class="mdi mdi-lightbulb-outline"></i> Meta Title should be under 60 characters for Google.</div>
+                        <div class="tip-item"><i class="mdi mdi-lightbulb-outline"></i> Use 5–6 highlights — keep each one short and punchy.</div>
+                        <div class="tip-item"><i class="mdi mdi-lightbulb-outline"></i> A+ images should be wide and high quality (min 1200px wide).</div>
+                    </div>
+                </div>
+
+            </div><!-- /sidebar -->
+
+        </div><!-- /product-page -->
+    </form>
+</div>
+{% endblock 'body' %}
+
+{% block 'script' %}
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script>
+// ── Quill Editor ──
+const quill = new Quill('#quill-editor', {
+    theme: 'snow',
+    placeholder: 'Describe the coffee — origin, roast profile, flavour notes, best brew method...',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, 4, false] }],
+            [{ 'font': [] }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            [{ 'align': [] }],
+            ['blockquote'],
+            ['clean']
+        ]
+    }
+});
+
+// Sync Quill to hidden textarea on submit
+document.getElementById('productForm').addEventListener('submit', function() {
+    document.getElementById('descriptionInput').value = quill.root.innerHTML;
+});
+
+// ── Counters ──
+const counts = { images: 0, variants: 0, highlights: 0, aplus: 0 };
+
+function updateCount(key, delta) {
+    counts[key] += delta;
+    const v = counts[key];
+    document.getElementById(`cnt-${key}`).textContent = v;
+    const snav = document.getElementById(`snav-${key}`);
+    snav.textContent = v;
+    snav.classList.toggle('visible', v > 0);
+}
+
+// ── Image Preview ──
+function previewThumb(input, imgId, overlayId) {
+    if (!input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const img = document.getElementById(imgId);
+        img.src = e.target.result;
+        img.style.display = 'block';
+        if (overlayId) document.getElementById(overlayId).style.display = 'flex';
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+function previewMini(input) {
+    if (!input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        const img = input.closest('.mini-upload').querySelector('img');
+        img.src = e.target.result;
+        img.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+// ── Load Subcategories ──
+function loadSubs(catId) {
+    const sel = document.getElementById('subCatSelect');
+    sel.innerHTML = '<option value="">Loading...</option>';
+    sel.disabled = true;
+    fetch(`/get_subcategories/?category_id=${catId}`)
+        .then(r => r.json())
+        .then(data => {
+            sel.innerHTML = '<option value="">— Select Sub Category —</option>';
+            data.forEach(s => {
+                sel.innerHTML += `<option value="${s.id}">${s.title}</option>`;
+            });
+            sel.disabled = false;
+        });
+}
+// ── Remove Row ──
+function removeRow(btn, key) {
+    btn.closest('.dyn-row').remove();
+    counts[key] = document.querySelectorAll(`#${key}-container .dyn-row`).length;
+    updateCount(key, 0);
+    renumber(key);
+}
+
+function renumber(key) {
+    const labels = { images: 'Image', variants: 'Variant', highlights: 'Highlight', aplus: 'A+ Content' };
+    document.querySelectorAll(`#${key}-container .dyn-row`).forEach((row, i) => {
+        row.querySelector('.dyn-row-num').textContent = `${labels[key]} #${i + 1}`;
+    });
+}
+
+// ── Add Image ──
+function addImage() {
+    updateCount('images', 1);
+    const n = counts.images;
+    const div = document.createElement('div');
+    div.className = 'dyn-row';
+    div.innerHTML = `
+        <div class="dyn-row-label">
+            <span class="dyn-row-num">Image #${n}</span>
+            <button type="button" class="btn-del-row" onclick="removeRow(this,'images')"><i class="mdi mdi-close"></i></button>
+        </div>
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label">Image File</label>
+                <div class="mini-upload" style="height:100px" onclick="this.querySelector('input').click()">
+                    <input type="file" name="product_images" accept="image/*" onchange="previewMini(this)">
+                    <i class="mdi mdi-image-plus"></i>
+                    <span>Upload</span>
+                    <img>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <label class="form-label">Alt Text</label>
+                <input type="text" class="form-control" name="product_image_alt"
+                    placeholder="e.g. Kapi Today Filter Coffee Powder 250g front pack shot">
+                <div class="form-text">Describe the image — improves SEO and accessibility</div>
+            </div>
+        </div>`;
+    document.getElementById('images-container').appendChild(div);
+}
+
+// ── Add Variant ──
+function addVariant() {
+    updateCount('variants', 1);
+    const n = counts.variants;
+    const div = document.createElement('div');
+    div.className = 'dyn-row';
+    div.innerHTML = `
+        <div class="dyn-row-label">
+            <span class="dyn-row-num">Variant #${n}</span>
+            <button type="button" class="btn-del-row" onclick="removeRow(this,'variants')"><i class="mdi mdi-close"></i></button>
+        </div>
+        <div class="row g-2">
+            <div class="col-md-4">
+                <label class="form-label">Variant Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="variant_name" placeholder="e.g. 250g Regular Pack" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Price (₹) <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" name="variant_price" placeholder="229" step="0.01" min="0" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">GST (%)</label>
+                <input type="number" class="form-control" name="variant_gst" placeholder="5" step="0.01" min="0" value="5">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Stock</label>
+                <input type="number" class="form-control" name="variant_quantity" placeholder="0" min="0" value="0">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Status</label>
+                <select class="form-select" name="variant_status">
+                    <option value="Enabled">Enabled</option>
+                    <option value="Disabled">Disabled</option>
+                </select>
+            </div>
+            <div class="col-md-3 mt-2">
+                <label class="form-label">Variant Image</label>
+                <div class="mini-upload" onclick="this.querySelector('input').click()">
+                    <input type="file" name="variant_image" accept="image/*" onchange="previewMini(this)">
+                    <i class="mdi mdi-image"></i>
+                    <span>Optional</span>
+                    <img>
+                </div>
+            </div>
+        </div>`;
+    document.getElementById('variants-container').appendChild(div);
+}
+
+// ── Add Highlight ──
+function addHighlight() {
+    updateCount('highlights', 1);
+    const n = counts.highlights;
+    const div = document.createElement('div');
+    div.className = 'dyn-row';
+    div.innerHTML = `
+        <div class="dyn-row-label">
+            <span class="dyn-row-num">Highlight #${n}</span>
+            <button type="button" class="btn-del-row" onclick="removeRow(this,'highlights')"><i class="mdi mdi-close"></i></button>
+        </div>
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label">Icon Image</label>
+                <div class="mini-upload" onclick="this.querySelector('input').click()">
+                    <input type="file" name="highlight_icon" accept="image/*" onchange="previewMini(this)">
+                    <i class="mdi mdi-image-filter-center-focus"></i>
+                    <span>PNG icon</span>
+                    <img>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <label class="form-label">Highlight Text <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="highlight_text"
+                    placeholder="e.g. 100% Natural — No Additives or Preservatives">
+                <div class="form-text">Keep it short and impactful — one key benefit per line</div>
+            </div>
+        </div>`;
+    document.getElementById('highlights-container').appendChild(div);
+}
+
+// ── Add A+ Content ──
+function addAplus() {
+    updateCount('aplus', 1);
+    const n = counts.aplus;
+    const div = document.createElement('div');
+    div.className = 'dyn-row';
+    div.innerHTML = `
+        <div class="dyn-row-label">
+            <span class="dyn-row-num">A+ Content #${n}</span>
+            <button type="button" class="btn-del-row" onclick="removeRow(this,'aplus')"><i class="mdi mdi-close"></i></button>
+        </div>
+        <div class="row g-2">
+            <div class="col-md-4">
+                <label class="form-label">Content Image <span class="text-danger">*</span></label>
+                <div class="mini-upload" style="height:100px" onclick="this.querySelector('input').click()">
+                    <input type="file" name="aplus_image" accept="image/*" onchange="previewMini(this)">
+                    <i class="mdi mdi-image-frame"></i>
+                    <span>Roasting, brew guide, farm-to-cup</span>
+                    <img>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <label class="form-label">Alt Text</label>
+                <input type="text" class="form-control" name="aplus_alt"
+                    placeholder="e.g. Slow roasting process at Coorg estate">
+                <div class="form-text">Describe the image for SEO</div>
+            </div>
+        </div>`;
+    document.getElementById('aplus-container').appendChild(div);
+}
+
+// ── Smooth nav scroll ──
+document.querySelectorAll('.nav-step').forEach(link => {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.nav-step').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+</script>
+{% endblock 'script' %}

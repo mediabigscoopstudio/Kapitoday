@@ -1,0 +1,71 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Product Manager{% endblock 'title' %}
+{% block 'css' %}{% endblock 'css' %}
+{% block 'body' %}
+<div class="container-fluid">
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Product Manager</h4>
+        </div>
+        <div>
+            <a href="/add_product" class="btn btn-primary btn-sm">
+                <i class="mdi mdi-plus fs-16 align-middle"></i> Add Product
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">All Products</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>Sub Category</th>
+                                    <th>Variants</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+    {% for i in products %}
+    <tr>
+        <td>
+            <span style="font-size:13px; font-weight:600; display:inline-block; max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:default;" 
+                  title="{{ i.name }}">{{ i.name }}</span>
+        </td>
+        <td><span style="font-size:12px; color:#888;">{{ i.category.title }}</span></td>
+        <td><span style="font-size:12px; color:#888;">{{ i.sub_category.title|default:"—" }}</span></td>
+        <td>
+            {% for j in i.product_variant.all %}
+                <span class="badge bg-primary-subtle text-dark" style="font-size:11px; margin-bottom:3px; display:inline-block;">
+                    {{ j.name }} &nbsp;·&nbsp; Qty: {{ j.quantity }}
+                </span>
+            {% empty %}
+                <span style="font-size:12px; color:#bbb;">No variants</span>
+            {% endfor %}
+        </td>
+        <td>
+            <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Product" href="/edit_product/{{ i.id }}"><i class="mdi mdi-pencil fs-16 align-middle"></i></a>
+            <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Product" href="/delete_product/{{ i.id }}"><i class="mdi mdi-delete fs-16 align-middle"></i></a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5" class="text-center text-muted">No products found. <a href="/add_product">Add a Product</a></td>
+    </tr>
+    {% endfor %}
+</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock 'body' %}
+{% block 'script' %}{% endblock 'script' %}

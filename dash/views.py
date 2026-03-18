@@ -155,3 +155,194 @@ def delete_sub_category(request, pk):
     sub_category = get_object_or_404(SubCategory, pk=pk)
     sub_category.delete()
     return redirect('/sub_category_list')
+
+#Product Management System 
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def product(request):
+    products = Product.objects.all().order_by('-id')
+    variants = Variant.objects.all()
+    context = {
+        'products':products,
+        'variants':variants,
+    }
+    return render(request, 'dash/product/products.html', context)
+ 
+ 
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def add_product(request):
+    if request.method == 'POST':
+ 
+        # Core Info
+        category_id      = request.POST.get('category')
+        sub_category_id  = request.POST.get('sub_category') or None
+        name             = request.POST.get('name')
+        description      = request.POST.get('description')   # comes as HTML from Quill
+        thumbnail        = request.FILES.get('thumbnail')
+ 
+        # SEO
+        meta_title       = request.POST.get('meta_title')
+        meta_description = request.POST.get('meta_description')
+        meta_keywords    = request.POST.get('meta_keywords')
+        meta_image       = request.FILES.get('meta_image')
+ 
+        product = Product.objects.create(
+            category_id=category_id,
+            sub_category_id=sub_category_id,
+            name=name,
+            description=description,
+            thumbnail=thumbnail,
+            meta_title=meta_title,
+            meta_description=meta_description,
+            meta_keywords=meta_keywords,
+            meta_image=meta_image,
+        )
+ 
+        # Product Images
+        product_images     = request.FILES.getlist('product_images')
+        product_image_alts = request.POST.getlist('product_image_alt')
+        for i, image in enumerate(product_images):
+            ProductImage.objects.create(
+                product=product,
+                image=image,
+                alt_text=product_image_alts[i] if i < len(product_image_alts) else ''
+            )
+ 
+        # Variants
+        variant_names      = request.POST.getlist('variant_name')
+        variant_prices     = request.POST.getlist('variant_price')
+        variant_gsts       = request.POST.getlist('variant_gst')
+        variant_quantities = request.POST.getlist('variant_quantity')
+        variant_statuses   = request.POST.getlist('variant_status')
+        variant_images     = request.FILES.getlist('variant_image')
+        for i, vname in enumerate(variant_names):
+            if vname.strip():
+                Variant.objects.create(
+                    product=product,
+                    name=vname,
+                    price=variant_prices[i]        if i < len(variant_prices)     else 0,
+                    gst=variant_gsts[i]            if i < len(variant_gsts)       else 0,
+                    quantity=variant_quantities[i] if i < len(variant_quantities) else 0,
+                    status=variant_statuses[i]     if i < len(variant_statuses)   else 'Enabled',
+                    image=variant_images[i]        if i < len(variant_images)     else None,
+                )
+ 
+        # Highlights
+        highlight_texts = request.POST.getlist('highlight_text')
+        highlight_icons = request.FILES.getlist('highlight_icon')
+        for i, htext in enumerate(highlight_texts):
+            if htext.strip():
+                Highlight.objects.create(
+                    product=product,
+                    text=htext,
+                    icon=highlight_icons[i] if i < len(highlight_icons) else None,
+                )
+ 
+        # A+ Content
+        aplus_images = request.FILES.getlist('aplus_image')
+        aplus_alts   = request.POST.getlist('aplus_alt')
+        for i, aimage in enumerate(aplus_images):
+            APlusContent.objects.create(
+                product=product,
+                image=aimage,
+                image_alt=aplus_alts[i] if i < len(aplus_alts) else ''
+            )
+ 
+        return redirect('/products')
+ 
+    categories = Category.objects.filter(status='Enabled').order_by('-id')
+
+    return render(request, 'dash/product/add_product.html', {'categories': categories})
+ 
+ 
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def edit_product(request, id):
+    product = get_object_or_404(Product, id=id)
+ 
+    if request.method == 'POST':
+        product.category_id      = request.POST.get('category')
+        product.sub_category_id  = request.POST.get('sub_category') or None
+        product.name             = request.POST.get('name')
+        product.description      = request.POST.get('description')   # HTML from Quill
+        product.meta_title       = request.POST.get('meta_title')
+        product.meta_description = request.POST.get('meta_description')
+        product.meta_keywords    = request.POST.get('meta_keywords')
+        if request.FILES.get('thumbnail'):
+            product.thumbnail = request.FILES.get('thumbnail')
+        if request.FILES.get('meta_image'):
+            product.meta_image = request.FILES.get('meta_image')
+        product.save()
+ 
+        # New Product Images
+        product_images     = request.FILES.getlist('product_images')
+        product_image_alts = request.POST.getlist('product_image_alt')
+        for i, image in enumerate(product_images):
+            ProductImage.objects.create(
+                product=product,
+                image=image,
+                alt_text=product_image_alts[i] if i < len(product_image_alts) else ''
+            )
+ 
+        # New Variants
+        variant_names      = request.POST.getlist('variant_name')
+        variant_prices     = request.POST.getlist('variant_price')
+        variant_gsts       = request.POST.getlist('variant_gst')
+        variant_quantities = request.POST.getlist('variant_quantity')
+        variant_statuses   = request.POST.getlist('variant_status')
+        variant_images     = request.FILES.getlist('variant_image')
+        for i, vname in enumerate(variant_names):
+            if vname.strip():
+                Variant.objects.create(
+                    product=product,
+                    name=vname,
+                    price=variant_prices[i]        if i < len(variant_prices)     else 0,
+                    gst=variant_gsts[i]            if i < len(variant_gsts)       else 0,
+                    quantity=variant_quantities[i] if i < len(variant_quantities) else 0,
+                    status=variant_statuses[i]     if i < len(variant_statuses)   else 'Enabled',
+                    image=variant_images[i]        if i < len(variant_images)     else None,
+                )
+ 
+        # New Highlights
+        highlight_texts = request.POST.getlist('highlight_text')
+        highlight_icons = request.FILES.getlist('highlight_icon')
+        for i, htext in enumerate(highlight_texts):
+            if htext.strip():
+                Highlight.objects.create(
+                    product=product,
+                    text=htext,
+                    icon=highlight_icons[i] if i < len(highlight_icons) else None,
+                )
+ 
+        # New A+ Content
+        aplus_images = request.FILES.getlist('aplus_image')
+        aplus_alts   = request.POST.getlist('aplus_alt')
+        for i, aimage in enumerate(aplus_images):
+            APlusContent.objects.create(
+                product=product,
+                image=aimage,
+                image_alt=aplus_alts[i] if i < len(aplus_alts) else ''
+            )
+ 
+        return redirect('/products')
+ 
+    categories    = Category.objects.filter(status='Enabled').order_by('-id')
+    subcategories = SubCategory.objects.filter(category=product.category, status='Enabled').order_by('-id')
+    return render(request, 'dash/product/edit_product.html', {
+        'data':           product,
+        'categories':     categories,
+        'subcategories':  subcategories,
+        'variants':       product.product_variant.all(),
+        'product_images': product.product_images.all(),
+        'highlights':     product.product_highlight.all(),
+        'aplus_contents': product.product_content.all(),
+    })
+ 
+ 
+from django.http import JsonResponse
+
+def get_subcategories(request):
+    category_id = request.GET.get('category_id')
+    subcategories = SubCategory.objects.filter(
+        category_id=category_id, status='Enabled'
+    ).values('id', 'title')
+    return JsonResponse(list(subcategories), safe=False)
