@@ -1,0 +1,755 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Order #{{ order.id }}{% endblock 'title' %}
+{% block 'css' %}
+<style>
+    :root {
+        --coffee-dark:  #1a0a00;
+        --coffee-warm:  #6b3a1f;
+        --coffee-gold:  #c8882a;
+        --coffee-cream: #f5efe6;
+        --coffee-light: #faf7f3;
+    }
+
+    .detail-page { display: flex; gap: 24px; align-items: flex-start; }
+    .detail-main { flex: 1; min-width: 0; }
+    .detail-sidebar { width: 280px; flex-shrink: 0; position: sticky; top: 80px; }
+
+    /* ── BLOCKS ── */
+    .dblock {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #eee;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .dblock-head {
+        padding: 14px 20px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .dblock-icon {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px; color: #fff; flex-shrink: 0;
+    }
+    .dblock-head h6 { margin: 0; font-size: 13.5px; font-weight: 700; color: var(--coffee-dark); }
+    .dblock-body { padding: 20px; }
+
+    /* ── ORDER HEADER ── */
+    .order-header {
+        background: linear-gradient(135deg, var(--coffee-dark) 0%, #3d1f00 100%);
+        border-radius: 14px;
+        padding: 22px 26px;
+        color: #fff;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    .order-id-badge {
+        font-family: monospace;
+        font-size: 13px;
+        font-weight: 700;
+        background: rgba(255,255,255,0.12);
+        padding: 4px 12px;
+        border-radius: 20px;
+        color: #fff;
+        margin-bottom: 6px;
+        display: inline-block;
+    }
+    .order-header h4 { margin: 0; font-size: 18px; font-weight: 800; }
+    .order-header p  { margin: 4px 0 0; opacity: 0.55; font-size: 12px; }
+
+    /* ── STATUS PILL ── */
+    .status-pill {
+        font-size: 12px;
+        font-weight: 700;
+        padding: 5px 14px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    /* ── INFO ROWS ── */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 9px 0;
+        border-bottom: 1px solid #f8f5f2;
+        font-size: 13px;
+    }
+    .info-row:last-child { border: none; padding-bottom: 0; }
+    .info-label { color: #999; font-weight: 500; flex-shrink: 0; padding-right: 12px; }
+    .info-value { color: var(--coffee-dark); font-weight: 600; text-align: right; }
+
+    /* ── ORDER ITEMS TABLE ── */
+    .items-table { width: 100%; border-collapse: collapse; }
+    .items-table th {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--coffee-warm);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 10px 12px;
+        background: var(--coffee-light);
+        border-bottom: 2px solid #f0ebe5;
+    }
+    .items-table td {
+        padding: 14px 12px;
+        font-size: 13px;
+        border-bottom: 1px solid #f5f5f5;
+        vertical-align: middle;
+    }
+    .items-table tr:last-child td { border: none; }
+    .items-table tr:hover td { background: #faf8f6; }
+
+    .product-thumb {
+        width: 44px; height: 44px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1.5px solid #e5e0db;
+    }
+    .product-thumb-placeholder {
+        width: 44px; height: 44px;
+        border-radius: 8px;
+        background: var(--coffee-cream);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--coffee-gold); font-size: 18px;
+    }
+
+    /* ── PRICING SUMMARY ── */
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 7px 0;
+        font-size: 13px;
+        border-bottom: 1px solid #f8f5f2;
+    }
+    .price-row:last-child { border: none; }
+    .price-label { color: #888; }
+    .price-value { font-weight: 600; color: var(--coffee-dark); }
+    .price-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0 0;
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--coffee-dark);
+        border-top: 2px solid #f0ebe5;
+        margin-top: 4px;
+    }
+
+    /* ── SIDEBAR BLOCKS ── */
+    .sblock {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #eee;
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+    .sblock-head {
+        background: var(--coffee-dark);
+        padding: 11px 16px;
+        color: #fff;
+        font-size: 12.5px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+    .sblock-body { padding: 16px; }
+
+    /* ── ACTION BUTTONS ── */
+    .btn-fulfill {
+        background: linear-gradient(135deg, var(--coffee-gold) 0%, #a86e1a 100%);
+        border: none;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        width: 100%;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    .btn-fulfill:hover { opacity: 0.9; color: #fff; transform: translateY(-1px); }
+
+    .btn-revoke {
+        background: #fee2e2;
+        border: none;
+        color: #dc2626;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        width: 100%;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all 0.2s;
+        text-decoration: none;
+        margin-top: 8px;
+    }
+    .btn-revoke:hover { background: #dc2626; color: #fff; }
+
+    /* ── SHIPROCKET INFO ── */
+    .awb-badge {
+        font-family: monospace;
+        font-size: 13px;
+        font-weight: 700;
+        background: #eff6ff;
+        color: #2563eb;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-block;
+    }
+
+    /* ── NOTES ── */
+    .notes-box {
+        background: #faf8f6;
+        border: 1.5px solid #e5e0db;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 12.5px;
+        color: #666;
+        white-space: pre-line;
+        line-height: 1.6;
+        min-height: 60px;
+    }
+
+    /* ── TIMELINE ── */
+    .timeline-item {
+        display: flex;
+        gap: 12px;
+        padding-bottom: 14px;
+        position: relative;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-item:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        left: 11px;
+        top: 24px;
+        bottom: 0;
+        width: 2px;
+        background: #f0ebe5;
+    }
+    .timeline-dot {
+        width: 24px; height: 24px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 11px; color: #fff;
+        flex-shrink: 0;
+        z-index: 1;
+    }
+    .timeline-content { flex: 1; }
+    .timeline-title { font-size: 12.5px; font-weight: 600; color: var(--coffee-dark); }
+    .timeline-sub   { font-size: 11px; color: #bbb; margin-top: 1px; }
+</style>
+{% endblock 'css' %}
+
+{% block 'body' %}
+<div class="container-fluid">
+
+    <!-- Page Title -->
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column mb-1">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Order Detail</h4>
+        </div>
+        <a href="/orders" class="btn btn-sm btn-light">
+            <i class="mdi mdi-arrow-left me-1"></i> Back to Orders
+        </a>
+    </div>
+
+    <!-- Order Header -->
+    <div class="order-header">
+        <div>
+            <div class="order-id-badge">#{{ order.id }}</div>
+            <h4>{{ order.full_name }}</h4>
+            <p>{{ order.created_at|date:"d M Y, h:i A" }} &nbsp;·&nbsp; {{ order.city }}, {{ order.state }}</p>
+        </div>
+        <div class="text-end">
+            <!-- Status Pill -->
+            {% if order.status == 'pending' %}
+            <span class="status-pill" style="background:#fef3c7; color:#d97706;">Pending</span>
+            {% elif order.status == 'paid' %}
+            <span class="status-pill" style="background:#ede9fe; color:#7c3aed;">Paid</span>
+            {% elif order.status == 'processing' %}
+            <span class="status-pill" style="background:#e0f2fe; color:#0891b2;">Processing</span>
+            {% elif order.status == 'ready_for_pickup' %}
+            <span class="status-pill" style="background:#fff7ed; color:#ea580c;">Ready for Pickup</span>
+            {% elif order.status == 'shipped' %}
+            <span class="status-pill" style="background:#dbeafe; color:#2563eb;">Shipped</span>
+            {% elif order.status == 'out_for_delivery' %}
+            <span class="status-pill" style="background:#fdf4ff; color:#a21caf;">Out for Delivery</span>
+            {% elif order.status == 'delivered' %}
+            <span class="status-pill" style="background:#dcfce7; color:#16a34a;">Delivered</span>
+            {% elif order.status == 'cancelled' %}
+            <span class="status-pill" style="background:#fee2e2; color:#dc2626;">Cancelled</span>
+            {% elif order.status == 'return_requested' %}
+            <span class="status-pill" style="background:#fce7f3; color:#be185d;">Return Requested</span>
+            {% elif order.status == 'returned' %}
+            <span class="status-pill" style="background:#f3e8ff; color:#7c3aed;">Returned</span>
+            {% elif order.status == 'refunded' %}
+            <span class="status-pill" style="background:#fee2e2; color:#dc2626;">Refunded</span>
+            {% elif order.status == 'payment_failed' %}
+            <span class="status-pill" style="background:#fee2e2; color:#dc2626;">Payment Failed</span>
+            {% endif %}
+            <div style="font-size:22px; font-weight:800; color:#fff; margin-top:8px;">₹{{ order.total }}</div>
+        </div>
+    </div>
+
+    <div class="detail-page">
+
+        <!-- ════ MAIN COLUMN ════ -->
+        <div class="detail-main">
+
+            <!-- Order Items -->
+            <div class="dblock">
+                <div class="dblock-head">
+                    <div class="dblock-icon" style="background:#c8882a;"><i class="mdi mdi-coffee"></i></div>
+                    <h6>Order Items ({{ order_items.count }})</h6>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Variant</th>
+                                <th>Price</th>
+                                <th>GST</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order_items %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        {% if item.product and item.product.thumbnail %}
+                                        <img src="{{ item.product.thumbnail.url }}" class="product-thumb" alt="{{ item.product_name }}">
+                                        {% else %}
+                                        <div class="product-thumb-placeholder"><i class="mdi mdi-coffee"></i></div>
+                                        {% endif %}
+                                        <div>
+                                            <div style="font-weight:600; color:#1a0a00; font-size:13px;">{{ item.product_name }}</div>
+                                            {% if item.product %}
+                                            <div style="font-size:11px; color:#bbb;">ID: {{ item.product.id }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="color:#666;">{{ item.variant_name|default:"—" }}</td>
+                                <td style="font-weight:600;">₹{{ item.price }}</td>
+                                <td style="color:#888;">{{ item.gst }}%</td>
+                                <td>
+                                    <span style="background:#f0ebe5; color:#6b3a1f; font-weight:700; font-size:12px; padding:3px 10px; border-radius:20px;">
+                                        × {{ item.quantity }}
+                                    </span>
+                                </td>
+                                <td style="font-weight:800; color:#1a0a00;">₹{{ item.total }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No items found for this order.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pricing Summary -->
+                <div style="padding:20px; border-top:1px solid #f0ebe5; background:#faf8f6;">
+                    <div class="price-row">
+                        <span class="price-label">Subtotal</span>
+                        <span class="price-value">₹{{ order.subtotal }}</span>
+                    </div>
+                    {% if order.discount > 0 %}
+                    <div class="price-row">
+                        <span class="price-label">
+                            Discount
+                            {% if order.coupon_code %}
+                            <span style="font-size:11px; background:#dcfce7; color:#16a34a; padding:2px 6px; border-radius:4px; margin-left:4px;">{{ order.coupon_code }}</span>
+                            {% endif %}
+                        </span>
+                        <span class="price-value" style="color:#16a34a;">−₹{{ order.discount }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="price-row">
+                        <span class="price-label">GST</span>
+                        <span class="price-value">₹{{ order.gst_total }}</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="price-label">Shipping</span>
+                        <span class="price-value">
+                            {% if order.shipping_charge == 0 %}
+                            <span style="color:#16a34a;">Free</span>
+                            {% else %}
+                            ₹{{ order.shipping_charge }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="price-total">
+                        <span>Total</span>
+                        <span>₹{{ order.total }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer & Shipping -->
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="dblock">
+                        <div class="dblock-head">
+                            <div class="dblock-icon" style="background:#2563eb;"><i class="mdi mdi-account"></i></div>
+                            <h6>Customer</h6>
+                        </div>
+                        <div class="dblock-body">
+                            <div class="info-row">
+                                <span class="info-label">Name</span>
+                                <span class="info-value">{{ order.full_name }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Email</span>
+                                <span class="info-value">{{ order.email }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Phone</span>
+                                <span class="info-value">{{ order.phone }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Type</span>
+                                <span class="info-value">
+                                    {% if order.customer %}
+                                    Registered Customer
+                                    {% else %}
+                                    Guest
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="dblock">
+                        <div class="dblock-head">
+                            <div class="dblock-icon" style="background:#16a34a;"><i class="mdi mdi-map-marker"></i></div>
+                            <h6>Shipping Address</h6>
+                        </div>
+                        <div class="dblock-body">
+                            <div class="info-row">
+                                <span class="info-label">Address</span>
+                                <span class="info-value">{{ order.address_line_1 }}</span>
+                            </div>
+                            {% if order.address_line_2 %}
+                            <div class="info-row">
+                                <span class="info-label">Address 2</span>
+                                <span class="info-value">{{ order.address_line_2 }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="info-row">
+                                <span class="info-label">City</span>
+                                <span class="info-value">{{ order.city }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">State</span>
+                                <span class="info-value">{{ order.state }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Pincode</span>
+                                <span class="info-value">{{ order.pincode }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Country</span>
+                                <span class="info-value">{{ order.country }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment & Shipping Info -->
+            <div class="row g-3 mt-0">
+                <div class="col-md-6">
+                    <div class="dblock">
+                        <div class="dblock-head">
+                            <div class="dblock-icon" style="background:#7c3aed;"><i class="mdi mdi-credit-card"></i></div>
+                            <h6>Payment</h6>
+                        </div>
+                        <div class="dblock-body">
+                            <div class="info-row">
+                                <span class="info-label">Method</span>
+                                <span class="info-value">{{ order.get_payment_method_display }}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status</span>
+                                <span class="info-value">{{ order.payment_status|title }}</span>
+                            </div>
+                            {% if order.razorpay_order_id %}
+                            <div class="info-row">
+                                <span class="info-label">Razorpay Order</span>
+                                <span class="info-value" style="font-family:monospace; font-size:11px;">{{ order.razorpay_order_id }}</span>
+                            </div>
+                            {% endif %}
+                            {% if order.razorpay_payment_id %}
+                            <div class="info-row">
+                                <span class="info-label">Payment ID</span>
+                                <span class="info-value" style="font-family:monospace; font-size:11px;">{{ order.razorpay_payment_id }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="dblock">
+                        <div class="dblock-head">
+                            <div class="dblock-icon" style="background:#ea580c;"><i class="mdi mdi-truck-delivery"></i></div>
+                            <h6>Shiprocket</h6>
+                        </div>
+                        <div class="dblock-body">
+                            {% if order.awb_code %}
+                            <div class="info-row">
+                                <span class="info-label">AWB Code</span>
+                                <span class="info-value"><span class="awb-badge">{{ order.awb_code }}</span></span>
+                            </div>
+                            {% endif %}
+                            {% if order.courier_name %}
+                            <div class="info-row">
+                                <span class="info-label">Courier</span>
+                                <span class="info-value">{{ order.courier_name }}</span>
+                            </div>
+                            {% endif %}
+                            {% if order.shiprocket_order_id %}
+                            <div class="info-row">
+                                <span class="info-label">SR Order ID</span>
+                                <span class="info-value" style="font-family:monospace; font-size:11px;">{{ order.shiprocket_order_id }}</span>
+                            </div>
+                            {% endif %}
+                            {% if order.estimated_delivery %}
+                            <div class="info-row">
+                                <span class="info-label">Est. Delivery</span>
+                                <span class="info-value">{{ order.estimated_delivery|date:"d M Y" }}</span>
+                            </div>
+                            {% endif %}
+                            {% if not order.awb_code and not order.shiprocket_order_id %}
+                            <p class="text-muted mb-0" style="font-size:12.5px;">Not yet fulfilled. Use the Fulfill button to push to Shiprocket.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dimensions -->
+            <div class="dblock mt-3">
+                <div class="dblock-head">
+                    <div class="dblock-icon" style="background:#0891b2;"><i class="mdi mdi-ruler"></i></div>
+                    <h6>Shipping Dimensions</h6>
+                </div>
+                <div class="dblock-body">
+                    <div class="row g-3 text-center">
+                        <div class="col-3">
+                            <div style="font-size:20px; font-weight:800; color:#1a0a00;">{{ order.total_weight }} <span style="font-size:12px; font-weight:500; color:#bbb;">kg</span></div>
+                            <div style="font-size:11px; color:#aaa; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px;">Weight</div>
+                        </div>
+                        <div class="col-3">
+                            <div style="font-size:20px; font-weight:800; color:#1a0a00;">{{ order.total_length }} <span style="font-size:12px; font-weight:500; color:#bbb;">cm</span></div>
+                            <div style="font-size:11px; color:#aaa; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px;">Length</div>
+                        </div>
+                        <div class="col-3">
+                            <div style="font-size:20px; font-weight:800; color:#1a0a00;">{{ order.total_breadth }} <span style="font-size:12px; font-weight:500; color:#bbb;">cm</span></div>
+                            <div style="font-size:11px; color:#aaa; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px;">Breadth</div>
+                        </div>
+                        <div class="col-3">
+                            <div style="font-size:20px; font-weight:800; color:#1a0a00;">{{ order.total_height }} <span style="font-size:12px; font-weight:500; color:#bbb;">cm</span></div>
+                            <div style="font-size:11px; color:#aaa; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px;">Height</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            {% if order.notes %}
+            <div class="dblock mt-3">
+                <div class="dblock-head">
+                    <div class="dblock-icon" style="background:#6b3a1f;"><i class="mdi mdi-note-text"></i></div>
+                    <h6>Order Notes & Logs</h6>
+                </div>
+                <div class="dblock-body">
+                    <div class="notes-box">{{ order.notes }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div><!-- /detail-main -->
+
+        <!-- ════ SIDEBAR ════ -->
+        <div class="detail-sidebar">
+
+            <!-- Actions -->
+            <div class="sblock">
+                <div class="sblock-head">Order Actions</div>
+                <div class="sblock-body">
+
+                    {% if order.status == 'cancelled' %}
+                    <div style="background:#fee2e2; border-radius:8px; padding:12px; text-align:center; margin-bottom:12px;">
+                        <i class="mdi mdi-close-circle text-danger fs-20"></i>
+                        <p class="mb-0 mt-1" style="font-size:12.5px; color:#dc2626; font-weight:600;">This order has been cancelled.</p>
+                        <p class="mb-0" style="font-size:11px; color:#dc2626; opacity:0.7;">Stock has been restored automatically.</p>
+                    </div>
+                    {% elif order.status == 'delivered' %}
+                    <div style="background:#dcfce7; border-radius:8px; padding:12px; text-align:center; margin-bottom:12px;">
+                        <i class="mdi mdi-check-circle" style="color:#16a34a; font-size:20px;"></i>
+                        <p class="mb-0 mt-1" style="font-size:12.5px; color:#16a34a; font-weight:600;">Order delivered successfully.</p>
+                    </div>
+                    {% else %}
+
+                    <!-- Fulfill Button -->
+                    {% if not order.awb_code and order.status != 'cancelled' %}
+                    <a href="/fulfill_order/{{ order.id }}" class="btn-fulfill"
+                       onclick="return confirm('Push this order to Shiprocket and mark as Ready for Pickup?')">
+                        <i class="mdi mdi-truck-fast"></i> Fulfill Order
+                    </a>
+                    <p style="font-size:11px; color:#bbb; text-align:center; margin-top:6px;">Pushes order to Shiprocket and notifies courier</p>
+                    {% else %}
+                    <div style="background:#eff6ff; border-radius:8px; padding:10px 12px; margin-bottom:8px; font-size:12.5px; color:#2563eb; text-align:center;">
+                        <i class="mdi mdi-check-circle me-1"></i> Already fulfilled — AWB assigned
+                    </div>
+                    {% endif %}
+
+                    <!-- Revoke Button -->
+                    {% if order.status not in 'shipped,out_for_delivery,delivered' %}
+                    <a href="/revoke_order/{{ order.id }}" class="btn-revoke"
+                       onclick="return confirm('Are you sure you want to cancel this order? Stock will be restored.')">
+                        <i class="mdi mdi-close-circle"></i> Revoke / Cancel Order
+                    </a>
+                    {% endif %}
+
+                    {% endif %}
+
+                    <hr style="border-color:#f0ebe5; margin:16px 0;">
+
+                    <!-- Update Status -->
+                    <p style="font-size:11px; font-weight:700; color:#999; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Manually Update Status</p>
+                    <form action="/update_order_status/{{ order.id }}" method="POST">
+                        {% csrf_token %}
+                        <select name="status" class="form-select form-select-sm mb-2" style="font-size:13px; border-color:#e5e0db; border-radius:8px;">
+                            <option value="pending"          {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="payment_failed"   {% if order.status == 'payment_failed' %}selected{% endif %}>Payment Failed</option>
+                            <option value="paid"             {% if order.status == 'paid' %}selected{% endif %}>Paid</option>
+                            <option value="processing"       {% if order.status == 'processing' %}selected{% endif %}>Processing</option>
+                            <option value="ready_for_pickup" {% if order.status == 'ready_for_pickup' %}selected{% endif %}>Ready for Pickup</option>
+                            <option value="shipped"          {% if order.status == 'shipped' %}selected{% endif %}>Shipped</option>
+                            <option value="out_for_delivery" {% if order.status == 'out_for_delivery' %}selected{% endif %}>Out for Delivery</option>
+                            <option value="delivered"        {% if order.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                            <option value="cancelled"        {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            <option value="return_requested" {% if order.status == 'return_requested' %}selected{% endif %}>Return Requested</option>
+                            <option value="returned"         {% if order.status == 'returned' %}selected{% endif %}>Returned</option>
+                            <option value="refunded"         {% if order.status == 'refunded' %}selected{% endif %}>Refunded</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary w-100" style="border-radius:8px; font-weight:600;">
+                            <i class="mdi mdi-check me-1"></i> Update Status
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order Timeline -->
+            <div class="sblock">
+                <div class="sblock-head">Order Timeline</div>
+                <div class="sblock-body">
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background:#c8882a;"><i class="mdi mdi-plus" style="font-size:12px;"></i></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Order Placed</div>
+                            <div class="timeline-sub">{{ order.created_at|date:"d M Y, h:i A" }}</div>
+                        </div>
+                    </div>
+                    {% if order.payment_status == 'paid' %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background:#7c3aed;"><i class="mdi mdi-check" style="font-size:12px;"></i></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Payment Confirmed</div>
+                            <div class="timeline-sub">{{ order.payment_method|title }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if order.shiprocket_order_id %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background:#ea580c;"><i class="mdi mdi-truck" style="font-size:12px;"></i></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Pushed to Shiprocket</div>
+                            <div class="timeline-sub">SR Order: {{ order.shiprocket_order_id }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if order.awb_code %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background:#2563eb;"><i class="mdi mdi-barcode" style="font-size:12px;"></i></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">AWB Assigned</div>
+                            <div class="timeline-sub">{{ order.awb_code }} · {{ order.courier_name }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if order.status == 'delivered' %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background:#16a34a;"><i class="mdi mdi-home-check" style="font-size:12px;"></i></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Delivered</div>
+                            <div class="timeline-sub">Order completed</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if order.status == 'cancelled' %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot" style="background:#dc2626;"><i class="mdi mdi-close" style="font-size:12px;"></i></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Order Cancelled</div>
+                            <div class="timeline-sub">Stock restored</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Order Meta -->
+            <div class="sblock">
+                <div class="sblock-head">Order Info</div>
+                <div class="sblock-body">
+                    <div class="info-row">
+                        <span class="info-label" style="font-size:12px;">Order ID</span>
+                        <span class="info-value" style="font-size:12px;">#{{ order.id }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label" style="font-size:12px;">Created</span>
+                        <span class="info-value" style="font-size:12px;">{{ order.created_at|date:"d M Y" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label" style="font-size:12px;">Updated</span>
+                        <span class="info-value" style="font-size:12px;">{{ order.updated_at|date:"d M Y" }}</span>
+                    </div>
+                    {% if order.offer %}
+                    <div class="info-row">
+                        <span class="info-label" style="font-size:12px;">Offer Used</span>
+                        <span class="info-value" style="font-size:12px;">{{ order.offer.title }}</span>
+                    </div>
+                    {% endif %}
+                    {% if order.coupon_code %}
+                    <div class="info-row">
+                        <span class="info-label" style="font-size:12px;">Coupon</span>
+                        <span class="info-value" style="font-family:monospace; font-size:12px; color:#16a34a;">{{ order.coupon_code }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div><!-- /sidebar -->
+
+    </div><!-- /detail-page -->
+</div>
+{% endblock 'body' %}

@@ -98,6 +98,16 @@ class Variant(models.Model):
     image = models.ImageField(upload_to='variant_images/', null=True, blank=True)
     status = models.CharField(max_length=255,default="Disabled")
 
+    # ── Shipping Dimensions (required for Shiprocket) ──
+    weight   = models.DecimalField(max_digits=5, decimal_places=2, default=0.5, help_text='Weight in kg')
+    length   = models.DecimalField(max_digits=6, decimal_places=2, default=1.0, help_text='Length in cm')
+    breadth  = models.DecimalField(max_digits=6, decimal_places=2, default=1.0, help_text='Breadth in cm')
+    height   = models.DecimalField(max_digits=6, decimal_places=2, default=1.0, help_text='Height in cm')
+
+    @property
+    def volumetric_weight(self):
+        return (self.length * self.breadth * self.height) / 5000
+
     def __str__(self):
         return self.name
 
@@ -229,3 +239,134 @@ class Support(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.subject}"
+    
+class Cart(models.Model):
+    customer         = models.ForeignKey(Customers, on_delete=models.CASCADE, null=True, blank=True, related_name='carts')
+    session_key      = models.CharField(max_length=255, null=True, blank=True)
+    is_abandoned     = models.BooleanField(default=False)
+    recovery_email_1 = models.BooleanField(default=False)
+    recovery_email_2 = models.BooleanField(default=False)
+    recovery_email_3 = models.BooleanField(default=False)
+    created_at       = models.DateTimeField(default=timezone.now)
+    updated_at       = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Cart — {self.customer or self.session_key}"
+
+
+class CartItem(models.Model):
+    cart     = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='cart_items')
+    product  = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variant  = models.ForeignKey(Variant, on_delete=models.SET_NULL, null=True, blank=True)
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.product.name} x {self.quantity}"
+
+# Order Managment
+
+class Order(models.Model):
+
+    STATUS_CHOICES = [
+        ('pending',          'Pending'),
+        ('payment_failed',   'Payment Failed'),
+        ('paid',             'Paid'),
+        ('processing',       'Processing'),
+        ('shipped',          'Shipped'),
+        ('out_for_delivery', 'Out for Delivery'),
+        ('delivered',        'Delivered'),
+        ('cancelled',        'Cancelled'),
+        ('return_requested', 'Return Requested'),
+        ('returned',         'Returned'),
+        ('refunded',         'Refunded'),
+    ]
+
+    PAYMENT_METHOD_CHOICES = [
+        ('razorpay', 'Razorpay'),
+        ('cod',      'Cash on Delivery'),
+    ]
+
+    # ── Customer ──
+    customer       = models.ForeignKey(Customers, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+    email          = models.EmailField()
+    phone          = models.CharField(max_length=15)
+
+    # ── Shipping Address ──
+    full_name      = models.CharField(max_length=255)
+    address_line_1 = models.TextField()
+    address_line_2 = models.TextField(blank=True)
+    city           = models.CharField(max_length=100)
+    state          = models.CharField(max_length=100)
+    pincode        = models.CharField(max_length=10)
+    country        = models.CharField(max_length=100, default='India')
+
+    # ── Pricing ──
+    subtotal       = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    discount       = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    shipping_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    gst_total      = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total          = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    # ── Offer / Coupon ──
+    offer          = models.ForeignKey(Offer, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+    coupon_code    = models.CharField(max_length=50, blank=True)
+
+    # ── Razorpay ──
+    payment_method      = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='razorpay')
+    razorpay_order_id   = models.CharField(max_length=255, blank=True)
+    razorpay_payment_id = models.CharField(max_length=255, blank=True)
+    razorpay_signature  = models.CharField(max_length=500, blank=True)
+    payment_status      = models.CharField(max_length=50, default='pending')
+
+    # ── Shiprocket ──
+    shiprocket_order_id    = models.CharField(max_length=255, blank=True)
+    shiprocket_shipment_id = models.CharField(max_length=255, blank=True)
+    awb_code               = models.CharField(max_length=255, blank=True)
+    courier_name           = models.CharField(max_length=255, blank=True)
+    shipping_status        = models.CharField(max_length=255, blank=True)
+    estimated_delivery     = models.DateField(null=True, blank=True)
+
+    # ── Shipping Dimensions Snapshot ──
+    # Stored at time of order so Shiprocket payload is always accurate
+    # even if variant dimensions are later edited
+    total_weight   = models.DecimalField(max_digits=8, decimal_places=2, default=0, help_text='Total order weight in kg')
+    total_length   = models.DecimalField(max_digits=8, decimal_places=2, default=1, help_text='Longest item length in cm')
+    total_breadth  = models.DecimalField(max_digits=8, decimal_places=2, default=1, help_text='Widest item breadth in cm')
+    total_height   = models.DecimalField(max_digits=8, decimal_places=2, default=1, help_text='Combined height of all items in cm')
+
+    # ── Order ──
+    status         = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pending')
+    notes          = models.TextField(blank=True)
+    created_at     = models.DateTimeField(default=timezone.now)
+    updated_at     = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Order #{self.id} — {self.full_name} — {self.status}"
+
+
+class OrderItem(models.Model):
+    order   = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    variant = models.ForeignKey(Variant, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # ── Snapshot at time of order ──
+    # Never changes even if product/variant is edited or deleted later
+    product_name  = models.CharField(max_length=255)
+    variant_name  = models.CharField(max_length=255, blank=True)
+    price         = models.DecimalField(max_digits=10, decimal_places=2)
+    gst           = models.DecimalField(max_digits=5, decimal_places=2)
+    quantity      = models.PositiveIntegerField(default=1)
+    total         = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # ── Dimension Snapshot per item ──
+    weight  = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    length  = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    breadth = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    height  = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"{self.product_name} x {self.quantity}"

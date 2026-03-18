@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
-from .models import Category,SubCategory,Product,ProductImage,Highlight,APlusContent,Variant,Offer,Customers,Support
+from .models import Category,SubCategory,Product,ProductImage,Highlight,APlusContent,Variant,Offer,Customers,Support,Cart,CartItem,OrderItem,Order
 
 def superadmin_required(user):
     return user.is_superuser 
@@ -24,9 +24,15 @@ def logout_view(request):
     logout(request)
     return redirect('/login_view')
 
+from django.core.paginator import Paginator
+
 @user_passes_test(superadmin_required, login_url=('/login_view'))
 def index(request):
-    return render(request,'dash/index.html')
+    all_orders = Order.objects.all().order_by('-created_at')
+    paginator  = Paginator(all_orders, 20)
+    page       = request.GET.get('page')
+    orders     = paginator.get_page(page)
+    return render(request,'dash/index.html', {'orders': orders})
 
 # Category Management Section
 
@@ -168,24 +174,23 @@ def product(request):
     }
     return render(request, 'dash/product/products.html', context)
  
- 
 @user_passes_test(superadmin_required, login_url=('/login_view'))
 def add_product(request):
     if request.method == 'POST':
- 
+
         # Core Info
         category_id      = request.POST.get('category')
         sub_category_id  = request.POST.get('sub_category') or None
         name             = request.POST.get('name')
-        description      = request.POST.get('description')   # comes as HTML from Quill
+        description      = request.POST.get('description')
         thumbnail        = request.FILES.get('thumbnail')
- 
+
         # SEO
         meta_title       = request.POST.get('meta_title')
         meta_description = request.POST.get('meta_description')
         meta_keywords    = request.POST.get('meta_keywords')
         meta_image       = request.FILES.get('meta_image')
- 
+
         product = Product.objects.create(
             category_id=category_id,
             sub_category_id=sub_category_id,
@@ -197,7 +202,7 @@ def add_product(request):
             meta_keywords=meta_keywords,
             meta_image=meta_image,
         )
- 
+
         # Product Images
         product_images     = request.FILES.getlist('product_images')
         product_image_alts = request.POST.getlist('product_image_alt')
@@ -207,7 +212,7 @@ def add_product(request):
                 image=image,
                 alt_text=product_image_alts[i] if i < len(product_image_alts) else ''
             )
- 
+
         # Variants
         variant_names      = request.POST.getlist('variant_name')
         variant_prices     = request.POST.getlist('variant_price')
@@ -215,18 +220,27 @@ def add_product(request):
         variant_quantities = request.POST.getlist('variant_quantity')
         variant_statuses   = request.POST.getlist('variant_status')
         variant_images     = request.FILES.getlist('variant_image')
+        variant_weights    = request.POST.getlist('variant_weight')
+        variant_lengths    = request.POST.getlist('variant_length')
+        variant_breadths   = request.POST.getlist('variant_breadth')
+        variant_heights    = request.POST.getlist('variant_height')
+
         for i, vname in enumerate(variant_names):
             if vname.strip():
                 Variant.objects.create(
                     product=product,
                     name=vname,
-                    price=variant_prices[i]        if i < len(variant_prices)     else 0,
-                    gst=variant_gsts[i]            if i < len(variant_gsts)       else 0,
+                    price=variant_prices[i]      if i < len(variant_prices)     else 0,
+                    gst=variant_gsts[i]          if i < len(variant_gsts)       else 0,
                     quantity=variant_quantities[i] if i < len(variant_quantities) else 0,
-                    status=variant_statuses[i]     if i < len(variant_statuses)   else 'Enabled',
-                    image=variant_images[i]        if i < len(variant_images)     else None,
+                    status=variant_statuses[i]   if i < len(variant_statuses)   else 'Enabled',
+                    image=variant_images[i]      if i < len(variant_images)     else None,
+                    weight=variant_weights[i]    if i < len(variant_weights)    else 0.5,
+                    length=variant_lengths[i]    if i < len(variant_lengths)    else 1.0,
+                    breadth=variant_breadths[i]  if i < len(variant_breadths)   else 1.0,
+                    height=variant_heights[i]    if i < len(variant_heights)    else 1.0,
                 )
- 
+
         # Highlights
         highlight_texts = request.POST.getlist('highlight_text')
         highlight_icons = request.FILES.getlist('highlight_icon')
@@ -237,7 +251,7 @@ def add_product(request):
                     text=htext,
                     icon=highlight_icons[i] if i < len(highlight_icons) else None,
                 )
- 
+
         # A+ Content
         aplus_images = request.FILES.getlist('aplus_image')
         aplus_alts   = request.POST.getlist('aplus_alt')
@@ -247,23 +261,22 @@ def add_product(request):
                 image=aimage,
                 image_alt=aplus_alts[i] if i < len(aplus_alts) else ''
             )
- 
-        return redirect('/products')
- 
-    categories = Category.objects.filter(status='Enabled').order_by('-id')
 
+        return redirect('/products')
+
+    categories = Category.objects.filter(status='Enabled').order_by('-id')
     return render(request, 'dash/product/add_product.html', {'categories': categories})
- 
- 
+
+
 @user_passes_test(superadmin_required, login_url=('/login_view'))
 def edit_product(request, id):
     product = get_object_or_404(Product, id=id)
- 
+
     if request.method == 'POST':
         product.category_id      = request.POST.get('category')
         product.sub_category_id  = request.POST.get('sub_category') or None
         product.name             = request.POST.get('name')
-        product.description      = request.POST.get('description')   # HTML from Quill
+        product.description      = request.POST.get('description')
         product.meta_title       = request.POST.get('meta_title')
         product.meta_description = request.POST.get('meta_description')
         product.meta_keywords    = request.POST.get('meta_keywords')
@@ -272,7 +285,7 @@ def edit_product(request, id):
         if request.FILES.get('meta_image'):
             product.meta_image = request.FILES.get('meta_image')
         product.save()
- 
+
         # New Product Images
         product_images     = request.FILES.getlist('product_images')
         product_image_alts = request.POST.getlist('product_image_alt')
@@ -282,7 +295,32 @@ def edit_product(request, id):
                 image=image,
                 alt_text=product_image_alts[i] if i < len(product_image_alts) else ''
             )
- 
+
+        # Update Existing Variants
+        for v in product.product_variant.all():
+            name     = request.POST.get(f'existing_variant_name_{v.id}')
+            price    = request.POST.get(f'existing_variant_price_{v.id}')
+            gst      = request.POST.get(f'existing_variant_gst_{v.id}')
+            quantity = request.POST.get(f'existing_variant_quantity_{v.id}')
+            status   = request.POST.get(f'existing_variant_status_{v.id}')
+            weight   = request.POST.get(f'existing_variant_weight_{v.id}')
+            length   = request.POST.get(f'existing_variant_length_{v.id}')
+            breadth  = request.POST.get(f'existing_variant_breadth_{v.id}')
+            height   = request.POST.get(f'existing_variant_height_{v.id}')
+            if name:
+                v.name     = name
+                v.price    = price    or v.price
+                v.gst      = gst      or v.gst
+                v.quantity = quantity or v.quantity
+                v.status   = status   or v.status
+                v.weight   = weight   or v.weight
+                v.length   = length   or v.length
+                v.breadth  = breadth  or v.breadth
+                v.height   = height   or v.height
+            if request.FILES.get(f'existing_variant_image_{v.id}'):
+                v.image = request.FILES.get(f'existing_variant_image_{v.id}')
+            v.save()
+
         # New Variants
         variant_names      = request.POST.getlist('variant_name')
         variant_prices     = request.POST.getlist('variant_price')
@@ -290,18 +328,27 @@ def edit_product(request, id):
         variant_quantities = request.POST.getlist('variant_quantity')
         variant_statuses   = request.POST.getlist('variant_status')
         variant_images     = request.FILES.getlist('variant_image')
+        variant_weights    = request.POST.getlist('variant_weight')
+        variant_lengths    = request.POST.getlist('variant_length')
+        variant_breadths   = request.POST.getlist('variant_breadth')
+        variant_heights    = request.POST.getlist('variant_height')
+
         for i, vname in enumerate(variant_names):
             if vname.strip():
                 Variant.objects.create(
                     product=product,
                     name=vname,
-                    price=variant_prices[i]        if i < len(variant_prices)     else 0,
-                    gst=variant_gsts[i]            if i < len(variant_gsts)       else 0,
+                    price=variant_prices[i]      if i < len(variant_prices)     else 0,
+                    gst=variant_gsts[i]          if i < len(variant_gsts)       else 0,
                     quantity=variant_quantities[i] if i < len(variant_quantities) else 0,
-                    status=variant_statuses[i]     if i < len(variant_statuses)   else 'Enabled',
-                    image=variant_images[i]        if i < len(variant_images)     else None,
+                    status=variant_statuses[i]   if i < len(variant_statuses)   else 'Enabled',
+                    image=variant_images[i]      if i < len(variant_images)     else None,
+                    weight=variant_weights[i]    if i < len(variant_weights)    else 0.5,
+                    length=variant_lengths[i]    if i < len(variant_lengths)    else 1.0,
+                    breadth=variant_breadths[i]  if i < len(variant_breadths)   else 1.0,
+                    height=variant_heights[i]    if i < len(variant_heights)    else 1.0,
                 )
- 
+
         # New Highlights
         highlight_texts = request.POST.getlist('highlight_text')
         highlight_icons = request.FILES.getlist('highlight_icon')
@@ -312,7 +359,7 @@ def edit_product(request, id):
                     text=htext,
                     icon=highlight_icons[i] if i < len(highlight_icons) else None,
                 )
- 
+
         # New A+ Content
         aplus_images = request.FILES.getlist('aplus_image')
         aplus_alts   = request.POST.getlist('aplus_alt')
@@ -322,9 +369,9 @@ def edit_product(request, id):
                 image=aimage,
                 image_alt=aplus_alts[i] if i < len(aplus_alts) else ''
             )
- 
+
         return redirect('/products')
- 
+
     categories    = Category.objects.filter(status='Enabled').order_by('-id')
     subcategories = SubCategory.objects.filter(category=product.category, status='Enabled').order_by('-id')
     return render(request, 'dash/product/edit_product.html', {
@@ -335,8 +382,8 @@ def edit_product(request, id):
         'product_images': product.product_images.all(),
         'highlights':     product.product_highlight.all(),
         'aplus_contents': product.product_content.all(),
-    })
- 
+    }) 
+
  
 from django.http import JsonResponse
 
@@ -542,3 +589,168 @@ def resolve_enquiry(request, id):
     enquiry.status = 'Resolved'
     enquiry.save()
     return redirect('/support')
+
+#Intelligence 
+from django.db.models import Sum, Count, Avg, Q
+from django.utils import timezone
+from datetime import timedelta
+
+def intelligence(request):
+    today = timezone.now().date()
+    this_month_start = today.replace(day=1)
+
+    context = {
+        # Products
+        'total_products':     Product.objects.count(),
+        'out_of_stock':       Variant.objects.filter(quantity=0).count(),
+        'low_stock':          Variant.objects.filter(quantity__gt=0, quantity__lt=10).count(),
+        'disabled_products':  0,
+
+        # Orders
+        'orders_today':       Order.objects.filter(created_at__date=today).count(),
+        'revenue_today':      Order.objects.filter(created_at__date=today, payment_status='paid').aggregate(t=Sum('total'))['t'] or 0,
+        'revenue_month':      Order.objects.filter(created_at__date__gte=this_month_start, payment_status='paid').aggregate(t=Sum('total'))['t'] or 0,
+        'revenue_all_time':   Order.objects.filter(payment_status='paid').aggregate(t=Sum('total'))['t'] or 0,
+        'avg_order_value':    Order.objects.filter(payment_status='paid').aggregate(a=Avg('total'))['a'] or 0,
+        'pending_orders':     Order.objects.filter(status='pending').count(),
+        'orders_by_status':   Order.objects.values('status').annotate(count=Count('id')),
+
+        # Carts
+        'active_carts':       Cart.objects.filter(is_abandoned=False).count(),
+        'abandoned_carts':    Cart.objects.filter(is_abandoned=True).count(),
+
+        # Offers
+        'active_offers':      Offer.objects.filter(status='Active').count(),
+        'total_discount':     Order.objects.aggregate(t=Sum('discount'))['t'] or 0,
+        'expiring_offers':    Offer.objects.filter(valid_to__date__lte=today + timedelta(days=7), status='Active').count(),
+
+        # Support
+        'pending_support':    Support.objects.filter(status='Pending').count(),
+        'resolved_today':     Support.objects.filter(status='Resolved', created_at__date=today).count(),
+        'total_support':      Support.objects.count(),
+    }
+    return render(request, 'dash/intelligence/intelligence.html', context)
+
+#Order Managment
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def order_detail(request, id):
+    order = get_object_or_404(Order, id=id)
+    order_items = order.order_items.all()
+    return render(request, 'dash/orders/detail.html', {
+        'order':       order,
+        'order_items': order_items,
+    })
+
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def update_order_status(request, id):
+    order = get_object_or_404(Order, id=id)
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status:
+            order.status = new_status
+            order.save()
+    return redirect(f'/order_detail/{id}')
+
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def revoke_order(request, id):
+    order = get_object_or_404(Order, id=id)
+
+    # Restore stock for each item
+    for item in order.order_items.all():
+        if item.variant:
+            item.variant.quantity += item.quantity
+            item.variant.save()
+
+    order.status = 'cancelled'
+    order.save()
+    return redirect(f'/order_detail/{id}')
+
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def fulfill_order(request, id):
+    import requests
+    import json
+
+    order = get_object_or_404(Order, id=id)
+
+    # ── Shiprocket Auth ──
+    auth_response = requests.post(
+        'https://apiv2.shiprocket.in/v1/external/auth/login',
+        json={
+            'email':    'YOUR_SHIPROCKET_EMAIL',
+            'password': 'YOUR_SHIPROCKET_PASSWORD',
+        }
+    )
+    token = auth_response.json().get('token')
+
+    if not token:
+        order.notes += '\n[Shiprocket] Auth failed.'
+        order.save()
+        return redirect(f'/order_detail/{id}')
+
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type':  'application/json',
+    }
+
+    # ── Build Order Items for Shiprocket ──
+    items = []
+    for item in order.order_items.all():
+        items.append({
+            'name':          item.product_name,
+            'sku':           f'SKU-{item.product_id or 0}',
+            'units':         item.quantity,
+            'selling_price': str(item.price),
+            'discount':      '0',
+            'tax':           str(item.gst),
+        })
+
+    # ── Create Shiprocket Order ──
+    payload = {
+        'order_id':               str(order.id),
+        'order_date':             order.created_at.strftime('%Y-%m-%d %H:%M'),
+        'pickup_location':        'Primary',
+        'channel_id':             '',
+        'comment':                order.notes or '',
+        'billing_customer_name':  order.full_name,
+        'billing_last_name':      '',
+        'billing_address':        order.address_line_1,
+        'billing_address_2':      order.address_line_2,
+        'billing_city':           order.city,
+        'billing_pincode':        order.pincode,
+        'billing_state':          order.state,
+        'billing_country':        order.country,
+        'billing_email':          order.email,
+        'billing_phone':          order.phone,
+        'shipping_is_billing':    True,
+        'order_items':            items,
+        'payment_method':         'Prepaid' if order.payment_method == 'razorpay' else 'COD',
+        'sub_total':              str(order.subtotal),
+        'length':                 str(order.total_length),
+        'breadth':                str(order.total_breadth),
+        'height':                 str(order.total_height),
+        'weight':                 str(order.total_weight),
+    }
+
+    sr_response = requests.post(
+        'https://apiv2.shiprocket.in/v1/external/orders/create/adhoc',
+        headers=headers,
+        json=payload,
+    )
+    sr_data = sr_response.json()
+
+    if sr_response.status_code == 200 and sr_data.get('order_id'):
+        order.shiprocket_order_id    = str(sr_data.get('order_id', ''))
+        order.shiprocket_shipment_id = str(sr_data.get('shipment_id', ''))
+        order.awb_code               = str(sr_data.get('awb_code', ''))
+        order.courier_name           = str(sr_data.get('courier_name', ''))
+        order.status                 = 'ready_for_pickup'
+        order.notes += f'\n[Shiprocket] Order created. AWB: {order.awb_code}'
+    else:
+        order.notes += f'\n[Shiprocket] Failed: {sr_data}'
+
+    order.save()
+    return redirect(f'/order_detail/{id}')

@@ -28,15 +28,7 @@
                                 {% for i in customers %}
                                 <tr>
                                     <td>
-                                        {% if i.profile_image %}
-                                        <img src="{{ i.profile_image.url }}" style="height:32px; width:32px; border-radius:50%; object-fit:cover;" class="me-2">
-                                        {% else %}
-                                        <span style="display:inline-flex; align-items:center; justify-content:center; height:32px; width:32px; border-radius:50%; background:#f0ebe5; color:#c8882a; font-size:13px; font-weight:700; margin-right:8px;">
-                                            {{ i.user.first_name|first|upper }}{{ i.user.last_name|first|upper }}
-                                        </span>
-                                        {% endif %}
-                                        <span style="font-size:13px; font-weight:600;">{{ i.user.get_full_name }}</span>
-                                        <span class="d-block text-muted" style="font-size:11px; margin-left:40px;">{{ i.user.email }}</span>
+                                         <span style="font-size:13px; font-weight:600;">{{ i.user.first_name }}</span><span style="font-size:13px; font-weight:600;">{{ i.user.last_name }}</span>
                                     </td>
                                     <td style="font-size:13px;">{{ i.phone_number|default:"—" }}</td>
                                     <td style="font-size:13px;">{{ i.date_of_birth|date:"d M Y"|default:"—" }}</td>

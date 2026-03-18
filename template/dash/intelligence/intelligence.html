@@ -1,0 +1,707 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Intelligence — Kapi Today{% endblock 'title' %}
+
+{% block 'css' %}
+<style>
+    :root {
+        --coffee-dark:  #1a0a00;
+        --coffee-mid:   #3d1f00;
+        --coffee-warm:  #6b3a1f;
+        --coffee-gold:  #c8882a;
+        --coffee-cream: #f5efe6;
+        --coffee-light: #faf7f3;
+    }
+
+    .intel-page { background: var(--coffee-light); min-height: 100vh; }
+
+    /* ── PAGE HEADER ── */
+    .intel-header {
+        background: linear-gradient(135deg, var(--coffee-dark) 0%, var(--coffee-mid) 100%);
+        border-radius: 16px;
+        padding: 24px 28px;
+        margin-bottom: 24px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .intel-header h4 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.3px; }
+    .intel-header p  { margin: 4px 0 0; opacity: 0.55; font-size: 12.5px; }
+    .intel-header .live-dot {
+        width: 8px; height: 8px;
+        background: #4ade80;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+
+    /* ── STAT CARDS ── */
+    .stat-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 20px;
+        border: 1px solid #eee;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    .stat-card .card-accent {
+        position: absolute;
+        top: 0; left: 0;
+        width: 4px;
+        height: 100%;
+        border-radius: 14px 0 0 14px;
+    }
+    .stat-card .stat-icon {
+        width: 42px; height: 42px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+    .stat-card .stat-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--coffee-dark);
+        letter-spacing: -0.5px;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+    .stat-card .stat-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .stat-card .stat-sub {
+        font-size: 11.5px;
+        color: #bbb;
+        margin-top: 6px;
+    }
+
+    /* accent colours */
+    .accent-gold   { background: var(--coffee-gold); }
+    .accent-green  { background: #16a34a; }
+    .accent-red    { background: #dc2626; }
+    .accent-blue   { background: #2563eb; }
+    .accent-purple { background: #7c3aed; }
+    .accent-orange { background: #ea580c; }
+
+    .icon-gold   { background: rgba(200,136,42,0.12); color: var(--coffee-gold); }
+    .icon-green  { background: rgba(22,163,74,0.12);  color: #16a34a; }
+    .icon-red    { background: rgba(220,38,38,0.12);  color: #dc2626; }
+    .icon-blue   { background: rgba(37,99,235,0.12);  color: #2563eb; }
+    .icon-purple { background: rgba(124,58,237,0.12); color: #7c3aed; }
+    .icon-orange { background: rgba(234,88,12,0.12);  color: #ea580c; }
+
+    /* ── SECTION HEADERS ── */
+    .section-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        margin-top: 8px;
+    }
+    .section-head .section-icon {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px; color: #fff;
+    }
+    .section-head h6 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 800;
+        color: var(--coffee-dark);
+        letter-spacing: -0.2px;
+    }
+    .section-head span {
+        font-size: 11px;
+        color: #bbb;
+        font-weight: 500;
+    }
+
+    /* ── CHART CARDS ── */
+    .chart-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #eee;
+        padding: 20px;
+        height: 100%;
+    }
+    .chart-card h6 {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--coffee-dark);
+        margin-bottom: 16px;
+    }
+
+    /* ── STATUS BREAKDOWN ── */
+    .status-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 13px;
+    }
+    .status-row:last-child { border: none; }
+    .status-row .status-name { color: #555; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+    .status-row .status-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-row .status-count { font-weight: 700; color: var(--coffee-dark); }
+
+    /* ── TOP SUMMARY BAR ── */
+    .summary-bar {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #eee;
+        padding: 0;
+        margin-bottom: 24px;
+        overflow: hidden;
+        display: flex;
+    }
+    .summary-item {
+        flex: 1;
+        padding: 16px 20px;
+        border-right: 1px solid #f0f0f0;
+        text-align: center;
+    }
+    .summary-item:last-child { border: none; }
+    .summary-item .s-value {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--coffee-dark);
+        letter-spacing: -0.5px;
+        display: block;
+    }
+    .summary-item .s-label {
+        font-size: 11px;
+        color: #aaa;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    .summary-item .s-badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 20px;
+        margin-top: 3px;
+    }
+    .urgent { background: #fee2e2; color: #dc2626; }
+    .good   { background: #dcfce7; color: #16a34a; }
+    .warn   { background: #fef3c7; color: #d97706; }
+    .info   { background: #dbeafe; color: #2563eb; }
+
+    /* ── PROGRESS BARS ── */
+    .intel-progress { height: 6px; border-radius: 3px; background: #f0f0f0; margin-top: 4px; }
+    .intel-progress-bar { height: 100%; border-radius: 3px; }
+
+    /* ── ALERT ITEMS ── */
+    .alert-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+    .alert-item:last-child { margin-bottom: 0; }
+    .alert-item i { font-size: 16px; flex-shrink: 0; }
+    .alert-item .alert-text { flex: 1; color: #444; }
+    .alert-item .alert-val { font-weight: 700; color: var(--coffee-dark); font-size: 12px; }
+    .alert-red    { background: #fff5f5; }
+    .alert-orange { background: #fff8f0; }
+    .alert-green  { background: #f0fdf4; }
+    .alert-blue   { background: #eff6ff; }
+</style>
+{% endblock 'css' %}
+
+{% block 'body' %}
+<br>
+<div class="container-fluid intel-page pb-4">
+
+    <!-- ── PAGE HEADER ── -->
+    <div class="intel-header">
+        <div>
+            <h4><i class="mdi mdi-chart-areaspline me-2"></i>Intelligence</h4>
+            <p><span class="live-dot"></span>Live data from your store — updated every page load</p>
+        </div>
+        <div class="text-end">
+            <div style="font-size:22px; font-weight:800; color:#fff;">₹{{ revenue_today|floatformat:0 }}</div>
+            <div style="font-size:11px; opacity:0.5; text-transform:uppercase; letter-spacing:0.5px;">Revenue Today</div>
+        </div>
+    </div>
+
+    <!-- ── TOP SUMMARY BAR ── -->
+    <div class="summary-bar">
+        <div class="summary-item">
+            <span class="s-value">{{ orders_today }}</span>
+            <span class="s-label">Orders Today</span>
+            {% if orders_today == 0 %}<span class="s-badge warn">Quiet</span>{% else %}<span class="s-badge good">Active</span>{% endif %}
+        </div>
+        <div class="summary-item">
+            <span class="s-value">{{ pending_orders }}</span>
+            <span class="s-label">Pending Orders</span>
+            {% if pending_orders > 0 %}<span class="s-badge urgent">Action Needed</span>{% else %}<span class="s-badge good">Clear</span>{% endif %}
+        </div>
+        <div class="summary-item">
+            <span class="s-value">{{ abandoned_carts }}</span>
+            <span class="s-label">Abandoned Carts</span>
+            {% if abandoned_carts > 0 %}<span class="s-badge warn">Opportunity</span>{% else %}<span class="s-badge good">None</span>{% endif %}
+        </div>
+        <div class="summary-item">
+            <span class="s-value">{{ low_stock }}</span>
+            <span class="s-label">Low Stock Items</span>
+            {% if low_stock > 0 %}<span class="s-badge urgent">Restock</span>{% else %}<span class="s-badge good">Healthy</span>{% endif %}
+        </div>
+        <div class="summary-item">
+            <span class="s-value">{{ out_of_stock }}</span>
+            <span class="s-label">Out of Stock</span>
+            {% if out_of_stock > 0 %}<span class="s-badge urgent">Critical</span>{% else %}<span class="s-badge good">All Good</span>{% endif %}
+        </div>
+        <div class="summary-item">
+            <span class="s-value">{{ pending_support }}</span>
+            <span class="s-label">Open Tickets</span>
+            {% if pending_support > 0 %}<span class="s-badge warn">Pending</span>{% else %}<span class="s-badge good">Clear</span>{% endif %}
+        </div>
+    </div>
+
+    <!-- ── REVENUE SECTION ── -->
+    <div class="section-head">
+        <div class="section-icon" style="background:#c8882a;"><i class="mdi mdi-currency-inr"></i></div>
+        <div>
+            <h6>Revenue & Orders</h6>
+            <span>Financial performance at a glance</span>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-gold"></div>
+                <div class="stat-icon icon-gold"><i class="mdi mdi-currency-inr"></i></div>
+                <div class="stat-value">₹{{ revenue_today|floatformat:0 }}</div>
+                <div class="stat-label">Revenue Today</div>
+                <div class="stat-sub">Paid orders only</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-green"></div>
+                <div class="stat-icon icon-green"><i class="mdi mdi-calendar-month"></i></div>
+                <div class="stat-value">₹{{ revenue_month|floatformat:0 }}</div>
+                <div class="stat-label">This Month</div>
+                <div class="stat-sub">Month to date</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-blue"></div>
+                <div class="stat-icon icon-blue"><i class="mdi mdi-chart-line"></i></div>
+                <div class="stat-value">₹{{ revenue_all_time|floatformat:0 }}</div>
+                <div class="stat-label">All Time Revenue</div>
+                <div class="stat-sub">Since launch</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-purple"></div>
+                <div class="stat-icon icon-purple"><i class="mdi mdi-calculator"></i></div>
+                <div class="stat-value">₹{{ avg_order_value|floatformat:0 }}</div>
+                <div class="stat-label">Avg Order Value</div>
+                <div class="stat-sub">Per paid order</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-gold"></div>
+                <div class="stat-icon icon-gold"><i class="mdi mdi-package-variant"></i></div>
+                <div class="stat-value">{{ orders_today }}</div>
+                <div class="stat-label">Orders Today</div>
+                <div class="stat-sub">All statuses</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-orange"></div>
+                <div class="stat-icon icon-orange"><i class="mdi mdi-clock-alert-outline"></i></div>
+                <div class="stat-value">{{ pending_orders }}</div>
+                <div class="stat-label">Pending Orders</div>
+                <div class="stat-sub">Need processing</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-green"></div>
+                <div class="stat-icon icon-green"><i class="mdi mdi-truck-delivery"></i></div>
+                <div class="stat-value">{{ orders_by_status|length }}</div>
+                <div class="stat-label">Active Statuses</div>
+                <div class="stat-sub">Across all orders</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-red"></div>
+                <div class="stat-icon icon-red"><i class="mdi mdi-cash-refund"></i></div>
+                <div class="stat-value">₹{{ total_discount|floatformat:0 }}</div>
+                <div class="stat-label">Total Discounts Given</div>
+                <div class="stat-sub">All time</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── ORDER STATUS + CHART ── -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-5">
+            <div class="chart-card">
+                <h6><i class="mdi mdi-chart-donut me-2" style="color:var(--coffee-gold);"></i>Orders by Status</h6>
+                {% for s in orders_by_status %}
+                <div class="status-row">
+                    <div class="status-name">
+                        <span class="status-dot" style="background:
+                            {% if s.status == 'delivered' %}#16a34a
+                            {% elif s.status == 'shipped' %}#2563eb
+                            {% elif s.status == 'pending' %}#d97706
+                            {% elif s.status == 'paid' %}#7c3aed
+                            {% elif s.status == 'cancelled' %}#dc2626
+                            {% elif s.status == 'processing' %}#0891b2
+                            {% elif s.status == 'refunded' %}#be185d
+                            {% else %}#aaa{% endif %};"></span>
+                        {{ s.status|title }}
+                    </div>
+                    <div class="status-count">{{ s.count }}</div>
+                </div>
+                {% empty %}
+                <p class="text-muted" style="font-size:13px;">No orders yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="chart-card">
+                <h6><i class="mdi mdi-chart-bar me-2" style="color:var(--coffee-gold);"></i>Order Status Distribution</h6>
+                <canvas id="orderStatusChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── INVENTORY SECTION ── -->
+    <div class="section-head">
+        <div class="section-icon" style="background:#16a34a;"><i class="mdi mdi-package-variant-closed"></i></div>
+        <div>
+            <h6>Products & Inventory</h6>
+            <span>Stock levels and product health</span>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-green"></div>
+                <div class="stat-icon icon-green"><i class="mdi mdi-coffee"></i></div>
+                <div class="stat-value">{{ total_products }}</div>
+                <div class="stat-label">Total Products</div>
+                <div class="stat-sub">In your catalogue</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-orange"></div>
+                <div class="stat-icon icon-orange"><i class="mdi mdi-alert-outline"></i></div>
+                <div class="stat-value">{{ low_stock }}</div>
+                <div class="stat-label">Low Stock</div>
+                <div class="stat-sub">Qty below 10</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-red"></div>
+                <div class="stat-icon icon-red"><i class="mdi mdi-close-circle-outline"></i></div>
+                <div class="stat-value">{{ out_of_stock }}</div>
+                <div class="stat-label">Out of Stock</div>
+                <div class="stat-sub">Qty = 0</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-gold"></div>
+                <div class="stat-icon icon-gold"><i class="mdi mdi-eye-off-outline"></i></div>
+                <div class="stat-value">{{ disabled_products }}</div>
+                <div class="stat-label">Disabled Products</div>
+                <div class="stat-sub">Not live yet</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── INVENTORY ALERTS ── -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h6><i class="mdi mdi-bell-alert me-2" style="color:#dc2626;"></i>Inventory Alerts</h6>
+                {% if out_of_stock > 0 %}
+                <div class="alert-item alert-red">
+                    <i class="mdi mdi-close-circle text-danger"></i>
+                    <span class="alert-text">{{ out_of_stock }} variant(s) are completely out of stock</span>
+                    <span class="alert-val">Urgent</span>
+                </div>
+                {% endif %}
+                {% if low_stock > 0 %}
+                <div class="alert-item alert-orange">
+                    <i class="mdi mdi-alert" style="color:#ea580c;"></i>
+                    <span class="alert-text">{{ low_stock }} variant(s) have less than 10 units left</span>
+                    <span class="alert-val">Restock</span>
+                </div>
+                {% endif %}
+                {% if disabled_products > 0 %}
+                <div class="alert-item alert-blue">
+                    <i class="mdi mdi-eye-off" style="color:#2563eb;"></i>
+                    <span class="alert-text">{{ disabled_products }} product(s) are disabled and not visible</span>
+                    <span class="alert-val">Review</span>
+                </div>
+                {% endif %}
+                {% if out_of_stock == 0 and low_stock == 0 and disabled_products == 0 %}
+                <div class="alert-item alert-green">
+                    <i class="mdi mdi-check-circle" style="color:#16a34a;"></i>
+                    <span class="alert-text">All inventory looks healthy — no urgent alerts</span>
+                    <span class="alert-val">All Good</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h6><i class="mdi mdi-chart-donut me-2" style="color:var(--coffee-gold);"></i>Inventory Health</h6>
+                <canvas id="inventoryChart" height="180"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CART SECTION ── -->
+    <div class="section-head">
+        <div class="section-icon" style="background:#2563eb;"><i class="mdi mdi-cart-outline"></i></div>
+        <div>
+            <h6>Cart Intelligence</h6>
+            <span>Active shopping and abandonment data</span>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4">
+            <div class="stat-card">
+                <div class="card-accent accent-blue"></div>
+                <div class="stat-icon icon-blue"><i class="mdi mdi-cart"></i></div>
+                <div class="stat-value">{{ active_carts }}</div>
+                <div class="stat-label">Active Carts</div>
+                <div class="stat-sub">Currently shopping</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="stat-card">
+                <div class="card-accent accent-orange"></div>
+                <div class="stat-icon icon-orange"><i class="mdi mdi-cart-off"></i></div>
+                <div class="stat-value">{{ abandoned_carts }}</div>
+                <div class="stat-label">Abandoned Carts</div>
+                <div class="stat-sub">Potential revenue lost</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="stat-card">
+                <div class="card-accent accent-red"></div>
+                <div class="stat-icon icon-red"><i class="mdi mdi-percent"></i></div>
+                <div class="stat-value">
+                    {% if active_carts or abandoned_carts %}
+                        {% widthratio abandoned_carts active_carts|add:abandoned_carts 100 %}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+                <div class="stat-label">Abandonment Rate</div>
+                <div class="stat-sub">Lower is better</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── OFFERS SECTION ── -->
+    <div class="section-head">
+        <div class="section-icon" style="background:#7c3aed;"><i class="mdi mdi-ticket-percent"></i></div>
+        <div>
+            <h6>Offers & Discounts</h6>
+            <span>Promotion performance and activity</span>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-purple"></div>
+                <div class="stat-icon icon-purple"><i class="mdi mdi-tag-multiple"></i></div>
+                <div class="stat-value">{{ active_offers }}</div>
+                <div class="stat-label">Active Offers</div>
+                <div class="stat-sub">Live right now</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-red"></div>
+                <div class="stat-icon icon-red"><i class="mdi mdi-currency-inr"></i></div>
+                <div class="stat-value">₹{{ total_discount|floatformat:0 }}</div>
+                <div class="stat-label">Discount Given</div>
+                <div class="stat-sub">All time total</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-orange"></div>
+                <div class="stat-icon icon-orange"><i class="mdi mdi-clock-alert"></i></div>
+                <div class="stat-value">{{ expiring_offers }}</div>
+                <div class="stat-label">Expiring Soon</div>
+                <div class="stat-sub">Within 7 days</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="card-accent accent-green"></div>
+                <div class="stat-icon icon-green"><i class="mdi mdi-check-decagram"></i></div>
+                <div class="stat-value">
+                    {% if active_offers > 0 %}
+                    <span style="color:#16a34a;">Live</span>
+                    {% else %}
+                    <span style="color:#dc2626;">None</span>
+                    {% endif %}
+                </div>
+                <div class="stat-label">Offer Status</div>
+                <div class="stat-sub">Current state</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SUPPORT SECTION ── -->
+    <div class="section-head">
+        <div class="section-icon" style="background:#e11d48;"><i class="mdi mdi-headset"></i></div>
+        <div>
+            <h6>Support & Enquiries</h6>
+            <span>Customer service health</span>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4">
+            <div class="stat-card">
+                <div class="card-accent accent-red"></div>
+                <div class="stat-icon icon-red"><i class="mdi mdi-headset"></i></div>
+                <div class="stat-value">{{ total_support }}</div>
+                <div class="stat-label">Total Enquiries</div>
+                <div class="stat-sub">All time</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="stat-card">
+                <div class="card-accent accent-orange"></div>
+                <div class="stat-icon icon-orange"><i class="mdi mdi-email-alert"></i></div>
+                <div class="stat-value">{{ pending_support }}</div>
+                <div class="stat-label">Pending</div>
+                <div class="stat-sub">Need response</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="stat-card">
+                <div class="card-accent accent-green"></div>
+                <div class="stat-icon icon-green"><i class="mdi mdi-check-circle"></i></div>
+                <div class="stat-value">{{ resolved_today }}</div>
+                <div class="stat-label">Resolved Today</div>
+                <div class="stat-sub">Great work</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SUPPORT HEALTH BAR ── -->
+    <div class="row g-3 mb-2">
+        <div class="col-12">
+            <div class="chart-card">
+                <h6><i class="mdi mdi-heart-pulse me-2" style="color:#e11d48;"></i>Support Health</h6>
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <span style="font-size:12px; color:#888; min-width:80px;">Resolution</span>
+                    <div class="intel-progress flex-grow-1">
+                        <div class="intel-progress-bar" style="width:{% if total_support > 0 %}{% widthratio resolved_today total_support 100 %}{% else %}0{% endif %}%; background:#16a34a;"></div>
+                    </div>
+                    <span style="font-size:12px; font-weight:700; color:var(--coffee-dark); min-width:40px;">{% if total_support > 0 %}{% widthratio resolved_today total_support 100 %}%{% else %}0%{% endif %}</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span style="font-size:12px; color:#888; min-width:80px;">Pending</span>
+                    <div class="intel-progress flex-grow-1">
+                        <div class="intel-progress-bar" style="width:{% if total_support > 0 %}{% widthratio pending_support total_support 100 %}{% else %}0{% endif %}%; background:#dc2626;"></div>
+                    </div>
+                    <span style="font-size:12px; font-weight:700; color:var(--coffee-dark); min-width:40px;">{% if total_support > 0 %}{% widthratio pending_support total_support 100 %}%{% else %}0%{% endif %}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock 'body' %}
+
+{% block 'script' %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// ── Order Status Chart ──
+const statusLabels = [{% for s in orders_by_status %}"{{ s.status|title }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+const statusData   = [{% for s in orders_by_status %}{{ s.count }}{% if not forloop.last %},{% endif %}{% endfor %}];
+const statusColors = ['#16a34a','#2563eb','#d97706','#7c3aed','#dc2626','#0891b2','#be185d','#c8882a'];
+
+new Chart(document.getElementById('orderStatusChart'), {
+    type: 'bar',
+    data: {
+        labels: statusLabels,
+        datasets: [{
+            label: 'Orders',
+            data: statusData,
+            backgroundColor: statusColors.slice(0, statusData.length),
+            borderRadius: 8,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, grid: { color: '#f5f5f5' }, ticks: { font: { size: 11 } } },
+            x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        }
+    }
+});
+
+// ── Inventory Health Chart ──
+new Chart(document.getElementById('inventoryChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Healthy', 'Low Stock', 'Out of Stock', 'Disabled'],
+        datasets: [{
+            data: [
+                Math.max(0, {{ total_products }} - {{ low_stock }} - {{ out_of_stock }} - {{ disabled_products }}),
+                {{ low_stock }},
+                {{ out_of_stock }},
+                {{ disabled_products }}
+            ],
+            backgroundColor: ['#16a34a', '#ea580c', '#dc2626', '#aaa'],
+            borderWidth: 0,
+            hoverOffset: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        cutout: '70%',
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { font: { size: 11 }, padding: 16, usePointStyle: true }
+            }
+        }
+    }
+});
+</script>
+{% endblock 'script' %}

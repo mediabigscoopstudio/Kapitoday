@@ -4,8 +4,10 @@ from dash import views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
+from django.contrib import admin
 
 urlpatterns = [
+    path("admin/", admin.site.urls),
     path("",views.index,name='index'),
     path("login_view",views.login_view,name='login_view'),
     path("logout_view",views.logout_view,name='logout_view'),
@@ -40,7 +42,14 @@ urlpatterns = [
     #Support Management urls
     path('support', views.support, name='support'),
     path('resolve_enquiry', views.resolve_enquiry, name='resolve_enquiry'),
-
+    #Support Management urls
+    path('intelligence', views.intelligence, name='intelligence'),
+    #Order Management urls 
+    path('order_detail/<int:id>',      views.order_detail,        name='order_detail'),
+    path('update_order_status/<int:id>', views.update_order_status, name='update_order_status'),
+    path('revoke_order/<int:id>',      views.revoke_order,        name='revoke_order'),
+    path('fulfill_order/<int:id>',     views.fulfill_order,       name='fulfill_order'),
+    
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

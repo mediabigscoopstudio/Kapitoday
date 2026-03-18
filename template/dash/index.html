@@ -1,5 +1,197 @@
 {% extends "dash/base.html" %}
-{% block 'title' %}Welcome to Silver Edge Dashboard!{% endblock 'title' %}
-{% block 'css' %}{% endblock 'css' %}
-{% block 'body' %}{% endblock 'body' %}
-{% block 'script' %}{% endblock 'script' %}
+{% block 'title' %}Welcome back {{user.username}}{% endblock 'title' %}
+{% block 'css' %}
+<style>
+    .order-id {
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b3a1f;
+        background: #f5efe6;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+    .status-pill {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+</style>
+{% endblock 'css' %}
+
+{% block 'body' %}
+<div class="container-fluid">
+
+    <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
+        <div class="flex-grow-1">
+            <h4 class="fs-18 fw-semibold m-0">Orders</h4>
+            <p class="text-muted mb-0" style="font-size:13px;">{{ orders.paginator.count }} total orders</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead style="background:#faf8f6; border-bottom:2px solid #f0ebe5;">
+                        <tr>
+                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px; padding:14px 16px;">Order ID</th>
+                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Customer</th>
+                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Contact</th>
+                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Location</th>
+                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Amount</th>
+                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Payment</th>
+                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Status</th>
+                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Date</th>
+                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in orders %}
+                        <tr>
+                            <!-- Order ID -->
+                            <td style="padding:14px 16px;">
+                                <span class="order-id">#{{ i.id }}</span>
+                                {% if i.awb_code %}
+                                <span class="d-block" style="font-size:10px; color:#bbb; margin-top:3px;">AWB: {{ i.awb_code }}</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Customer -->
+                            <td>
+                                <span style="font-size:13px; font-weight:600; color:#1a0a00; display:block;">{{ i.full_name }}</span>
+                                {% if i.customer %}
+                                <span style="font-size:11px; color:#bbb;">{{ i.customer.user.email }}</span>
+                                {% else %}
+                                <span style="font-size:11px; color:#bbb;">Guest</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Contact -->
+                            <td style="font-size:12px; color:#666;">{{ i.phone }}</td>
+
+                            <!-- Location -->
+                            <td>
+                                <span style="font-size:12px; color:#666; display:block;">{{ i.city }}, {{ i.state }}</span>
+                                <span style="font-size:11px; color:#bbb;">{{ i.pincode }}</span>
+                            </td>
+
+                            <!-- Amount -->
+                            <td>
+                                <span style="font-size:13px; font-weight:700; color:#1a0a00;">₹{{ i.total }}</span>
+                                {% if i.discount > 0 %}
+                                <span style="font-size:10px; color:#16a34a; display:block;">-₹{{ i.discount }} off</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Payment -->
+                            <td>
+                                {% if i.payment_method == 'razorpay' %}
+                                <span class="status-pill" style="background:#eff6ff; color:#2563eb;">Razorpay</span>
+                                {% else %}
+                                <span class="status-pill" style="background:#fef3c7; color:#d97706;">COD</span>
+                                {% endif %}
+                                <span class="d-block" style="font-size:10px; margin-top:3px;
+                                    {% if i.payment_status == 'paid' %}color:#16a34a;
+                                    {% elif i.payment_status == 'pending' %}color:#d97706;
+                                    {% else %}color:#dc2626;{% endif %}
+                                    font-weight:600;">
+                                    {{ i.payment_status|title }}
+                                </span>
+                            </td>
+
+                            <!-- Status -->
+                            <td>
+                                {% if i.status == 'pending' %}
+                                <span class="status-pill" style="background:#fef3c7; color:#d97706;">Pending</span>
+                                {% elif i.status == 'paid' %}
+                                <span class="status-pill" style="background:#ede9fe; color:#7c3aed;">Paid</span>
+                                {% elif i.status == 'processing' %}
+                                <span class="status-pill" style="background:#e0f2fe; color:#0891b2;">Processing</span>
+                                {% elif i.status == 'ready_for_pickup' %}
+                                <span class="status-pill" style="background:#fff7ed; color:#ea580c;">Ready for Pickup</span>
+                                {% elif i.status == 'shipped' %}
+                                <span class="status-pill" style="background:#dbeafe; color:#2563eb;">Shipped</span>
+                                {% elif i.status == 'out_for_delivery' %}
+                                <span class="status-pill" style="background:#fdf4ff; color:#a21caf;">Out for Delivery</span>
+                                {% elif i.status == 'delivered' %}
+                                <span class="status-pill" style="background:#dcfce7; color:#16a34a;">Delivered</span>
+                                {% elif i.status == 'cancelled' %}
+                                <span class="status-pill" style="background:#fee2e2; color:#dc2626;">Cancelled</span>
+                                {% elif i.status == 'return_requested' %}
+                                <span class="status-pill" style="background:#fce7f3; color:#be185d;">Return Requested</span>
+                                {% elif i.status == 'returned' %}
+                                <span class="status-pill" style="background:#f3e8ff; color:#7c3aed;">Returned</span>
+                                {% elif i.status == 'refunded' %}
+                                <span class="status-pill" style="background:#fee2e2; color:#dc2626;">Refunded</span>
+                                {% elif i.status == 'payment_failed' %}
+                                <span class="status-pill" style="background:#fee2e2; color:#dc2626;">Payment Failed</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Date -->
+                            <td style="font-size:12px; color:#888;">
+                                {{ i.created_at|date:"d M Y" }}
+                                <span class="d-block" style="font-size:11px; color:#bbb;">{{ i.created_at|date:"h:i A" }}</span>
+                            </td>
+
+                            <!-- Action -->
+                            <td>
+                                <a href="/order_detail/{{ i.id }}" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="View Order Details">
+                                    <i class="mdi mdi-eye fs-16 align-middle"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-5">No orders found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if orders.has_other_pages %}
+            <div class="d-flex align-items-center justify-content-between px-4 py-3" style="border-top:1px solid #f0ebe5;">
+                <p class="mb-0" style="font-size:12.5px; color:#888;">
+                    Showing {{ orders.start_index }}–{{ orders.end_index }} of {{ orders.paginator.count }} orders
+                </p>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0 gap-1">
+                        {% if orders.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.previous_page_number }}" style="border-radius:6px;">
+                                <i class="mdi mdi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% for num in orders.paginator.page_range %}
+                            {% if orders.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link" style="background:#c8882a; border-color:#c8882a; border-radius:6px;">{{ num }}</span>
+                            </li>
+                            {% elif num > orders.number|add:'-3' and num < orders.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}" style="border-radius:6px;">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if orders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.next_page_number }}" style="border-radius:6px;">
+                                <i class="mdi mdi-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock 'body' %}
