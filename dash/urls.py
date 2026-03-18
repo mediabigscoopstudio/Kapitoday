@@ -17,8 +17,8 @@ urlpatterns = [
     path("enable_category/<id>",views.enable_category,name='enable_category'),
     path("disable_category/<id>",views.disable_category,name='disable_category'),
     #Sub-Category Management 
-    path('sub_category_list', views.sub_category_list, name='sub_category_list'),
-    path('add_sub_category', views.add_sub_category, name='add_sub_category'),
+    path('sub_category_list/', views.sub_category_list, name='sub_category_list'),
+    path('add_sub_category/', views.add_sub_category, name='add_sub_category'),
     path('edit_sub_category/<int:pk>/', views.edit_sub_category, name='edit_sub_category'),
     path('enable_sub_category/<int:pk>/', views.enable_sub_category, name='enable_sub_category'),
     path('disable_sub_category/<int:pk>/', views.disable_sub_category, name='disable_sub_category'),
