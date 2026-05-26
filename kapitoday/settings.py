@@ -78,13 +78,13 @@ WSGI_APPLICATION = "kapitoday.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "kapi_db",
-        "USER": "minaketan",
-        "PASSWORD": "Mina@2001",
-        "HOST": "127.0.0.1",
-        "PORT": "5432",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'kapi_db',
+        'USER': 'amit_winner',
+        'PASSWORD': 'I_Win#_26',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
