@@ -81,8 +81,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'kapi_db',
-        'USER': 'amit_winner',
-        'PASSWORD': 'I_Win#_26',
+        'USER': 'minaketan',
+        'PASSWORD': 'Mina@2001',
         'HOST': 'localhost',
         'PORT': '5432',
     }
