@@ -6,7 +6,7 @@ from django.utils import timezone
 
 class Customers(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer_account')
-    phone_number = models.CharField(max_length=15, unique=True)
+    phone_number = models.CharField(max_length=15, unique=True, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     address = models.TextField(blank=True)
     is_verified = models.BooleanField(default=False)

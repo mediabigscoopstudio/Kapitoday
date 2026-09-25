@@ -97,11 +97,9 @@ from dash.models import Product, Variant, Cart, CartItem, Customers
 def _get_or_create_cart(request):
     cart = None
     if request.user.is_authenticated:
-        try:
-            customer = Customers.objects.get(user=request.user)
-            cart, _ = Cart.objects.get_or_create(customer=customer)
-        except Customers.DoesNotExist:
-            pass
+        from dash.models import Customers, Cart
+        customer, _ = Customers.objects.get_or_create(user=request.user)
+        cart, _ = Cart.objects.get_or_create(customer=customer)
     
     if not cart:
         if not request.session.session_key:
@@ -236,6 +234,31 @@ def google_login(request):
                 'first_name': first_name,
                 'last_name': last_name,
             })
+            
+            # Ensure Customer object exists
+            from dash.models import Customers, Cart, CartItem
+            customer, _ = Customers.objects.get_or_create(user=user)
+            
+            # Transfer session cart if exists
+            session_key = request.session.session_key
+            if session_key:
+                session_cart = Cart.objects.filter(session_key=session_key).first()
+                if session_cart:
+                    customer_cart = Cart.objects.filter(customer=customer).first()
+                    if customer_cart and customer_cart != session_cart:
+                        # Merge session cart items into customer cart
+                        for item in session_cart.items.all():
+                            existing_item = customer_cart.items.filter(product=item.product, variant=item.variant).first()
+                            if existing_item:
+                                existing_item.quantity += item.quantity
+                                existing_item.save()
+                            else:
+                                item.cart = customer_cart
+                                item.save()
+                        session_cart.delete()
+                    else:
+                        session_cart.customer = customer
+                        session_cart.save()
             
             # Send welcome email if created
             if created:
