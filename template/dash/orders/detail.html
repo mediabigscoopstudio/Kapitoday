@@ -11,7 +11,7 @@
     }
 
     .detail-page { display: flex; gap: 24px; align-items: flex-start; }
-    .detail-main { flex: 1; min-width: 0; }
+    .detail-main { flex: 1; min-width: 0; max-width: 100%; overflow: hidden; }
     .detail-sidebar { width: 280px; flex-shrink: 0; position: sticky; top: 80px; }
 
     /* ── BLOCKS ── */
@@ -100,6 +100,7 @@
         border-bottom: 2px solid #f0ebe5;
     }
     .items-table td {
+        white-space: nowrap;
         padding: 14px 12px;
         font-size: 13px;
         border-bottom: 1px solid #f5f5f5;
@@ -357,7 +358,7 @@
                                 <td style="font-weight:600;">₹{{ item.price }}</td>
                                 <td style="color:#888;">{{ item.gst }}%</td>
                                 <td>
-                                    <span style="background:#f0ebe5; color:#6b3a1f; font-weight:700; font-size:12px; padding:3px 10px; border-radius:20px;">
+                                    <span style="background:#f0ebe5; color:#6b3a1f; font-weight:700; font-size:12px; padding:3px 10px; border-radius:20px; white-space: nowrap;">
                                         × {{ item.quantity }}
                                     </span>
                                 </td>
