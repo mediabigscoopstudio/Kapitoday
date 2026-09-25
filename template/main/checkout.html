@@ -11,14 +11,16 @@
 <style>
 .checkout-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
 .checkout-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; }
-@media (max-width: 768px) {
-    .checkout-grid { grid-template-columns: 1fr; }
+@media (max-width: 992px) {
+    .checkout-grid { grid-template-columns: 1fr; gap: 25px; }
+    .checkout-section { padding: 20px; }
+    .city-state-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
 }
-.checkout-section { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.checkout-section { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-width: 0; max-width: 100%; }
 .checkout-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 25px; color: var(--text-color); }
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; color: #555; }
-.form-control { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; }
+.form-control { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; box-sizing: border-box; }
 .form-control:focus { outline: none; border-color: var(--primary-color); }
 .order-summary-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
 .order-summary-item:last-child { border-bottom: none; }
@@ -31,7 +33,7 @@
 .pay-btn { display: block; width: 100%; padding: 15px; background: var(--primary-color, #a67c52); color: #fff; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 30px; transition: opacity 0.2s; }
 .pay-btn:hover { opacity: 0.9; }
 
-.coupon-marquee-wrapper { overflow: hidden; white-space: nowrap; position: relative; width: 100%; margin: 20px 0; }
+.coupon-marquee-wrapper { overflow: hidden; white-space: nowrap; position: relative; width: 100%; margin: 20px 0; max-width: 100%; }
 .coupon-marquee-track { display: inline-flex; animation: marquee 20s linear infinite; gap: 15px; }
 .coupon-marquee-wrapper:hover .coupon-marquee-track { animation-play-state: paused; }
 @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(calc(-50% - 7.5px)); } }
@@ -44,7 +46,7 @@
 .address-pills { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; }
 .address-pills::-webkit-scrollbar { height: 4px; }
 .address-pills::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
-.address-pill { border: 1px solid #ddd; padding: 12px; border-radius: 8px; cursor: pointer; min-width: 220px; font-size: 0.85rem; color: #555; background: #fff; transition: all 0.2s; }
+.address-pill { border: 1px solid #ddd; padding: 12px; border-radius: 8px; cursor: pointer; min-width: 220px; font-size: 0.85rem; color: #555; background: #fff; transition: all 0.2s; white-space: normal; }
 .address-pill:hover, .address-pill.active { border-color: #a67c52; background: #fdfaf4; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .address-pill b { display: block; margin-bottom: 4px; font-size: 0.95rem; color: #333; }
 </style>
@@ -82,7 +84,7 @@
                     <label>Address Line 2 (Optional)</label>
                     <input type="text" class="form-control" name="address_line_2" placeholder="Locality, Landmark">
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="city-state-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="form-group">
                         <label>City</label>
                         <input type="text" class="form-control" name="city" required>
