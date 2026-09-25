@@ -252,11 +252,27 @@
     .timeline-sub   { font-size: 11px; color: #bbb; margin-top: 1px; }
 
     @media (max-width: 991px) {
-        .detail-page { flex-direction: column; }
+        .detail-page { flex-direction: column; padding-bottom: 320px; }
         .detail-sidebar { width: 100%; position: relative; top: 0; }
         
         .order-header { flex-direction: column; align-items: flex-start; }
         .order-header .text-end { text-align: left !important; margin-top: 15px; }
+        
+        .floating-actions-mobile {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 0 !important;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -8px 24px rgba(0,0,0,0.12);
+            z-index: 1050;
+            max-height: 55vh;
+            overflow-y: auto;
+            border-bottom: none;
+            border-left: none;
+            border-right: none;
+        }
     }
 </style>
 
@@ -601,7 +617,7 @@
         <div class="detail-sidebar">
 
             <!-- Actions -->
-            <div class="sblock">
+            <div class="sblock floating-actions-mobile">
                 <div class="sblock-head">Order Actions</div>
                 <div class="sblock-body">
 
