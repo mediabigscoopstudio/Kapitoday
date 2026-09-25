@@ -668,7 +668,24 @@ def fc_verify_payment(request):
                 if 'discount_amt' in request.session:
                     del request.session['discount_amt']
                 
-                # We could send email here if we want, ignoring for brevity of the API
+                # Send confirmation email
+                try:
+                    from django.core.mail import EmailMultiAlternatives
+                    from django.template.loader import render_to_string
+                    from django.conf import settings
+                    base_url = request.build_absolute_uri('/')[:-1]
+                    html_content = render_to_string('emails/order_confirmation.html', {'order': order, 'base_url': base_url})
+                    msg = EmailMultiAlternatives('Order Confirmation - Kapi Today', 'Your order is confirmed!', settings.DEFAULT_FROM_EMAIL, [order.email])
+                    msg.attach_alternative(html_content, "text/html")
+                    msg.send(fail_silently=False)
+                    
+                    # Send tracking email immediately as requested
+                    track_html = render_to_string('emails/track_order.html', {'order': order, 'base_url': base_url})
+                    msg2 = EmailMultiAlternatives('Track Your Kapi Today Order', 'Track your coffee order!', settings.DEFAULT_FROM_EMAIL, [order.email])
+                    msg2.attach_alternative(track_html, "text/html")
+                    msg2.send(fail_silently=False)
+                except Exception as e:
+                    print("Order email failed:", e)
                 
                 return JsonResponse({'success': True, 'order_db_id': order.id})
             except Exception as e:
