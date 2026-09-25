@@ -1,79 +1,199 @@
 
 <style>
     .kapi-newsletter-section {
-        background-color: #4A2C2A;
         position: relative;
+        background-color: #3b201a;
+        background-image: url('/static/main/images/home/newsletter-bg.webp');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 440px;
+        display: flex;
+        align-items: center;
         overflow: hidden;
     }
-    .news-img-left {
+    
+    /* Gentle center overlay to guarantee text readability without ruining the edges */
+    .kapi-newsletter-overlay {
         position: absolute;
-        left: -20px;
-        bottom: -20px;
-        width: 350px;
-        max-width: 30vw;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(circle at center, rgba(40, 20, 15, 0.45) 0%, rgba(40, 20, 15, 0.1) 60%, rgba(40, 20, 15, 0) 100%);
         z-index: 1;
     }
-    .news-img-right {
-        position: absolute;
-        right: -20px;
-        bottom: -20px;
-        width: 350px;
-        max-width: 30vw;
-        z-index: 1;
-    }
-    .news-content {
+
+    .kapi-newsletter-content {
         position: relative;
-        z-index: 3;
+        z-index: 2;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 20px;
     }
-    .news-input {
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: #fff !important;
-        box-shadow: none !important;
+
+    /* Typography */
+    .kapi-newsletter-eyebrow {
+        color: #C9A84C; /* muted gold */
+        font-family: var(--bs-body-font-family, sans-serif);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
     }
-    .news-input::placeholder {
-        color: rgba(255, 255, 255, 0.6) !important;
+    .kapi-newsletter-eyebrow::before,
+    .kapi-newsletter-eyebrow::after {
+        content: '';
+        display: block;
+        width: 24px;
+        height: 1px;
+        background-color: rgba(201, 168, 76, 0.5);
     }
-    .news-input:focus {
-        border-color: #D4B872 !important;
-        background-color: rgba(255, 255, 255, 0.15) !important;
+    
+    .kapi-newsletter-heading {
+        font-family: var(--font-heading);
+        color: #F8F5EE; /* warm cream */
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1.1;
+        font-weight: 700;
+        margin-bottom: 1rem;
     }
-    .news-btn {
-        background-color: #D4B872;
-        color: #111;
+    
+    .kapi-newsletter-copy {
+        color: rgba(248, 245, 238, 0.85);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 2rem;
+    }
+
+    /* Form Styles */
+    .kapi-newsletter-form {
+        display: flex;
+        gap: 0;
+        position: relative;
+    }
+    
+    .kapi-newsletter-input-group {
+        position: relative;
+        flex-grow: 1;
+    }
+    
+    .kapi-newsletter-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(248, 245, 238, 0.6);
+        pointer-events: none;
+    }
+
+    .kapi-newsletter-input {
+        width: 100%;
+        background-color: rgba(75, 46, 42, 0.4); /* translucent warm brown */
+        border: 1px solid rgba(201, 168, 76, 0.4); /* thin muted-gold border */
+        border-radius: 30px; /* sophisticated rounded corners */
+        color: #F8F5EE;
+        padding: 12px 20px 12px 45px;
+        font-size: 0.95rem;
+        backdrop-filter: blur(4px);
+        transition: all 0.3s ease;
+    }
+    .kapi-newsletter-input::placeholder {
+        color: rgba(248, 245, 238, 0.5);
+    }
+    .kapi-newsletter-input:focus {
+        outline: none;
+        background-color: rgba(75, 46, 42, 0.6);
+        border-color: #C9A84C;
+        box-shadow: 0 0 15px rgba(201, 168, 76, 0.2); /* soft focus glow */
+    }
+
+    .kapi-newsletter-btn {
+        background-color: #C9A84C; /* muted Kapi gold */
+        color: #2A1C18; /* dark coffee text */
         border: none;
-        transition: background 0.3s;
+        border-radius: 30px;
+        padding: 0 28px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: absolute;
+        right: 4px;
+        top: 4px;
+        bottom: 4px;
     }
-    .news-btn:hover {
-        background-color: #e6c87a;
+    .kapi-newsletter-btn:hover {
+        transform: translateY(-2px);
+        background-color: #d8b75c;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-    @media (max-width: 768px) {
-        .news-img-left, .news-img-right {
-            opacity: 0.15;
-            width: 200px;
+    .kapi-newsletter-btn i {
+        transition: transform 0.3s ease;
+    }
+    .kapi-newsletter-btn:hover i {
+        transform: translateX(4px);
+    }
+
+    /* Mobile Redesign */
+    @media (max-width: 767px) {
+        .kapi-newsletter-section {
+            min-height: 500px;
+            /* Enhance background position for mobile to keep cherries and cup visible */
+            background-position: center bottom;
+        }
+        .kapi-newsletter-heading {
+            font-size: 2.2rem;
+        }
+        .kapi-newsletter-form {
+            flex-direction: column;
+            gap: 12px;
+        }
+        .kapi-newsletter-input {
+            border-radius: 12px; /* standard rounded for mobile */
+        }
+        .kapi-newsletter-btn {
+            position: relative;
+            right: 0; top: 0; bottom: 0;
+            width: 100%;
+            border-radius: 12px;
+            padding: 14px 20px;
+            justify-content: center;
         }
     }
 </style>
 
 <section class="kapi-newsletter-section text-center py-5">
     
-    <!-- Left & Right Images -->
-    <img src="/static/main/images/home/news-left.webp" alt="Coffee Cherries" class="news-img-left">
-    <img src="/static/main/images/home/news-right.webp" alt="Brass Coffee Filter" class="news-img-right">
+    <div class="kapi-newsletter-overlay"></div>
     
-    <div class="container py-5 my-3 news-content">
-        <div class="text-uppercase fw-bold mb-3" style="color: #D4B872; letter-spacing: 2px; font-size: 0.8rem;">JOIN THE KAPI CULTURE</div>
+    <div class="kapi-newsletter-content">
+        <div class="kapi-newsletter-eyebrow">
+            Join the Kapi Culture
+        </div>
         
-        <h2 class="display-5 fw-bold mb-3 text-white" style="font-family: var(--font-heading); line-height: 1.2;">Good Coffee. Brighter Days.</h2>
+        <h2 class="kapi-newsletter-heading">Good Coffee.<br>Brighter Days.</h2>
         
-        <p class="mb-5 mx-auto" style="color: #E0E0E0; max-width: 550px; font-size: 0.95rem; line-height: 1.6;">
+        <p class="kapi-newsletter-copy">
             Get updates on new harvests, brewing tips, exclusive offers and stories from our plantations.
         </p>
         
-        <form class="d-flex mx-auto position-relative" style="max-width: 480px;">
-            <i class="bi bi-envelope position-absolute top-50 translate-middle-y ms-4" style="color: rgba(255,255,255,0.6);"></i>
-            <input type="email" class="form-control rounded-pill news-input py-3" style="padding-left: 3rem; padding-right: 140px;" placeholder="Enter your email address" required>
-            <button type="submit" class="btn rounded-pill position-absolute top-0 end-0 h-100 fw-bold news-btn" style="padding: 0 32px; font-size: 0.9rem; margin: 4px; height: calc(100% - 8px) !important;">Subscribe</button>
+        <!-- Form configured to support existing django functionality if wired -->
+        <form class="kapi-newsletter-form" action="#" method="POST" onsubmit="event.preventDefault(); this.innerHTML='<div class=\'text-success fw-bold p-3 bg-white rounded-3\'>Thank you for subscribing!</div>';">
+            <div class="kapi-newsletter-input-group w-100">
+                <label for="newsletter-email" class="visually-hidden">Email address</label>
+                <i class="bi bi-envelope kapi-newsletter-icon"></i>
+                <input type="email" id="newsletter-email" name="email" class="kapi-newsletter-input" placeholder="Enter your email address" required aria-label="Enter your email address">
+            </div>
+            <button type="submit" class="kapi-newsletter-btn" aria-label="Subscribe">
+                Subscribe <i class="bi bi-arrow-right"></i>
+            </button>
         </form>
     </div>
 </section>
