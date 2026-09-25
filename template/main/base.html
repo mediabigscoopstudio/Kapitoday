@@ -254,7 +254,7 @@
             <!-- STEP 1: CART -->
             <div id="fc-step-cart" class="fc-step-container active" style="padding: 20px; display:block;">
                 <div id="fc-cart-items-container">
-                    {% include 'main/partials/fc_cart_items.html' %}
+                    {% include 'main/partials/fc_cart_items.html' with cart_items=global_cart_items %}
                 </div>
             </div>
 

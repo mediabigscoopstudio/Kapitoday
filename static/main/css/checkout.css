@@ -5,6 +5,7 @@
     background-color: #fdfaf4; /* Warm cream */
     border-left: none;
     box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+    z-index: 1060 !important; /* Ensure it floats above sticky headers */
 }
 @media (max-width: 768px) {
     #fastCheckoutDrawer {

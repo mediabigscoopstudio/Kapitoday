@@ -35,7 +35,7 @@
         <img src="{% if rec.thumbnail %}{{ rec.thumbnail.url }}{% else %}{% static 'main/logos/LogoMain.webp' %}{% endif %}" style="width:60px; height:60px; object-fit:cover; border-radius:6px;" alt="{{ rec.name }}">
         <div style="flex:1;">
             <div style="font-weight:600; font-size:0.9rem; color:#3A2A1D;">{{ rec.name }}</div>
-            <div style="font-weight:700; color:#2a8b41; font-size:0.85rem;">₹{{ rec.price }}</div>
+            <div style="font-weight:700; color:#2a8b41; font-size:0.85rem;">₹{{ rec.product_variant.first.price|default:'---' }}</div>
         </div>
         <button onclick="fcAddRecommended('{{ rec.id }}')" style="background:#a67c52; color:#fff; border:none; width:30px; height:30px; border-radius:50%; font-weight:bold; cursor:pointer;">+</button>
     </div>

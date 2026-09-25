@@ -108,9 +108,9 @@ from django.http import JsonResponse
 from dash.models import Product, Variant, Cart, CartItem, Customers
 
 def _get_or_create_cart(request):
+    from dash.models import Customers, Cart
     cart = None
     if request.user.is_authenticated:
-        from dash.models import Customers, Cart
         customer, _ = Customers.objects.get_or_create(user=request.user)
         cart, _ = Cart.objects.get_or_create(customer=customer)
     
@@ -496,7 +496,7 @@ def fc_get_state(request):
     # Get up to 3 recommended products (random or latest)
     from dash.models import Product
     cart_product_ids = [item.product.id for item in cart_items]
-    recommended = Product.objects.filter(status='Enabled').exclude(id__in=cart_product_ids).order_by('?')[:3]
+    recommended = Product.objects.exclude(id__in=cart_product_ids).order_by('?')[:3]
     
     # Render the cart items HTML so we don't have to build it in JS
     cart_html = render_to_string('main/partials/fc_cart_items.html', {
