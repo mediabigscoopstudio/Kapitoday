@@ -680,7 +680,7 @@
         });
       }
 
-      window.onload = function () {
+      window.addEventListener('load', function () {
         // Only initialize if GOOGLE_CLIENT_ID is available (i.e., not logged in and configured)
         const clientId = '{{ GOOGLE_CLIENT_ID|escapejs }}';
         if (clientId) {
@@ -698,7 +698,7 @@
             });
           });
         }
-      };
+      });
     </script>
 </body>
 
