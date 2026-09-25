@@ -133,10 +133,14 @@ def _get_or_create_cart(request):
     return cart
 
 def shop(request, category_slug=None):
+    search_query = request.GET.get('q', '').strip()
     if category_slug:
         products = Product.objects.filter(category__slug=category_slug).prefetch_related('product_variant').order_by('-created_at')
     else:
         products = Product.objects.all().prefetch_related('product_variant').order_by('-created_at')
+        
+    if search_query:
+        products = products.filter(name__icontains=search_query)
     
     # Let's also attach the cart context so the drawer works
     cart = _get_or_create_cart(request)
