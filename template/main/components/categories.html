@@ -93,65 +93,31 @@
                 </div>
             </a>
             
-            <a href="/shop/single-origin/" class="category-item">
+            {% for cat in categories %}
+            <a href="/shop/category/{{ cat.slug }}/" class="category-item">
                 <div class="category-icon-wrapper">
-                    <img src="/static/main/images/home/roast-light.webp" alt="Single Origin">
+                    {% with prod=cat.product_category.first %}
+                        {% if cat.category_image %}
+                            <img src="{{ cat.category_image.url }}" alt="{{ cat.title }}">
+                        {% elif prod and prod.thumbnail %}
+                            <img src="{{ prod.thumbnail.url }}" alt="{{ cat.title }}">
+                        {% else %}
+                            <img src="/static/main/images/home/roast-dark.webp" alt="{{ cat.title }}">
+                        {% endif %}
+                    {% endwith %}
                 </div>
                 <div class="category-text-wrapper">
-                    <p class="category-title">Single Origin</p>
-                    <p class="category-subtitle">Estate Fresh</p>
+                    <p class="category-title">{{ cat.title|truncatechars:20 }}</p>
+                    <p class="category-subtitle">
+                        {% if cat.description %}
+                            {{ cat.description|striptags|truncatechars:20 }}
+                        {% else %}
+                            Explore
+                        {% endif %}
+                    </p>
                 </div>
             </a>
-            
-            <a href="/shop/south-indian/" class="category-item">
-                <div class="category-icon-wrapper">
-                    <img src="/static/main/images/home/brew-1.webp" alt="South Indian">
-                </div>
-                <div class="category-text-wrapper">
-                    <p class="category-title">South Indian</p>
-                    <p class="category-subtitle">Traditional</p>
-                </div>
-            </a>
-            
-            <a href="/shop/instant-coffee/" class="category-item">
-                <div class="category-icon-wrapper">
-                    <img src="/static/main/images/home/brew-2.webp" alt="Instant Coffee">
-                </div>
-                <div class="category-text-wrapper">
-                    <p class="category-title">Instant Coffee</p>
-                    <p class="category-subtitle">Quick & Rich</p>
-                </div>
-            </a>
-            
-            <a href="/shop/nespresso-pods/" class="category-item">
-                <div class="category-icon-wrapper">
-                    <img src="/static/main/images/home/brew-4.webp" alt="Nespresso Pods">
-                </div>
-                <div class="category-text-wrapper">
-                    <p class="category-title">Nespresso Pods</p>
-                    <p class="category-subtitle">Convenience</p>
-                </div>
-            </a>
-
-            <a href="/shop/ground-coffee/" class="category-item">
-                <div class="category-icon-wrapper">
-                    <img src="/static/main/images/home/roast-malabar.webp" alt="Ground Coffee">
-                </div>
-                <div class="category-text-wrapper">
-                    <p class="category-title">Ground Coffee</p>
-                    <p class="category-subtitle">Everyday Brew</p>
-                </div>
-            </a>
-
-            <a href="/shop/equipments/" class="category-item">
-                <div class="category-icon-wrapper">
-                    <img src="/static/main/images/home/roast-dark.webp" alt="Equipments">
-                </div>
-                <div class="category-text-wrapper">
-                    <p class="category-title">Equipments</p>
-                    <p class="category-subtitle">Brew Better</p>
-                </div>
-            </a>
+            {% endfor %}
             
         </div>
     </div>
