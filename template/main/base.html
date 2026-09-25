@@ -32,6 +32,7 @@
 {% block 'body' %}
         
       {% endblock 'body' %}
+    {% include 'main/components/footer.html' %}
       
     </main>
 
@@ -39,97 +40,7 @@
     <!-- ============================
          FOOTER
          ============================ -->
-    <footer class="footer-kapi">
-      <div class="footer-top-border"></div>
-
-      <div class="footer-main">
-        <div class="container">
-          <div class="row g-4 g-lg-5">
-
-            <!-- Column 1: About -->
-            <div class="col-lg-4 col-md-6">
-              <div class="footer-about">
-                <div class="footer-logo">
-                  <a href="/">
-                    <img src="/static/main/logos/LogoDark.webp" alt="Kapi Today" style="height: 100px;">
-                  </a>
-                </div>
-                <p>Authentic, artisanal, estate-grown specialty coffee from the Western Ghats of South India. Every cup tells the story of our land, our farmers, and our heritage.</p>
-                <div class="footer-social">
-                  <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-                  <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-                  <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
-                  <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
-                </div>
-              </div>
-            </div>
-
-            <!-- Column 2: Quick Links -->
-            <div class="col-lg-2 col-md-6">
-              <h5>Quick Links</h5>
-              <ul class="footer-links">
-                <li><a href="/shop">Shop Coffee</a></li>
-                <li><a href="/about">Our Story</a></li>
-                <li><a href="/learn">Brew Guides</a></li>
-                <li><a href="/content">Our Content</a></li>
-                <li><a href="/support">Contact Us</a></li>
-              </ul>
-            </div>
-
-            <!-- Column 3: Coffee Origins -->
-            <div class="col-lg-2 col-md-6">
-              <h5>Our Categories</h5>
-              <ul class="footer-links">
-                {% for cat in nav_categories %}
-                <li><a href="{% url 'shop_category' category_slug=cat.slug %}">{{ cat.title }}</a></li>
-                {% endfor %}
-              </ul>
-            </div>
-
-            <!-- Column 4: Newsletter -->
-            <div class="col-lg-4 col-md-6">
-              <h5>Stay Brewed</h5>
-              <p style="font-size:var(--text-sm);color:var(--kapi-sand);margin-bottom:var(--space-lg);">
-                Join our newsletter for brew tips, new arrivals, and stories from the plantations.
-              </p>
-              <div class="footer-newsletter">
-                <div class="input-group">
-                  <input type="email" class="form-control" placeholder="Your email address" aria-label="Email">
-                  <button class="btn-subscribe" type="button">Subscribe</button>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- Bottom Bar -->
-      <div class="footer-bottom">
-        <div class="container">
-          <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-            <p>© 2026 Kapi Today. All rights reserved.</p>
-            <div class="d-flex gap-3 align-items-center flex-wrap justify-content-center">
-              <a href="#">Privacy Policy</a>
-              <a href="#">Terms of Service</a>
-              <a href="#">Shipping &amp; Returns</a>
-              <!-- Pinecode Studio Credit -->
-              <button
-                class="pinecode-credit"
-                id="pinecodeCreditBtn"
-                type="button"
-                aria-haspopup="dialog"
-                aria-expanded="false"
-                aria-controls="pinecodeModal"
-              >
-                <span class="pc-dot" aria-hidden="true"></span>
-                Designed &amp; Developed by <span class="pc-name">Pinecode Studio</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
+    
 
   <!-- ==========================================
        PINECODE STUDIO — PROMOTIONAL MODAL

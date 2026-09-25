@@ -1,0 +1,61 @@
+
+<section class="kapi-origins-video position-relative" style="background-color: var(--kapi-plantation-dark, #1B3A28); color: #fff; overflow: hidden; min-height: 600px;">
+    <!-- Background Video / Image -->
+    <picture>
+        <source media="(max-width: 767px)" srcset="/static/main/images/home/origins-poster.webp">
+        <img src="/static/main/images/home/origins-poster.webp" alt="Western Ghats Coffee Origins" class="position-absolute w-100 h-100 object-fit-cover opacity-50 z-1" loading="lazy">
+    </picture>
+    <video autoplay loop muted playsinline class="position-absolute w-100 h-100 object-fit-cover opacity-50 z-1 d-none d-md-block" style="pointer-events: none;" preload="none" id="originsVideo">
+        <source src="/static/main/images/home/origins.mp4" type="video/mp4">
+    </video>
+    
+    <div class="position-absolute w-100 h-100 z-2" style="background: linear-gradient(to right, rgba(27,58,40,0.9) 0%, rgba(27,58,40,0.6) 50%, rgba(27,58,40,0.2) 100%);"></div>
+
+    <div class="container position-relative z-3 py-5 h-100 d-flex flex-column justify-content-center" style="min-height: 600px;">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="text-gold text-uppercase fw-bold mb-3" style="letter-spacing: 1.5px; font-size: 0.8rem;">OUR ORIGINS</div>
+                <h2 class="display-4 fw-bold mb-4" style="font-family: var(--font-heading);">From the Mist-Covered<br>Slopes of the<br>Western Ghats</h2>
+                <p class="mb-5 text-white-50 fs-5" style="line-height: 1.6; max-width: 480px;">
+                    Our coffee comes from small farms, rich soils and people who have nurtured this land for generations. Taste a richer, more meaningful cup.
+                </p>
+                
+                <div class="row g-4 mb-5">
+                    <div class="col-4">
+                        <div class="text-gold fw-bold display-6">5</div>
+                        <div class="text-white-50 small text-uppercase">Regions</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-gold fw-bold display-6">1,200+</div>
+                        <div class="text-white-50 small text-uppercase">Smallholder Farmers</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-gold fw-bold display-6">100%</div>
+                        <div class="text-white-50 small text-uppercase">Indian Grown</div>
+                    </div>
+                </div>
+                
+                <a href="/about" class="btn btn-warning rounded-pill px-4 py-3 fw-bold" style="background-color: var(--kapi-gold-accent); border: none; color: var(--kapi-espresso);">
+                    <i class="bi bi-play-fill fs-5 align-middle me-1"></i> Watch Our Story &rarr;
+                </a>
+            </div>
+            
+            <div class="col-lg-5 offset-lg-1 d-none d-lg-flex flex-column justify-content-center">
+                <ul class="list-unstyled d-flex flex-column gap-4 mt-5">
+                    <li class="d-flex align-items-center gap-3">
+                        <i class="bi bi-check-circle-fill text-gold fs-4"></i>
+                        <span class="fs-5 fw-bold">Sustainable Farming</span>
+                    </li>
+                    <li class="d-flex align-items-center gap-3">
+                        <i class="bi bi-check-circle-fill text-gold fs-4"></i>
+                        <span class="fs-5 fw-bold">Fair Trade Practices</span>
+                    </li>
+                    <li class="d-flex align-items-center gap-3">
+                        <i class="bi bi-check-circle-fill text-gold fs-4"></i>
+                        <span class="fs-5 fw-bold">Supporting Local Communities</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>

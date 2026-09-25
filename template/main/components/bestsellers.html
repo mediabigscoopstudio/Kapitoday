@@ -1,0 +1,79 @@
+
+<section class="kapi-bestsellers-section py-5 bg-white">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5">
+            <div>
+                <div class="text-gold fw-bold text-uppercase mb-2" style="letter-spacing: 1px; font-size: 0.8rem;">FRESHLY ROASTED</div>
+                <h2 class="display-6 fw-bold mb-2" style="font-family: var(--font-heading); color: var(--kapi-espresso);">Our Bestsellers</h2>
+                <p class="text-muted mb-0">Loved by coffee drinkers across India. Discover your perfect cup.</p>
+            </div>
+            <div class="mt-3 mt-md-0 d-flex align-items-center gap-3">
+                <a href="/shop" class="text-dark fw-bold text-decoration-none">View All Products &rarr;</a>
+                <div class="d-none d-md-flex gap-2">
+                    <button class="btn btn-outline-dark rounded-circle" style="width: 40px; height: 40px; padding: 0;"><i class="bi bi-chevron-left"></i></button>
+                    <button class="btn btn-outline-dark rounded-circle" style="width: 40px; height: 40px; padding: 0;"><i class="bi bi-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 flex-nowrap overflow-auto bestsellers-scroll" style="scrollbar-width: none;">
+            {% for p in bestseller_products %}
+            <div class="col-10 col-md-6 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm kapi-product-card rounded-4 overflow-hidden">
+                    <div class="position-relative">
+                        {% if p.thumbnail %}
+                        <img src="{{ p.thumbnail.url }}" class="card-img-top object-fit-cover" alt="{{ p.name }}" style="height: 250px;">
+                        {% else %}
+                        <div class="bg-light" style="height: 250px;"></div>
+                        {% endif %}
+                        <!-- Badges -->
+                        <div class="position-absolute top-0 start-0 m-3">
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Bestseller</span>
+                        </div>
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <button class="btn btn-light rounded-circle shadow-sm" style="width: 35px; height: 35px; padding: 0;"><i class="bi bi-heart"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column">
+                        <h5 class="card-title fw-bold" style="color: var(--kapi-espresso); font-family: var(--font-heading); font-size: 1.1rem;">{{ p.name }}</h5>
+                        <p class="card-text text-muted small mb-2">{{ p.category.title }} &bull; 100% Arabica</p>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.8rem;"></i>
+                            <span class="fw-bold small me-1">4.8</span>
+                            <span class="text-muted small">(150)</span>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="fs-5 fw-bold text-dark" id="price_display_{{ p.id }}">
+                                {% if p.product_variant.first %}₹{{ p.product_variant.first.price }}{% else %}N/A{% endif %}
+                            </span>
+                            <span class="text-muted text-decoration-line-through small">₹499</span>
+                            <span class="badge bg-danger rounded-pill">20% OFF</span>
+                        </div>
+
+                        <form action="/add_to_cart/{{ p.id }}/" method="POST" class="mt-auto">
+                            {% csrf_token %}
+                            <!-- Variant Selector -->
+                            {% if p.product_variant.all %}
+                            <div class="d-flex gap-2 mb-3 variant-selector-pills">
+                                {% for v in p.product_variant.all %}
+                                <input type="radio" class="btn-check" name="variant_id" id="v_{{ p.id }}_{{ v.id }}" autocomplete="off" value="{{ v.id }}" {% if forloop.first %}checked{% endif %} onchange="document.getElementById('price_display_{{ p.id }}').innerText = '₹{{ v.price }}';">
+                                <label class="btn btn-outline-secondary rounded-pill py-1 px-3 flex-fill text-center" style="font-size: 0.85rem;" for="v_{{ p.id }}_{{ v.id }}">{{ v.name }}</label>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <input type="hidden" name="quantity" value="1">
+                            
+                            <button type="submit" class="btn btn-dark w-100 rounded-pill py-2 fw-bold" style="background-color: var(--kapi-plantation-dark); border: none;" {% if not p.product_variant.all %}disabled{% endif %}>
+                                <i class="bi bi-bag me-1"></i> Add to Cart
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>

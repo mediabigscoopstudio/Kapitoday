@@ -147,12 +147,137 @@
         justify-content: center;
     }
 }
+
+/* ==========================================
+   STAGE 4: CATEGORY & STORY
+   ========================================== */
+.category-strip-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+}
+.category-strip-container::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+}
+.category-strip {
+    display: flex;
+    gap: 20px;
+    padding-bottom: 10px;
+}
+.category-card {
+    text-align: center;
+    text-decoration: none;
+    flex: 0 0 auto;
+    width: 100px;
+}
+.category-img-wrapper {
+    width: 90px;
+    height: 90px;
+    border-radius: 24px; /* Squircle look */
+    overflow: hidden;
+    margin: 0 auto 10px;
+    background-color: var(--kapi-cream-warm, #F5EDE0);
+    transition: transform 0.3s;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+.category-card:hover .category-img-wrapper {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.category-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.category-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--kapi-cream-dark, #EBE0D0);
+}
+.category-name {
+    color: var(--kapi-espresso);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.kapi-story-card {
+    background-color: var(--kapi-cream, #FAF6F0);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+}
+.kapi-story-image img {
+    min-height: 400px;
+}
+
+
+/* ==========================================
+   STAGE 5: BESTSELLERS
+   ========================================== */
+.bestsellers-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 20px;
+}
+.bestsellers-scroll::-webkit-scrollbar {
+    display: none;
+}
+.kapi-product-card {
+    transition: transform 0.3s;
+}
+.kapi-product-card:hover {
+    transform: translateY(-5px);
+}
+.variant-selector-pills .btn-check:checked + .btn-outline-secondary {
+    background-color: var(--kapi-plantation-dark, #1B3A28);
+    color: #fff;
+    border-color: var(--kapi-plantation-dark, #1B3A28);
+}
+.variant-selector-pills .btn-outline-secondary {
+    border-color: #dee2e6;
+    color: var(--kapi-espresso);
+}
+
+
+/* ==========================================
+   STAGE 6-8: ROAST, BREW, ORIGINS
+   ========================================== */
+.roast-card {
+    transition: all 0.3s ease;
+}
+.roast-card:hover {
+    background: rgba(255,255,255,0.1) !important;
+    transform: translateX(10px);
+}
+.brew-card img {
+    transition: transform 0.4s ease;
+}
+.brew-card:hover img {
+    transform: scale(1.05);
+}
+
 </style>
 {% endblock 'css' %}
 
 {% block 'body' %}
     {% include 'main/components/hero.html' %}
     
-    <!-- Stage 4-11 components will go here -->
+    
+    {% include 'main/components/categories.html' %}
+    {% include 'main/components/story.html' %}
+
+    
+    {% include 'main/components/bestsellers.html' %}
+
+    
+    {% include 'main/components/roast_spectrum.html' %}
+    {% include 'main/components/brew_methods.html' %}
+    {% include 'main/components/origins_video.html' %}
+
+    
+    {% include 'main/components/testimonials.html' %}
+    {% include 'main/components/community.html' %}
+    {% include 'main/components/newsletter.html' %}
+
     
 {% endblock 'body' %}

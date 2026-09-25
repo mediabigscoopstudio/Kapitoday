@@ -17,7 +17,12 @@ from dash.models import ArticleCategory, Author, Article, ArticleFAQ, ArticleHow
 
 
 def index(request):
-    from dash.models import Product
+    from dash.models import Product, Category
+    
+    # 1. Categories for Category Strip
+    categories = Category.objects.filter(status='Enabled')[:8]
+    
+    # 2. Bestseller Products (Eagerly fetch variants to prevent N+1 queries)
     bestseller_names = [
         'Kapi Today Araku Valley Medium Roast',
         'Kapi Today Chikmagalur Medium Roast',
@@ -26,11 +31,15 @@ def index(request):
     ]
     bestseller_products = []
     for name in bestseller_names:
-        prod = Product.objects.filter(name__icontains=name.replace('Kapi Today ', '')).first()
+        prod = Product.objects.prefetch_related('product_variant').filter(name__icontains=name.replace('Kapi Today ', '')).first()
         if prod:
             bestseller_products.append(prod)
     
-    return render(request, 'main/index.html', {'bestseller_products': bestseller_products})
+    context = {
+        'categories': categories,
+        'bestseller_products': bestseller_products,
+    }
+    return render(request, 'main/index.html', context)
 
 def about(request):
     return render(request, 'main/about.html')
