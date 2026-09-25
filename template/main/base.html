@@ -48,7 +48,7 @@
     <!-- ============================
          UTILITY BAR (Account + Cart) — Desktop
          ============================ -->
-    <div class="utility-bar desktop-nav">
+    <div class="utility-bar desktop-nav" style="position: relative; z-index: 1050;">
       <div class="container">
         <div class="d-flex justify-content-end align-items-center gap-4">
           {% if request.user.is_authenticated %}
@@ -173,7 +173,15 @@
 
       <div class="mobile-icons">
         {% if request.user.is_authenticated %}
-        <a href="/admin/" aria-label="Account Settings"><i class="bi bi-person-check-fill"></i></a>
+        <div class="dropdown" style="display:inline-block;">
+          <a href="#" aria-label="Account Settings" data-bs-toggle="dropdown"><i class="bi bi-person-check-fill"></i></a>
+          <ul class="dropdown-menu dropdown-menu-end" style="position:absolute;">
+            <li><h6 class="dropdown-header">Hi, {{ request.user.first_name }}</h6></li>
+            <li><a class="dropdown-item" href="#">My Orders</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+          </ul>
+        </div>
         {% else %}
         <a href="#" class="google-login-trigger" aria-label="Account"><i class="bi bi-person"></i></a>
         {% endif %}
