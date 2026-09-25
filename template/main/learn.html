@@ -1,4 +1,5 @@
 {% extends "main/base.html" %}
+{% load static %}
 {% block 'title' %}Learn — Kapi Today{% endblock 'title' %}
 {% block 'meta' %}{% endblock 'meta' %}
 {% block 'css' %}
@@ -897,7 +898,7 @@
       <!-- LIGHT ROAST -->
       <div class="roast-deep light reveal">
         <div class="roast-deep-visual">
-          <div class="roast-swatch-lg"></div>
+          <img src="{% static 'main/learn/roast_light.webp' %}" class="roast-swatch-lg" alt="Light Roast" style="object-fit: cover; background: none;">
           <div class="roast-temp">196–205°C</div>
           <div class="roast-temp-label">Roast Temperature</div>
         </div>
@@ -940,7 +941,7 @@
       <!-- MEDIUM ROAST -->
       <div class="roast-deep medium reveal">
         <div class="roast-deep-visual">
-          <div class="roast-swatch-lg"></div>
+          <img src="{% static 'main/learn/roast_medium.webp' %}" class="roast-swatch-lg" alt="Medium Roast" style="object-fit: cover; background: none;">
           <div class="roast-temp">210–220°C</div>
           <div class="roast-temp-label">Roast Temperature</div>
         </div>
@@ -983,7 +984,7 @@
       <!-- DARK ROAST -->
       <div class="roast-deep dark reveal">
         <div class="roast-deep-visual">
-          <div class="roast-swatch-lg"></div>
+          <img src="{% static 'main/learn/roast_dark.webp' %}" class="roast-swatch-lg" alt="Dark Roast" style="object-fit: cover; background: none;">
           <div class="roast-temp">225–235°C</div>
           <div class="roast-temp-label">Roast Temperature</div>
         </div>
@@ -1026,7 +1027,7 @@
       <!-- MONSOON MALABAR -->
       <div class="roast-deep monsoon reveal">
         <div class="roast-deep-visual">
-          <div class="roast-swatch-lg"></div>
+          <img src="{% static 'main/learn/roast_monsoon.webp' %}" class="roast-swatch-lg" alt="Monsoon Malabar" style="object-fit: cover; background: none;">
           <div class="roast-temp">Monsoon-Exposed</div>
           <div class="roast-temp-label">Natural Process</div>
         </div>
@@ -1095,9 +1096,9 @@
  
       <!-- SOUTH INDIAN FILTER -->
       <div class="brew-technique brew-tech-filter reveal">
-        <div class="brew-tech-visual">
-          <div class="brew-tech-badge">Traditional</div>
-          <i class="bi bi-funnel-fill"></i>
+        <div class="brew-tech-visual p-0">
+          <img src="{% static 'main/learn/brew_filter.webp' %}" alt="South Indian Filter" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 0; opacity: 0.85;">
+          <div class="brew-tech-badge" style="z-index: 1;">Traditional</div>
         </div>
         <div class="brew-tech-content">
           <div class="brew-tech-label">The Original</div>
@@ -1144,9 +1145,9 @@
  
       <!-- POUR OVER -->
       <div class="brew-technique brew-tech-pourover reveal">
-        <div class="brew-tech-visual">
-          <div class="brew-tech-badge">Modern</div>
-          <i class="bi bi-droplet-fill"></i>
+        <div class="brew-tech-visual p-0">
+          <img src="{% static 'main/learn/brew_pourover.webp' %}" alt="Pour Over" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 0; opacity: 0.85;">
+          <div class="brew-tech-badge" style="z-index: 1;">Modern</div>
         </div>
         <div class="brew-tech-content">
           <div class="brew-tech-label">The Slow Ritual</div>
@@ -1193,9 +1194,9 @@
  
       <!-- COLD BREW -->
       <div class="brew-technique brew-tech-coldbrew reveal">
-        <div class="brew-tech-visual">
-          <div class="brew-tech-badge">Patient</div>
-          <i class="bi bi-snow2"></i>
+        <div class="brew-tech-visual p-0">
+          <img src="{% static 'main/learn/brew_coldbrew.webp' %}" alt="Cold Brew" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 0; opacity: 0.85;">
+          <div class="brew-tech-badge" style="z-index: 1;">Patient</div>
         </div>
         <div class="brew-tech-content">
           <div class="brew-tech-label">The Overnight Wait</div>
@@ -1242,9 +1243,9 @@
  
       <!-- ESPRESSO -->
       <div class="brew-technique brew-tech-espresso reveal">
-        <div class="brew-tech-visual">
-          <div class="brew-tech-badge">Intense</div>
-          <i class="bi bi-lightning-fill"></i>
+        <div class="brew-tech-visual p-0">
+          <img src="{% static 'main/learn/brew_espresso.webp' %}" alt="Espresso" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 0; opacity: 0.85;">
+          <div class="brew-tech-badge" style="z-index: 1;">Intense</div>
         </div>
         <div class="brew-tech-content">
           <div class="brew-tech-label">The Concentrated Shot</div>

@@ -1,4 +1,5 @@
 {% extends "main/base.html" %}
+{% load static %}
 {% block 'title' %}Our Story — Kapi Today{% endblock 'title' %}
 {% block 'meta' %}{% endblock 'meta' %}
 {% block 'css' %}
@@ -916,8 +917,7 @@
     <div class="origin-grid">
       <div class="reveal" style="position:relative;">
         <div class="origin-image">
-          <!-- Replace with real image -->
-          <i class="bi bi-cup-hot"></i>
+          <img src="{% static 'main/about/origin_story.webp' %}" alt="Traditional filter coffee" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div class="origin-image-accent"></div>
       </div>
@@ -1098,7 +1098,7 @@
  
     <div class="estates-grid">
       <div class="estate-card reveal">
-        <div class="estate-card-header"><i class="bi bi-geo-alt-fill"></i></div>
+        <div class="estate-card-header p-0"><img src="{% static 'main/about/estate_coorg.webp' %}" alt="Coorg Estate" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 1;"></div>
         <div class="estate-card-body">
           <div class="estate-name">Coorg</div>
           <div class="estate-region">Karnataka</div>
@@ -1111,7 +1111,7 @@
       </div>
  
       <div class="estate-card reveal reveal-delay-1">
-        <div class="estate-card-header"><i class="bi bi-geo-alt-fill"></i></div>
+        <div class="estate-card-header p-0"><img src="{% static 'main/about/estate_chikmagalur.webp' %}" alt="Chikmagalur Estate" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 1;"></div>
         <div class="estate-card-body">
           <div class="estate-name">Chikmagalur</div>
           <div class="estate-region">Karnataka</div>
@@ -1124,7 +1124,7 @@
       </div>
  
       <div class="estate-card reveal reveal-delay-2">
-        <div class="estate-card-header"><i class="bi bi-geo-alt-fill"></i></div>
+        <div class="estate-card-header p-0"><img src="{% static 'main/about/estate_wayanad.webp' %}" alt="Wayanad Estate" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 1;"></div>
         <div class="estate-card-body">
           <div class="estate-name">Wayanad</div>
           <div class="estate-region">Kerala</div>
@@ -1137,7 +1137,7 @@
       </div>
  
       <div class="estate-card reveal reveal-delay-3">
-        <div class="estate-card-header"><i class="bi bi-geo-alt-fill"></i></div>
+        <div class="estate-card-header p-0"><img src="{% static 'main/about/estate_nilgiris.webp' %}" alt="Nilgiris Estate" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 1;"></div>
         <div class="estate-card-body">
           <div class="estate-name">Nilgiris</div>
           <div class="estate-region">Tamil Nadu</div>
@@ -1150,7 +1150,7 @@
       </div>
  
       <div class="estate-card reveal reveal-delay-4">
-        <div class="estate-card-header"><i class="bi bi-geo-alt-fill"></i></div>
+        <div class="estate-card-header p-0"><img src="{% static 'main/about/estate_araku.webp' %}" alt="Araku Valley Estate" style="width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 1;"></div>
         <div class="estate-card-body">
           <div class="estate-name">Araku Valley</div>
           <div class="estate-region">Andhra Pradesh</div>
@@ -1181,7 +1181,7 @@
  
     <div class="people-grid">
       <div class="person-card reveal">
-        <div class="person-avatar"><i class="bi bi-person"></i></div>
+        <div class="person-avatar"><img src="{% static 'main/about/arjun_founder.webp' %}" alt="Arjun Menon" style="width: 100%; height: 100%; object-fit: cover;"></div>
         <div class="person-name">Arjun Menon</div>
         <div class="person-role">Founder</div>
         <div class="person-bio">
@@ -1191,7 +1191,7 @@
       </div>
  
       <div class="person-card reveal reveal-delay-1">
-        <div class="person-avatar"><i class="bi bi-person"></i></div>
+        <div class="person-avatar"><img src="{% static 'main/about/kavitha_sourcing.webp' %}" alt="Kavitha Raj" style="width: 100%; height: 100%; object-fit: cover;"></div>
         <div class="person-name">Kavitha Raj</div>
         <div class="person-role">Head of Sourcing</div>
         <div class="person-bio">
@@ -1201,7 +1201,7 @@
       </div>
  
       <div class="person-card reveal reveal-delay-2">
-        <div class="person-avatar"><i class="bi bi-person"></i></div>
+        <div class="person-avatar"><img src="{% static 'main/about/thomas_roaster_v2.webp' %}" alt="Thomas Kurian" style="width: 100%; height: 100%; object-fit: cover;"></div>
         <div class="person-name">Thomas Kurian</div>
         <div class="person-role">Master Roaster</div>
         <div class="person-bio">

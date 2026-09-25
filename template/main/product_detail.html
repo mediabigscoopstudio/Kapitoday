@@ -1,0 +1,356 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% block 'title' %}{{ product.name }} — Kapi Today{% endblock 'title' %}
+
+{% block 'css' %}
+<style>
+  .pdp-wrapper {
+    background: var(--kapi-cream);
+    padding: var(--space-3xl) 0;
+  }
+  
+  .pdp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3xl);
+  }
+  
+  @media (max-width: 768px) {
+    .pdp-grid { grid-template-columns: 1fr; gap: var(--space-xl); }
+  }
+
+  .pdp-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .pdp-main-image {
+    width: 100%;
+    border-radius: var(--radius-md);
+    background: #fff;
+    padding: var(--space-sm);
+    border: 1px solid rgba(139, 90, 43, 0.1);
+  }
+  .pdp-main-image img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    aspect-ratio: 1/1;
+  }
+
+  .pdp-thumbnails {
+    display: flex;
+    gap: var(--space-sm);
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+  
+  .pdp-thumb {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(139, 90, 43, 0.2);
+    cursor: pointer;
+    background: #fff;
+    flex-shrink: 0;
+  }
+  .pdp-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: calc(var(--radius-sm) - 1px);
+  }
+  .pdp-thumb:hover { border-color: var(--kapi-brass); }
+
+  .pdp-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pdp-meta {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--kapi-olive);
+    margin-bottom: var(--space-sm);
+    font-weight: 600;
+  }
+
+  .pdp-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--kapi-charcoal);
+    line-height: 1.1;
+    margin-bottom: var(--space-md);
+  }
+
+  .pdp-price {
+    font-family: var(--font-body);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--kapi-brown);
+    margin-bottom: var(--space-lg);
+  }
+
+  .pdp-desc {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--kapi-charcoal);
+    margin-bottom: var(--space-xl);
+    opacity: 0.9;
+  }
+
+  .pdp-variants-label {
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+    display: block;
+    color: var(--kapi-charcoal);
+  }
+
+  .pdp-form {
+    background: #fff;
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(139, 90, 43, 0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+  }
+
+  .pdp-variant-select {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid rgba(139, 90, 43, 0.3);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    margin-bottom: var(--space-md);
+    cursor: pointer;
+  }
+
+  .pdp-variant-select:focus {
+    outline: none;
+    border-color: var(--kapi-brass);
+    box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1);
+  }
+
+  .pdp-qty-row {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+  }
+
+  .pdp-qty-input {
+    width: 80px;
+    padding: 12px;
+    border: 1px solid rgba(139, 90, 43, 0.3);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .btn-add-cart-large {
+    flex-grow: 1;
+    background: var(--kapi-charcoal);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn-add-cart-large:hover {
+    background: var(--kapi-brass);
+  }
+
+  /* Highlights Section */
+  .pdp-highlights {
+    margin-top: var(--space-3xl);
+    padding: var(--space-2xl) 0;
+    border-top: 1px solid rgba(139, 90, 43, 0.1);
+    border-bottom: 1px solid rgba(139, 90, 43, 0.1);
+    background: #fff;
+  }
+  
+  .highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-xl);
+    text-align: center;
+  }
+
+  .highlight-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+  .highlight-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+  }
+  .highlight-item span {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    color: var(--kapi-charcoal);
+  }
+
+  /* A+ Content */
+  .aplus-section {
+    padding: var(--space-3xl) 0;
+    background: var(--kapi-cream);
+  }
+  
+  .aplus-item {
+    margin-bottom: var(--space-2xl);
+  }
+  
+  .aplus-item img {
+    width: 100%;
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+  }
+</style>
+{% endblock 'css' %}
+
+{% block 'body' %}
+<section class="pdp-wrapper">
+  <div class="container">
+    <div class="pdp-grid">
+      
+      <!-- Gallery Left -->
+      <div class="pdp-gallery">
+        <div class="pdp-main-image">
+          <img id="mainImage" src="{% if product.thumbnail %}{{ product.thumbnail.url }}{% else %}{% static 'main/logos/LogoMain.webp' %}{% endif %}" alt="{{ product.name }}">
+        </div>
+        
+        {% if product.product_images.all %}
+        <div class="pdp-thumbnails">
+          {% if product.thumbnail %}
+          <div class="pdp-thumb" onclick="swapImage('{{ product.thumbnail.url }}')">
+            <img src="{{ product.thumbnail.url }}" alt="Thumbnail">
+          </div>
+          {% endif %}
+          
+          {% for img in product.product_images.all %}
+          <div class="pdp-thumb" onclick="swapImage('{{ img.image.url }}')">
+            <img src="{{ img.image.url }}" alt="{{ img.alt_text }}">
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Info Right -->
+      <div class="pdp-info">
+        <div class="pdp-meta">
+          {{ product.category.title }} {% if product.sub_category %} / {{ product.sub_category.title }}{% endif %}
+        </div>
+        
+        <h1 class="pdp-title">{{ product.name }}</h1>
+        
+        <div class="pdp-price" id="displayPrice">
+          {% if product.product_variant.first %}
+            ₹{{ product.product_variant.first.price }}
+          {% else %}
+            Currently Unavailable
+          {% endif %}
+        </div>
+        
+        <div class="pdp-desc">
+          {{ product.description|linebreaks }}
+        </div>
+        
+        <div class="pdp-form">
+          <form action="{% url 'add_to_cart' %}" method="POST" class="add-to-cart-form">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            
+            <label class="pdp-variants-label">Choose Variant</label>
+            <select name="variant_id" class="pdp-variant-select" id="variantSelect" onchange="updatePrice()" required>
+              {% for v in product.product_variant.all %}
+                <option value="{{ v.id }}" data-price="{{ v.price }}">
+                  {{ v.name }}
+                </option>
+              {% endfor %}
+            </select>
+            
+            <div class="pdp-qty-row">
+              <input type="number" name="quantity" class="pdp-qty-input" value="1" min="1" max="99" required>
+              <button type="submit" class="btn-add-cart-large" {% if not product.product_variant.all %}disabled{% endif %}>
+                <i class="bi bi-bag-plus"></i> Add to Cart
+              </button>
+            </div>
+          </form>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if product.product_highlight.all %}
+<section class="pdp-highlights">
+  <div class="container">
+    <div class="highlights-grid">
+      {% for h in product.product_highlight.all %}
+      <div class="highlight-item">
+        {% if h.icon %}
+        <img src="{{ h.icon.url }}" alt="{{ h.text }}">
+        {% else %}
+        <i class="bi bi-star-fill" style="font-size:2rem; color:var(--kapi-brass);"></i>
+        {% endif %}
+        <span>{{ h.text }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if product.product_content.all %}
+<section class="aplus-section">
+  <div class="container" style="max-width: 900px;">
+    {% for c in product.product_content.all %}
+      <div class="aplus-item">
+        {% if c.image %}
+        <img src="{{ c.image.url }}" alt="{{ c.image_alt }}">
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock 'body' %}
+
+{% block 'script' %}
+<script>
+  function swapImage(url) {
+    document.getElementById('mainImage').src = url;
+  }
+  
+  function updatePrice() {
+    const select = document.getElementById('variantSelect');
+    const selectedOption = select.options[select.selectedIndex];
+    const price = selectedOption.getAttribute('data-price');
+    document.getElementById('displayPrice').innerText = '₹' + price;
+  }
+  
+  // Call once on load to ensure sync
+  window.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('variantSelect')) {
+      updatePrice();
+    }
+  });
+</script>
+{% endblock 'script' %}

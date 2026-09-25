@@ -370,3 +370,241 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product_name} x {self.quantity}"
+
+
+# ============================================================
+# CONTENT MANAGEMENT SYSTEM
+# Reference: Corporate Impact — github.com/mediabigscoopstudio/Corporate-Impact
+#
+# NOTE: Kapi Today already contains a 'Category' model used for
+# e-commerce products.  The content-management category is named
+# 'ArticleCategory' here to avoid any collision with that model.
+# Field names and behaviour are otherwise a faithful port of the
+# Corporate Impact Category model.
+# ============================================================
+
+
+# ── ArticleCategory ─────────────────────────────────────────────────────────
+
+class ArticleCategory(models.Model):
+    """Content-management category (articles/blog), distinct from the
+    e-commerce Category model that already exists in this app."""
+
+    title           = models.CharField(max_length=255)
+    description     = models.TextField()
+    meta_title      = models.CharField(max_length=255)
+    meta_description = models.TextField()
+    meta_keywords   = models.CharField(max_length=255)
+    slug            = models.SlugField(unique=True, blank=True)
+    created_at      = models.DateTimeField(default=timezone.now)
+
+    status = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        default='Enabled',
+    )
+
+    display_order = models.PositiveIntegerField(
+        default=0,
+        blank=True,
+        null=True,
+    )
+
+    show_in_nav = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['display_order', 'title']
+        verbose_name        = 'Article Category'
+        verbose_name_plural = 'Article Categories'
+
+    def save(self, *args, **kwargs):
+        # Auto-generate slug from title on first save
+        if not self.slug:
+            self.slug = slugify(self.title)
+
+        # Auto-place new categories at the end of the display order
+        if not self.pk:
+            last_order = ArticleCategory.objects.order_by('-display_order').first()
+            self.display_order = (
+                last_order.display_order + 1
+                if last_order else 1
+            )
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+# ── Author ───────────────────────────────────────────────────────────────────
+
+class Author(models.Model):
+    """Article author profile.  Optionally linked to a Django User account."""
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='author_profile',
+        null=True,
+        blank=True,
+    )
+    name        = models.CharField(max_length=100)
+    designation = models.CharField(max_length=100)
+    description = models.TextField()
+    email       = models.EmailField(unique=True, blank=True, null=True)
+    DOB         = models.DateField(blank=True, null=True)
+    location    = models.TextField(blank=True, null=True)
+    image       = models.ImageField(upload_to='authors/')
+
+    # Social links
+    facebook_url  = models.URLField(blank=True, null=True)
+    instagram_url = models.URLField(blank=True, null=True)
+    linkedin_url  = models.URLField(blank=True, null=True)
+    twitter_url   = models.URLField(blank=True, null=True)
+
+    slug       = models.SlugField(unique=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    status     = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def save(self, *args, **kwargs):
+        # Generate a unique slug from the author name
+        if not self.slug:
+            base_slug = slugify(self.name)
+            slug  = base_slug
+            count = 1
+            while Author.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f'{base_slug}-{count}'
+                count += 1
+            self.slug = slug
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+# ── Article ──────────────────────────────────────────────────────────────────
+
+class Article(models.Model):
+    """Core article / blog-post content model."""
+
+    title    = models.CharField(max_length=1500)
+    author   = models.ForeignKey(
+        Author,
+        on_delete=models.CASCADE,
+        related_name='articles',
+    )
+    category = models.ForeignKey(
+        ArticleCategory,
+        on_delete=models.CASCADE,
+        related_name='articles',
+    )
+
+    description = models.TextField(blank=True, null=True)
+
+    # TL;DR section
+    tldr_title = models.CharField(max_length=1500, blank=True, null=True)
+    tldr       = models.TextField(blank=True, null=True)
+
+    # SEO metadata
+    meta_title       = models.CharField(max_length=1500)
+    meta_description = models.TextField()
+    meta_keywords    = models.CharField(max_length=1500)
+
+    # Body
+    content = models.TextField(blank=True, null=True)
+
+    # Engagement counters
+    likes = models.PositiveIntegerField(default=0)
+    views = models.PositiveIntegerField(default=0)
+
+    # URL
+    slug = models.SlugField(unique=True, blank=True, max_length=1500)
+
+    # Timestamps
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Status
+    status = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        default='Enabled',
+    )
+
+    # Visual customisation (banner colour overrides)
+    title_colour             = models.CharField(max_length=100, blank=True)
+    banner_background_colour = models.CharField(max_length=100, blank=True)
+    remaining_text_colour    = models.CharField(max_length=100, blank=True)
+
+    # Images
+    banner_image    = models.ImageField(upload_to='articles/banners/',    blank=True, null=True)
+    thumbnail_image = models.ImageField(upload_to='articles/thumbnails/', blank=True, null=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        # Generate a collision-free slug from the article title
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug  = base_slug
+            count = 1
+            while Article.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f'{base_slug}-{count}'
+                count += 1
+            self.slug = slug
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+# ── ArticleFAQ ───────────────────────────────────────────────────────────────
+
+class ArticleFAQ(models.Model):
+    """Frequently-asked questions attached to an Article.
+    Supports multiple FAQ entries per article (one-to-many)."""
+
+    article  = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='faqs',
+    )
+    question = models.CharField(max_length=500)
+    answer   = models.TextField()
+
+    class Meta:
+        verbose_name        = 'Article FAQ'
+        verbose_name_plural = 'Article FAQs'
+
+    def __str__(self):
+        return self.question
+
+
+# ── ArticleHowTo ─────────────────────────────────────────────────────────────
+
+class ArticleHowTo(models.Model):
+    """Step-by-step how-to instructions attached to an Article.
+    Supports multiple ordered steps per article (one-to-many)."""
+
+    article   = models.ForeignKey(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='howto_steps',
+    )
+    step_name = models.CharField(max_length=300)
+    step_text = models.TextField()
+
+    class Meta:
+        verbose_name        = 'Article How-To Step'
+        verbose_name_plural = 'Article How-To Steps'
+
+    def __str__(self):
+        return self.step_name

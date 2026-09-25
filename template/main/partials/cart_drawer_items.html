@@ -1,0 +1,70 @@
+{% load static %}
+<div class="cart-items-wrapper" id="cartItemsWrapper">
+  {% if global_cart_items %}
+    {% for item in global_cart_items %}
+    <div class="cart-item">
+      <div class="cart-item-img">
+        {% if item.product.thumbnail %}
+          <img src="{{ item.product.thumbnail.url }}" alt="{{ item.product.name }}" style="width: 100%; height: 100%; object-fit: contain;">
+        {% else %}
+          <img src="{% static 'main/logos/LogoMain.webp' %}" style="width: 100%; height: 100%; object-fit: contain;">
+        {% endif %}
+      </div>
+      <div class="cart-item-details">
+        <div class="cart-item-name">{{ item.product.name }}</div>
+        <div class="cart-item-meta">{% if item.variant %}{{ item.variant.name }}{% endif %}</div>
+        <div class="cart-item-bottom">
+          <div class="cart-qty" style="display:flex; align-items:center; background:#fff; border:1px solid #ddd; border-radius:4px; overflow:hidden;">
+            <form action="{% url 'add_to_cart' %}" method="POST" class="add-to-cart-form" style="margin:0;">
+              {% csrf_token %}
+              <input type="hidden" name="product_id" value="{{ item.product.id }}">
+              {% if item.variant %}<input type="hidden" name="variant_id" value="{{ item.variant.id }}">{% endif %}
+              <input type="hidden" name="quantity" value="-1">
+              <button type="submit" style="background:none; border:none; padding:2px 8px; cursor:pointer; color:#555;">&minus;</button>
+            </form>
+            
+            <span style="padding:2px 4px; font-size:0.9rem; font-weight:600; min-width:20px; text-align:center;">{{ item.quantity }}</span>
+            
+            <form action="{% url 'add_to_cart' %}" method="POST" class="add-to-cart-form" style="margin:0;">
+              {% csrf_token %}
+              <input type="hidden" name="product_id" value="{{ item.product.id }}">
+              {% if item.variant %}<input type="hidden" name="variant_id" value="{{ item.variant.id }}">{% endif %}
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" style="background:none; border:none; padding:2px 8px; cursor:pointer; color:#555;">&plus;</button>
+            </form>
+          </div>
+          <div class="cart-item-price">
+            {% if item.variant %}
+              ₹{% widthratio item.variant.price 1 item.quantity %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <!-- EMPTY STATE -->
+    <div class="cart-empty" style="text-align:center; padding: 40px 20px; color: var(--kapi-brown);">
+      <i class="bi bi-bag-x" style="font-size: 3rem; margin-bottom: 15px; display: block; opacity: 0.5;"></i>
+      <p>Your cart is empty</p>
+      <a href="/shop" class="btn-cta-primary" style="padding: 10px 20px; text-decoration: none; display: inline-block; background: var(--kapi-charcoal); color: white; border-radius: 4px; margin-top: 15px;">Browse Coffee</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Cart Footer: Subtotal + Checkout -->
+{% if global_cart_items %}
+<div class="cart-footer" id="cartFooter">
+  <div class="cart-subtotal">
+    <span class="cart-subtotal-label">Subtotal</span>
+    <span class="cart-subtotal-value">₹{{ global_cart_total }}</span>
+  </div>
+  <div class="cart-tax-note">Taxes & shipping calculated at checkout</div>
+  <a href="#" class="btn-checkout">
+    Proceed to Checkout <i class="bi bi-arrow-right" style="margin-left:6px;"></i>
+  </a>
+  <button class="btn-continue-shopping" type="button" data-bs-dismiss="offcanvas">
+    Continue Shopping
+  </button>
+</div>
+{% endif %}

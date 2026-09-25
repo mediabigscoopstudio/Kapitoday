@@ -1,0 +1,787 @@
+{% extends "main/base.html" %}
+
+{% block 'title' %}{{ article.meta_title|default:article.title }} — Kapi Today{% endblock 'title' %}
+
+{% block 'meta' %}
+<meta name="description" content="{{ article.meta_description|default:article.description }}">
+{% if article.meta_keywords %}
+<meta name="keywords" content="{{ article.meta_keywords }}">
+{% endif %}
+
+<!-- Open Graph / Social -->
+<meta property="og:title" content="{{ article.meta_title|default:article.title }}">
+<meta property="og:description" content="{{ article.meta_description|default:article.description }}">
+<meta property="og:type" content="article">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+{% if article.banner_image %}
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ article.banner_image.url }}">
+{% elif article.thumbnail_image %}
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ article.thumbnail_image.url }}">
+{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- Canonical URL -->
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ request.build_absolute_uri }}"
+  },
+  "headline": "{{ article.title|escapejs }}",
+  "description": "{{ article.description|default:article.tldr|escapejs }}",
+  {% if article.banner_image %}
+  "image": "{{ request.scheme }}://{{ request.get_host }}{{ article.banner_image.url }}",
+  {% endif %}
+  "author": {
+    "@type": "Person",
+    "name": "{{ article.author.name|escapejs }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Kapi Today",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ request.scheme }}://{{ request.get_host }}/static/main/logos/Vector.webp"
+    }
+  },
+  "datePublished": "{{ article.created_at|date:'Y-m-d' }}",
+  "dateModified": "{{ article.updated_at|date:'Y-m-d' }}"
+}
+</script>
+
+{% if article.faqs.exists %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for faq in article.faqs.all %}
+    {
+      "@type": "Question",
+      "name": "{{ faq.question|escapejs }}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ faq.answer|striptags|escapejs }}"
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+
+{% if article.howto_steps.exists %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "{{ article.title|escapejs }}",
+  "step": [
+    {% for step in article.howto_steps.all %}
+    {
+      "@type": "HowToStep",
+      "name": "{{ step.step_name|escapejs }}",
+      "text": "{{ step.step_text|striptags|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+{% endblock 'meta' %}
+
+{% block 'css' %}
+<style>
+    /* Article Page specific styles based on Kapi Today design language */
+    .article-header {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 3rem 15px 2rem;
+        text-align: center;
+    }
+    
+    .article-breadcrumbs {
+        font-family: var(--font-body);
+        font-size: 0.8125rem;
+        color: var(--kapi-stone);
+        margin-bottom: 2rem;
+    }
+    .article-breadcrumbs a {
+        color: var(--kapi-charcoal);
+        text-decoration: none;
+    }
+    .article-breadcrumbs a:hover {
+        color: var(--kapi-red-oxide);
+    }
+    
+    .article-cat-label {
+        font-family: var(--font-body);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--kapi-sienna);
+        margin-bottom: 1rem;
+        display: block;
+    }
+    
+    .article-title {
+        font-family: var(--font-heading);
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--kapi-espresso);
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+    }
+    
+    .article-subtitle {
+        font-family: var(--font-body);
+        font-size: 1.25rem;
+        color: var(--kapi-charcoal);
+        line-height: 1.6;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .article-meta-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        border-top: 1px solid var(--kapi-cream-dark);
+        border-bottom: 1px solid var(--kapi-cream-dark);
+        padding: 1rem 0;
+        margin-top: 2rem;
+    }
+    
+    .article-author-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-align: left;
+    }
+    .article-author-img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .article-author-details {
+        display: flex;
+        flex-direction: column;
+    }
+    .article-author-name {
+        font-family: var(--font-body);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--kapi-ink);
+        margin-bottom: 2px;
+    }
+    .article-date-time {
+        font-family: var(--font-body);
+        font-size: 0.8125rem;
+        color: var(--kapi-stone);
+    }
+    
+    /* Hero Image */
+    .article-hero {
+        max-width: 1200px;
+        margin: 0 auto 3rem;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        aspect-ratio: 21/9;
+        background: var(--kapi-cream-dark);
+    }
+    .article-hero img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    /* Content Layout */
+    .article-container {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 4rem;
+        max-width: 1200px;
+        margin: 0 auto 4rem;
+        padding: 0 15px;
+    }
+    
+    .article-content {
+        font-family: var(--font-body);
+        font-size: 1.125rem;
+        line-height: 1.8;
+        color: var(--kapi-charcoal);
+    }
+    
+    .article-content p {
+        margin-bottom: 1.75rem;
+    }
+    
+    .article-content h2 {
+        font-family: var(--font-heading);
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--kapi-espresso);
+        margin: 3rem 0 1.5rem;
+    }
+    
+    .article-content h3 {
+        font-family: var(--font-heading);
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--kapi-ink);
+        margin: 2rem 0 1rem;
+    }
+    
+    .article-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: var(--radius-md);
+        margin: 2rem 0;
+    }
+    
+    .article-content blockquote {
+        border-left: 4px solid var(--kapi-brass);
+        padding: 1rem 1.5rem;
+        background: var(--kapi-cream-warm);
+        font-family: var(--font-heading);
+        font-style: italic;
+        font-size: 1.25rem;
+        color: var(--kapi-espresso);
+        margin: 2rem 0;
+        border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    }
+    
+    /* TLDR Section */
+    .article-tldr {
+        background: var(--kapi-cream-warm);
+        border: 1px solid var(--kapi-cream-dark);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+    .article-tldr::before {
+        content: '\F2E4'; /* bi-cup-hot */
+        font-family: bootstrap-icons;
+        position: absolute;
+        top: -15px;
+        left: 2rem;
+        background: var(--kapi-cream);
+        color: var(--kapi-terracotta);
+        font-size: 1.5rem;
+        padding: 0 10px;
+    }
+    .article-tldr h3 {
+        margin-top: 0;
+        font-family: var(--font-heading);
+        font-size: 1.25rem;
+        color: var(--kapi-espresso);
+    }
+    .article-tldr p {
+        margin-bottom: 0;
+        font-size: 1rem;
+    }
+    
+    /* FAQ Section */
+    .article-faq {
+        margin: 3rem 0;
+    }
+    .faq-accordion .accordion-item {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--kapi-cream-dark);
+        margin-bottom: 0;
+    }
+    .faq-accordion .accordion-button {
+        background: transparent;
+        color: var(--kapi-ink);
+        font-family: var(--font-heading);
+        font-weight: 600;
+        font-size: 1.125rem;
+        padding: 1.5rem 0;
+        box-shadow: none;
+    }
+    .faq-accordion .accordion-button:not(.collapsed) {
+        color: var(--kapi-red-oxide);
+    }
+    .faq-accordion .accordion-body {
+        padding: 0 0 1.5rem 0;
+        color: var(--kapi-charcoal);
+        font-size: 1rem;
+    }
+    
+    /* HowTo Section */
+    .article-howto {
+        margin: 3rem 0;
+        background: var(--kapi-cream-warm);
+        padding: 2.5rem;
+        border-radius: var(--radius-lg);
+    }
+    .howto-step {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .howto-step:last-child {
+        margin-bottom: 0;
+    }
+    .howto-number {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        background: var(--kapi-brass);
+        color: var(--kapi-cream);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+    .howto-content h4 {
+        font-family: var(--font-heading);
+        font-size: 1.25rem;
+        color: var(--kapi-espresso);
+        margin: 0 0 0.5rem 0;
+    }
+    .howto-content p {
+        margin: 0;
+        font-size: 1rem;
+    }
+    
+    /* Sidebar */
+    .article-sidebar {
+        position: sticky;
+        top: 100px;
+        align-self: start;
+    }
+    
+    /* Author Card */
+    .author-card {
+        background: var(--kapi-cream-warm);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .author-card img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 1rem;
+    }
+    .author-card h4 {
+        font-family: var(--font-heading);
+        font-size: 1.25rem;
+        color: var(--kapi-espresso);
+        margin-bottom: 0.25rem;
+    }
+    .author-card .designation {
+        font-size: 0.8125rem;
+        color: var(--kapi-sienna);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 1rem;
+    }
+    .author-card p {
+        font-size: 0.9375rem;
+        color: var(--kapi-charcoal);
+        margin-bottom: 1.5rem;
+    }
+    .author-social {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+    .author-social a {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--kapi-cream-dark);
+        color: var(--kapi-ink);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    .author-social a:hover {
+        background: var(--kapi-brass);
+        color: var(--kapi-cream);
+    }
+    
+    /* Table of Contents */
+    .toc-card {
+        background: var(--kapi-cream-warm);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+    }
+    .toc-title {
+        font-family: var(--font-heading);
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--kapi-espresso);
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--kapi-cream-dark);
+        padding-bottom: 0.5rem;
+    }
+    .toc-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .toc-list li {
+        margin-bottom: 0.75rem;
+    }
+    .toc-list a {
+        color: var(--kapi-charcoal);
+        text-decoration: none;
+        font-size: 0.9375rem;
+        transition: color 0.2s;
+    }
+    .toc-list a:hover {
+        color: var(--kapi-red-oxide);
+    }
+    
+    /* Related Articles */
+    .related-articles {
+        background: var(--kapi-cream-warm);
+        padding: 4rem 0;
+        margin-top: 4rem;
+    }
+    .section-title {
+        text-align: center;
+        font-family: var(--font-heading);
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--kapi-espresso);
+        margin-bottom: 3rem;
+    }
+    .related-card {
+        background: var(--kapi-cream);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        height: 100%;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: block;
+        text-decoration: none;
+    }
+    .related-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+    .related-thumb {
+        aspect-ratio: 16/9;
+        background: var(--kapi-cream-dark);
+    }
+    .related-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .related-body {
+        padding: 1.5rem;
+    }
+    .related-cat {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--kapi-sienna);
+        margin-bottom: 0.5rem;
+    }
+    .related-title {
+        font-family: var(--font-heading);
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--kapi-ink);
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+    .related-meta {
+        font-size: 0.8125rem;
+        color: var(--kapi-stone);
+    }
+    
+    @media (max-width: 991px) {
+        .article-container {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        .article-title {
+            font-size: 2.25rem;
+        }
+        .article-sidebar {
+            position: static;
+        }
+    }
+    
+    @media (max-width: 767px) {
+        .article-hero {
+            aspect-ratio: 16/10;
+            border-radius: 0;
+            margin: 0 -15px 2rem;
+            max-width: calc(100% + 30px);
+        }
+        .article-header {
+            padding-top: 1.5rem;
+        }
+        .article-title {
+            font-size: 1.75rem;
+        }
+        .article-meta-bar {
+            flex-direction: column;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock 'css' %}
+
+{% block 'body' %}
+  <!-- HEADER -->
+  <header class="article-header">
+      <div class="article-breadcrumbs">
+          <a href="/">Home</a> &rsaquo; 
+          <a href="{% url 'content' %}">Content</a> &rsaquo; 
+          <a href="{% url 'category_detail' article.category.slug %}">{{ article.category.title }}</a> &rsaquo; 
+          <span class="text-muted">{{ article.title|truncatechars:40 }}</span>
+      </div>
+      
+      <span class="article-cat-label">{{ article.category.title }}</span>
+      
+      <h1 class="article-title">{{ article.title }}</h1>
+      
+      {% if article.description %}
+      <p class="article-subtitle">{{ article.description }}</p>
+      {% endif %}
+      
+      <div class="article-meta-bar">
+          <div class="article-author-meta">
+              {% if article.author.image %}
+              <img src="{{ article.author.image.url }}" alt="{{ article.author.name }}" class="article-author-img">
+              {% else %}
+              <div class="article-author-img" style="background: var(--kapi-cream-dark); display: flex; align-items: center; justify-content: center; color: var(--kapi-stone);">
+                  <i class="bi bi-person-fill"></i>
+              </div>
+              {% endif %}
+              <div class="article-author-details">
+                  <span class="article-author-name">{{ article.author.name }}</span>
+                  <span class="article-date-time">{{ article.created_at|date:"F j, Y" }} &middot; {{ article.views }} reads</span>
+              </div>
+          </div>
+          
+          <div class="d-flex gap-2">
+              <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ article.title|urlencode }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3"><i class="bi bi-twitter-x"></i></a>
+              <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-3"><i class="bi bi-facebook"></i></a>
+          </div>
+      </div>
+  </header>
+  
+  <!-- HERO IMAGE -->
+  {% if article.banner_image %}
+  <div class="article-hero">
+      <img src="{{ article.banner_image.url }}" alt="{{ article.title }}">
+  </div>
+  {% elif article.thumbnail_image %}
+  <div class="article-hero">
+      <img src="{{ article.thumbnail_image.url }}" alt="{{ article.title }}">
+  </div>
+  {% endif %}
+
+  <!-- CONTENT CONTAINER -->
+  <div class="article-container">
+      
+      <!-- MAIN BODY -->
+      <article class="article-content js-toc-content">
+          
+          {% if article.tldr %}
+          <div class="article-tldr">
+              <h3>{{ article.tldr_title|default:"TL;DR (Too Long, Didn't Read)" }}</h3>
+              <p>{{ article.tldr }}</p>
+          </div>
+          {% endif %}
+          
+          <!-- Safely render article HTML. Using safe is acceptable here as the content comes from the trusted CMS (Corporate Impact architecture expectation). -->
+          {{ article.content|safe }}
+          
+          
+          {% if article.howto_steps.exists %}
+          <div class="article-howto">
+              <h2 style="margin-top:0;">Step by Step</h2>
+              {% for step in article.howto_steps.all %}
+              <div class="howto-step">
+                  <div class="howto-number">{{ forloop.counter }}</div>
+                  <div class="howto-content">
+                      <h4>{{ step.step_name }}</h4>
+                      <p>{{ step.step_text|safe }}</p>
+                  </div>
+              </div>
+              {% endfor %}
+          </div>
+          {% endif %}
+          
+          
+          {% if article.faqs.exists %}
+          <div class="article-faq">
+              <h2>Frequently Asked Questions</h2>
+              <div class="accordion faq-accordion" id="faqAccordion">
+                  {% for faq in article.faqs.all %}
+                  <div class="accordion-item">
+                      <h3 class="accordion-header" id="faqHeading{{ faq.id }}" style="margin:0;">
+                          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse{{ faq.id }}" aria-expanded="false" aria-controls="faqCollapse{{ faq.id }}">
+                              {{ faq.question }}
+                          </button>
+                      </h3>
+                      <div id="faqCollapse{{ faq.id }}" class="accordion-collapse collapse" aria-labelledby="faqHeading{{ faq.id }}" data-bs-parent="#faqAccordion">
+                          <div class="accordion-body">
+                              {{ faq.answer|safe }}
+                          </div>
+                      </div>
+                  </div>
+                  {% endfor %}
+              </div>
+          </div>
+          {% endif %}
+          
+      </article>
+      
+      <!-- SIDEBAR -->
+      <aside class="article-sidebar">
+          
+          <!-- Dynamic TOC Container -->
+          <div class="toc-card mb-4 d-none js-toc-container">
+              <div class="toc-title">In This Article</div>
+              <ul class="toc-list js-toc-list">
+                  <!-- JS will populate this -->
+              </ul>
+          </div>
+          
+          <!-- Author Card -->
+          {% if article.author %}
+          <div class="author-card">
+              {% if article.author.image %}
+              <img src="{{ article.author.image.url }}" alt="{{ article.author.name }}">
+              {% else %}
+              <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--kapi-cream-dark); margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--kapi-stone);">
+                  <i class="bi bi-person-fill"></i>
+              </div>
+              {% endif %}
+              <h4>{{ article.author.name }}</h4>
+              <div class="designation">{{ article.author.designation|default:"Contributor" }}</div>
+              {% if article.author.description %}
+              <p>{{ article.author.description|truncatewords:20 }}</p>
+              {% endif %}
+              
+              <div class="author-social">
+                  {% if article.author.twitter_url %}<a href="{{ article.author.twitter_url }}" target="_blank"><i class="bi bi-twitter-x"></i></a>{% endif %}
+                  {% if article.author.linkedin_url %}<a href="{{ article.author.linkedin_url }}" target="_blank"><i class="bi bi-linkedin"></i></a>{% endif %}
+                  {% if article.author.instagram_url %}<a href="{{ article.author.instagram_url }}" target="_blank"><i class="bi bi-instagram"></i></a>{% endif %}
+              </div>
+          </div>
+          {% endif %}
+          
+      </aside>
+  </div>
+  
+  <!-- RELATED ARTICLES -->
+  {% if related_articles %}
+  <section class="related-articles">
+      <div class="container">
+          <h2 class="section-title">More from {{ article.category.title }}</h2>
+          <div class="row g-4 justify-content-center">
+              {% for rel in related_articles %}
+              <div class="col-md-4">
+                  <a href="{% url 'article_detail' rel.category.slug rel.slug %}" class="related-card">
+                      <div class="related-thumb">
+                          {% if rel.thumbnail_image %}
+                          <img src="{{ rel.thumbnail_image.url }}" alt="{{ rel.title }}" loading="lazy">
+                          {% elif rel.banner_image %}
+                          <img src="{{ rel.banner_image.url }}" alt="{{ rel.title }}" loading="lazy">
+                          {% else %}
+                          <div class="w-100 h-100 d-flex align-items-center justify-content-center opacity-25">
+                              <i class="bi bi-image" style="font-size: 3rem;"></i>
+                          </div>
+                          {% endif %}
+                      </div>
+                      <div class="related-body">
+                          <div class="related-cat">{{ rel.category.title }}</div>
+                          <div class="related-title">{{ rel.title }}</div>
+                          <div class="related-meta">{{ rel.author.name }} &middot; {{ rel.created_at|date:"F j, Y" }}</div>
+                      </div>
+                  </a>
+              </div>
+              {% endfor %}
+          </div>
+      </div>
+  </section>
+  {% endif %}
+  
+{% endblock 'body' %}
+
+{% block 'script' %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-generate Table of Contents from H2/H3 in article content
+    const content = document.querySelector('.js-toc-content');
+    const tocContainer = document.querySelector('.js-toc-container');
+    const tocList = document.querySelector('.js-toc-list');
+    
+    if (content && tocContainer && tocList) {
+        // Find all headings that aren't inside the FAQ or HowTo sections
+        // We only want the main article body headings
+        const rawHeadings = content.querySelectorAll('h2, h3');
+        const headings = Array.from(rawHeadings).filter(h => {
+            return !h.closest('.article-tldr') && 
+                   !h.closest('.article-faq') && 
+                   !h.closest('.article-howto');
+        });
+        
+        if (headings.length > 1) { // Only show TOC if there's more than 1 heading
+            let tocHTML = '';
+            headings.forEach((heading, index) => {
+                // Assign an ID if it doesn't have one
+                if (!heading.id) {
+                    heading.id = 'section-' + index;
+                }
+                
+                const level = heading.tagName.toLowerCase() === 'h2' ? 0 : 1;
+                const margin = level === 1 ? 'ms-3' : '';
+                
+                tocHTML += `<li class="${margin}">
+                    <a href="#${heading.id}" class="d-block py-1 text-truncate">${heading.textContent}</a>
+                </li>`;
+            });
+            
+            tocList.innerHTML = tocHTML;
+            tocContainer.classList.remove('d-none');
+        }
+    }
+    
+    // Smooth scrolling for TOC anchors
+    document.querySelectorAll('.js-toc-list a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                // Account for fixed navbar if any (assuming 100px offset)
+                const y = targetElement.getBoundingClientRect().top + window.pageYOffset - 100;
+                window.scrollTo({top: y, behavior: 'smooth'});
+            }
+        });
+    });
+});
+</script>
+{% endblock 'script' %}

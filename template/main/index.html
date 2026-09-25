@@ -1,4 +1,5 @@
 {% extends "main/base.html" %}
+{% load static %}
 {% block 'title' %}Kapi Today — From South India to World{% endblock 'title' %}
 {% block 'meta' %}{% endblock 'meta' %}
 {% block 'css' %}
@@ -21,7 +22,9 @@
   .hero-bg {
     position: absolute;
     inset: 0;
-    
+    background-image: url('{% static "main/images/hero_coffee.webp" %}');
+    background-size: cover;
+    background-position: center;
     transform: scale(1.08);
     transition: transform 8s ease-out;
   }
@@ -469,15 +472,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
   }
  
-  .culture-card-bg i {
-    font-size: 48px;
-    color: var(--kapi-sand);
+  .culture-card-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     transition: transform var(--transition-slow);
   }
  
-  .culture-card:hover .culture-card-bg i {
+  .culture-card-bg i {
+    display: none;
+  }
+ 
+  .culture-card:hover .culture-card-bg img {
     transform: scale(1.15);
   }
  
@@ -1082,15 +1091,17 @@
   .plantation-bg {
     position: absolute;
     inset: 0;
-    background: var(--kapi-plantation-dark);
+    background-image: url('{% static "main/images/plantation_mist.webp" %}');
+    background-size: cover;
+    background-position: center;
+    background-color: var(--kapi-plantation-dark);
     display: flex;
     align-items: center;
     justify-content: center;
   }
  
   .plantation-bg i {
-    font-size: 120px;
-    color: rgba(250,246,240,0.03);
+    display: none;
   }
  
   .plantation-overlay {
@@ -1467,7 +1478,7 @@
  
     <div class="culture-grid">
       <div class="culture-card reveal">
-        <div class="culture-card-bg"><i class="bi bi-cup-hot"></i></div>
+        <div class="culture-card-bg"><img src="{% static 'main/images/hero_coffee.webp' %}" alt="Davara"></div>
         <div class="culture-card-overlay"></div>
         <div class="culture-card-content">
           <div class="culture-card-tag">The Ritual</div>
@@ -1477,7 +1488,7 @@
       </div>
  
       <div class="culture-card reveal reveal-delay-1">
-        <div class="culture-card-bg"><i class="bi bi-funnel"></i></div>
+        <div class="culture-card-bg"><img src="{% static 'main/images/product_1.webp' %}" alt="Filter"></div>
         <div class="culture-card-overlay"></div>
         <div class="culture-card-content">
           <div class="culture-card-tag">The Method</div>
@@ -1487,7 +1498,7 @@
       </div>
  
       <div class="culture-card reveal reveal-delay-2">
-        <div class="culture-card-bg"><i class="bi bi-sunrise"></i></div>
+        <div class="culture-card-bg"><img src="{% static 'main/images/plantation_mist.webp' %}" alt="Plantation"></div>
         <div class="culture-card-overlay"></div>
         <div class="culture-card-content">
           <div class="culture-card-tag">The Origin</div>
@@ -1516,7 +1527,7 @@
  
     <div class="coffee-types-grid">
       <a href="#" class="coffee-type-card reveal">
-        <div class="coffee-type-img"><i class="bi bi-funnel-fill"></i></div>
+        <div class="coffee-type-img"><img src="{% static 'main/images/product_1.webp' %}" alt="Filter Coffee"></div>
         <div class="coffee-type-body">
           <div class="coffee-type-name">Filter Coffee</div>
           <div class="coffee-type-count">8 blends available</div>
@@ -1524,7 +1535,7 @@
         </div>
       </a>
       <a href="#" class="coffee-type-card reveal reveal-delay-1">
-        <div class="coffee-type-img"><i class="bi bi-geo-alt"></i></div>
+        <div class="coffee-type-img"><img src="{% static 'main/about/estate_nilgiris.webp' %}" alt="Single Origin"></div>
         <div class="coffee-type-body">
           <div class="coffee-type-name">Single Origin</div>
           <div class="coffee-type-count">5 estates</div>
@@ -1532,7 +1543,7 @@
         </div>
       </a>
       <a href="#" class="coffee-type-card reveal reveal-delay-2">
-        <div class="coffee-type-img"><i class="bi bi-lightning-fill"></i></div>
+        <div class="coffee-type-img"><img src="{% static 'main/about/thomas_roaster_v2.webp' %}" alt="Espresso"></div>
         <div class="coffee-type-body">
           <div class="coffee-type-name">Espresso</div>
           <div class="coffee-type-count">4 roasts</div>
@@ -1540,7 +1551,7 @@
         </div>
       </a>
       <a href="#" class="coffee-type-card reveal reveal-delay-3">
-        <div class="coffee-type-img"><i class="bi bi-snow2"></i></div>
+        <div class="coffee-type-img"><img src="{% static 'main/about/estate_araku.webp' %}" alt="Cold Brew"></div>
         <div class="coffee-type-body">
           <div class="coffee-type-name">Cold Brew</div>
           <div class="coffee-type-count">3 blends</div>
@@ -1663,7 +1674,7 @@
       <!-- Product 1 -->
       <div class="product-card reveal">
         <div class="product-img">
-          <i class="bi bi-cup-hot"></i>
+          <img src="{% static 'main/images/product_1.webp' %}" alt="Classic South Indian Filter Blend">
           <span class="product-badge bestseller">Bestseller</span>
         </div>
         <div class="product-body">
@@ -1680,7 +1691,7 @@
       <!-- Product 2 -->
       <div class="product-card reveal reveal-delay-1">
         <div class="product-img">
-          <i class="bi bi-cup-hot"></i>
+          <img src="{% static 'main/about/estate_wayanad.webp' %}" alt="Monsoon Malabar">
           <span class="product-badge new">New</span>
         </div>
         <div class="product-body">
@@ -1697,7 +1708,7 @@
       <!-- Product 3 -->
       <div class="product-card reveal reveal-delay-2">
         <div class="product-img">
-          <i class="bi bi-cup-hot"></i>
+          <img src="{% static 'main/about/estate_coorg.webp' %}" alt="Coorg Estate">
         </div>
         <div class="product-body">
           <div class="product-origin">Coorg</div>
@@ -1713,7 +1724,7 @@
       <!-- Product 4 -->
       <div class="product-card reveal reveal-delay-3">
         <div class="product-img">
-          <i class="bi bi-cup-hot"></i>
+          <img src="{% static 'main/about/estate_chikmagalur.webp' %}" alt="Wayanad Robusta">
           <span class="product-badge bestseller">Bestseller</span>
         </div>
         <div class="product-body">

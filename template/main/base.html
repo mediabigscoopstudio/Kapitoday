@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,7 +56,7 @@
           </a>
           <button class="util-link" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-label="Open cart" style="background:none;border:none;cursor:pointer;">
             <i class="bi bi-bag"></i> Cart
-            <span class="cart-count">3</span>
+            <span class="cart-count" style="position:absolute;top:-6px;right:-10px;font-size:9px;width:16px;height:16px;background:var(--kapi-charcoal);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;">{{ global_cart_count|default:"0" }}</span>
           </button>
         </div>
       </div>
@@ -162,7 +163,7 @@
         <a href="#" aria-label="Account"><i class="bi bi-person"></i></a>
         <button type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-label="Cart" style="background:none;border:none;padding:0;color:var(--kapi-charcoal);font-size:20px;position:relative;cursor:pointer;">
           <i class="bi bi-bag"></i>
-          <span class="cart-count" style="position:absolute;top:-6px;right:-10px;font-size:9px;width:16px;height:16px;">3</span>
+          <span class="cart-count" style="position:absolute;top:-6px;right:-10px;font-size:9px;width:16px;height:16px;background:var(--kapi-charcoal);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;">{{ global_cart_count|default:"0" }}</span>
         </button>
       </div>
     </header>
@@ -185,7 +186,7 @@
         </nav>
         <div class="mobile-util-links">
           <a href="#"><i class="bi bi-person"></i> My Account</a>
-          <a href="#"><i class="bi bi-bag"></i> Cart (3)</a>
+          <a href="#" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer"><i class="bi bi-bag"></i> Cart ({{ global_cart_count|default:"0" }})</a>
         </div>
       </div>
     </div>
@@ -201,7 +202,7 @@
         <h5 class="offcanvas-title" id="cartDrawerLabel">
           <i class="bi bi-bag" style="font-size:20px;"></i>
           Your Cart
-          <span class="cart-title-count" id="cartTitleCount">3</span>
+          <span class="cart-title-count" id="cartTitleCount">{{ global_cart_count|default:"0" }}</span>
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
       </div>
@@ -221,95 +222,9 @@
         </div>
       </div>
 
-      <!-- Cart Items (scrollable) -->
-      <div class="cart-items-wrapper" id="cartItemsWrapper">
-
-        <!-- === DEMO ITEMS (replace with Django template loop) === -->
-        <!--  -->
-        <div class="cart-item">
-          <div class="cart-item-img">
-            <i class="bi bi-cup-hot"></i>
-            <!-- <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"> -->
-          </div>
-          <div class="cart-item-details">
-            <div class="cart-item-name">Monsoon Malabar Single Origin</div>
-            <div class="cart-item-meta">250g · Whole Beans</div>
-            <div class="cart-item-bottom">
-              <div class="cart-qty">
-                <button type="button" aria-label="Decrease">−</button>
-                <span>1</span>
-                <button type="button" aria-label="Increase">+</button>
-              </div>
-              <div class="cart-item-price">₹549</div>
-            </div>
-          </div>
-          <button class="cart-item-remove" type="button" aria-label="Remove item"><i class="bi bi-x-lg"></i></button>
-        </div>
-
-        <div class="cart-item">
-          <div class="cart-item-img">
-            <i class="bi bi-cup-hot"></i>
-          </div>
-          <div class="cart-item-details">
-            <div class="cart-item-name">Coorg Estate Dark Roast</div>
-            <div class="cart-item-meta">500g · Ground</div>
-            <div class="cart-item-bottom">
-              <div class="cart-qty">
-                <button type="button" aria-label="Decrease">−</button>
-                <span>2</span>
-                <button type="button" aria-label="Increase">+</button>
-              </div>
-              <div class="cart-item-price">₹1,298</div>
-            </div>
-          </div>
-          <button class="cart-item-remove" type="button" aria-label="Remove item"><i class="bi bi-x-lg"></i></button>
-        </div>
-
-        <div class="cart-item">
-          <div class="cart-item-img">
-            <i class="bi bi-funnel"></i>
-          </div>
-          <div class="cart-item-details">
-            <div class="cart-item-name">Brass Davara-Tumbler Set</div>
-            <div class="cart-item-meta">Traditional · Handcrafted</div>
-            <div class="cart-item-bottom">
-              <div class="cart-qty">
-                <button type="button" aria-label="Decrease">−</button>
-                <span>1</span>
-                <button type="button" aria-label="Increase">+</button>
-              </div>
-              <div class="cart-item-price">₹899</div>
-            </div>
-          </div>
-          <button class="cart-item-remove" type="button" aria-label="Remove item"><i class="bi bi-x-lg"></i></button>
-        </div>
-        <!--  -->
-
-        <!-- === EMPTY STATE (show when cart is empty) === -->
-        <!-- 
-        <div class="cart-empty">
-          <i class="bi bi-bag-x"></i>
-          <p>Your cart is empty</p>
-          <a href="#" class="btn-kapi-browse">Browse Coffee</a>
-        </div>
-         -->
-
-      </div>
-
-      <!-- Cart Footer: Subtotal + Checkout -->
-      <div class="cart-footer" id="cartFooter">
-        <div class="cart-savings">
-          <i class="bi bi-tag"></i> You're saving ₹150 on this order!
-        </div>
-        <div class="cart-subtotal">
-          <span class="cart-subtotal-label">Subtotal</span>
-          <span class="cart-subtotal-value">₹2,746</span>
-        </div>
-        <div class="cart-tax-note">Taxes & shipping calculated at checkout</div>
-        <a href="#" class="btn-checkout">
-          Proceed to Checkout <i class="bi bi-arrow-right" style="margin-left:6px;"></i>
-        </a>
-        <button class="cart-continue" type="button" data-bs-dismiss="offcanvas">Continue Shopping</button>
+      <!-- Cart Items via AJAX / Partial -->
+      <div id="cartOffcanvasAjaxContainer" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
+        {% include 'main/partials/cart_drawer_items.html' %}
       </div>
     </div>
 
@@ -357,11 +272,11 @@
             <div class="col-lg-2 col-md-6">
               <h5>Quick Links</h5>
               <ul class="footer-links">
-                <li><a href="#">Shop Coffee</a></li>
-                <li><a href="#">Our Story</a></li>
-                <li><a href="#">Brew Guides</a></li>
+                <li><a href="/shop">Shop Coffee</a></li>
+                <li><a href="/about">Our Story</a></li>
+                <li><a href="/learn">Brew Guides</a></li>
                 <li><a href="/content">Our Content</a></li>
-                <li><a href="#">Contact Us</a></li>
+                <li><a href="/support">Contact Us</a></li>
               </ul>
             </div>
 
@@ -400,15 +315,109 @@
         <div class="container">
           <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
             <p>© 2026 Kapi Today. All rights reserved.</p>
-            <div class="d-flex gap-3">
+            <div class="d-flex gap-3 align-items-center flex-wrap justify-content-center">
               <a href="#">Privacy Policy</a>
               <a href="#">Terms of Service</a>
-              <a href="#">Shipping & Returns</a>
+              <a href="#">Shipping &amp; Returns</a>
+              <!-- Pinecode Studio Credit -->
+              <button
+                class="pinecode-credit"
+                id="pinecodeCreditBtn"
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded="false"
+                aria-controls="pinecodeModal"
+              >
+                <span class="pc-dot" aria-hidden="true"></span>
+                Designed &amp; Developed by <span class="pc-name">Pinecode Studio</span>
+              </button>
             </div>
           </div>
         </div>
       </div>
     </footer>
+
+  <!-- ==========================================
+       PINECODE STUDIO — PROMOTIONAL MODAL
+       ========================================== -->
+  <div
+    class="pc-backdrop"
+    id="pinecodeBackdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pcModalHeading"
+    aria-describedby="pcModalDesc"
+  >
+    <div class="pc-modal" id="pinecodeModal">
+
+      <!-- Close Button -->
+      <button class="pc-close" id="pinecodeClose" aria-label="Close Pinecode Studio popup">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+
+      <!-- Desktop: Left Image Panel -->
+      <div class="pc-image-panel" aria-hidden="true">
+        {% load static %}
+        <img src="{% static 'pinecode/desktop.webp' %}" alt="Pinecode Studio">
+      </div>
+
+      <!-- Mobile: Top Image Panel -->
+      <div class="pc-mobile-image" aria-hidden="true">
+        {% load static %}
+        <img src="{% static 'pinecode/mobile.webp' %}" alt="Pinecode Studio">
+      </div>
+
+      <!-- Right / Main Content Panel -->
+      <div class="pc-content-panel">
+        <div>
+          <!-- Eyebrow -->
+          <p class="pc-eyebrow">Meet the Creative Studio</p>
+
+          <!-- Heading -->
+          <h2 class="pc-heading" id="pcModalHeading">Ideas into Impact.</h2>
+
+          <!-- Description -->
+          <p class="pc-description" id="pcModalDesc">
+            Pinecode Studio is a creative technology studio helping businesses
+            build, launch, and grow through thoughtful digital experiences.
+          </p>
+
+          <!-- Services -->
+          <ul class="pc-services" aria-label="Our services">
+            <li>Website Development</li>
+            <li>E-commerce Solutions</li>
+            <li>Mobile Applications</li>
+            <li>Digital Marketing</li>
+            <li>AI Automations</li>
+          </ul>
+
+          <!-- CTA -->
+          <a
+            href="https://pinecodestudio.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="pc-cta"
+          >
+            Visit Pinecode Studio
+            <i class="bi bi-arrow-right pc-arrow" aria-hidden="true"></i>
+          </a>
+
+          <!-- Supporting Text -->
+          <p class="pc-support-text">
+            Want to build a website with us?<br>
+            Let&rsquo;s turn your idea into something extraordinary.
+          </p>
+        </div>
+
+        <!-- Tagline -->
+        <div>
+          <hr class="pc-divider">
+          <p class="pc-tagline">Build &bull; Launch &bull; Grow Together</p>
+        </div>
+      </div>
+
+    </div><!-- /.pc-modal -->
+  </div><!-- /.pc-backdrop -->
 
   </div> <!-- /.page-wrapper -->
 
@@ -428,5 +437,200 @@
     
   {% endblock 'script' %}
   
+  <!-- Pinecode Studio — Modal + Sound Script -->
+  <script>
+  (function () {
+    'use strict';
+
+    const backdrop  = document.getElementById('pinecodeBackdrop');
+    const modal     = document.getElementById('pinecodeModal');
+    const closeBtn  = document.getElementById('pinecodeClose');
+    const triggerBtn = document.getElementById('pinecodeCreditBtn');
+
+    if (!backdrop || !triggerBtn) return;
+
+    // ── Audio (synthesised chime via Web Audio API) ──────────────────────────
+    let audioCtx = null;
+
+    function playChime() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const ctx = audioCtx;
+
+        // Carrier oscillator — 880 Hz (bright chime)
+        const osc1 = ctx.createOscillator();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(880, ctx.currentTime);
+
+        // Harmonic — 1760 Hz (presence)
+        const osc2 = ctx.createOscillator();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1760, ctx.currentTime);
+
+        const gain1 = ctx.createGain();
+        const gain2 = ctx.createGain();
+        const master = ctx.createGain();
+
+        // Envelope — fast attack, smooth exponential decay
+        const now = ctx.currentTime;
+        gain1.gain.setValueAtTime(0, now);
+        gain1.gain.linearRampToValueAtTime(0.38, now + 0.012);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+
+        gain2.gain.setValueAtTime(0, now);
+        gain2.gain.linearRampToValueAtTime(0.12, now + 0.012);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+
+        master.gain.setValueAtTime(0.7, now);
+
+        osc1.connect(gain1); gain1.connect(master);
+        osc2.connect(gain2); gain2.connect(master);
+        master.connect(ctx.destination);
+
+        osc1.start(now); osc1.stop(now + 0.6);
+        osc2.start(now); osc2.stop(now + 0.5);
+      } catch (e) {
+        // Sound unavailable — modal still works perfectly
+      }
+    }
+
+    // ── Focus management ─────────────────────────────────────────────────────
+    let previouslyFocused = null;
+
+    function getFocusableElements() {
+      return Array.from(modal.querySelectorAll(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      ));
+    }
+
+    function trapFocus(e) {
+      const focusable = getFocusableElements();
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last  = focusable[focusable.length - 1];
+      if (e.key === 'Tab') {
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last)  { e.preventDefault(); first.focus(); }
+        }
+      }
+    }
+
+    // ── Open ─────────────────────────────────────────────────────────────────
+    function openModal() {
+      previouslyFocused = document.activeElement;
+      backdrop.classList.add('pc-open');
+      document.body.style.overflow = 'hidden';
+      triggerBtn.setAttribute('aria-expanded', 'true');
+
+      // Move focus into modal after animation starts
+      setTimeout(() => {
+        const firstFocus = getFocusableElements()[0];
+        if (firstFocus) firstFocus.focus();
+      }, 50);
+
+      backdrop.addEventListener('keydown', trapFocus);
+      playChime();
+    }
+
+    // ── Close ─────────────────────────────────────────────────────────────────
+    function closeModal() {
+      backdrop.classList.remove('pc-open');
+      document.body.style.overflow = '';
+      triggerBtn.setAttribute('aria-expanded', 'false');
+      backdrop.removeEventListener('keydown', trapFocus);
+      if (previouslyFocused) previouslyFocused.focus();
+    }
+
+    // ── Triggers ──────────────────────────────────────────────────────────────
+    triggerBtn.addEventListener('click', openModal);
+
+    closeBtn.addEventListener('click', closeModal);
+
+    // Click outside modal (on backdrop)
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) closeModal();
+    });
+
+    // Escape key
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && backdrop.classList.contains('pc-open')) {
+        closeModal();
+      }
+    });
+  })();
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Global AJAX Add to Cart handler
+      document.body.addEventListener('submit', function(e) {
+        if (e.target && e.target.classList.contains('add-to-cart-form')) {
+          e.preventDefault();
+          const form = e.target;
+          const formData = new FormData(form);
+          const submitBtn = form.querySelector('button[type="submit"]');
+          
+          let originalBtnHtml = '';
+          if (submitBtn) {
+            originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="margin-right:5px;"></span> Adding...';
+          }
+          
+          fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Update cart count badges globally
+              const badges = document.querySelectorAll('.cart-count, .cart-title-count, #cartTitleCount');
+              badges.forEach(badge => badge.innerText = data.cart_count);
+              
+              // Also update the nav text format e.g. "Cart (3)"
+              const navCartLinks = document.querySelectorAll('a[data-bs-toggle="offcanvas"][data-bs-target="#cartDrawer"]');
+              navCartLinks.forEach(link => {
+                if(link.innerHTML.includes('Cart (')) {
+                  link.innerHTML = '<i class="bi bi-bag"></i> Cart (' + data.cart_count + ')';
+                }
+              });
+
+              // Replace cart offcanvas inner HTML
+              const ajaxContainer = document.getElementById('cartOffcanvasAjaxContainer');
+              if (ajaxContainer) {
+                ajaxContainer.innerHTML = data.cart_html;
+              }
+              
+              // Automatically open the cart drawer so user sees it
+              if (typeof bootstrap !== 'undefined') {
+                const cartOffcanvas = document.getElementById('cartDrawer');
+                const bsOffcanvas = bootstrap.Offcanvas.getInstance(cartOffcanvas) || new bootstrap.Offcanvas(cartOffcanvas);
+                bsOffcanvas.show();
+              }
+            }
+          })
+          .catch(err => console.error("Error adding to cart:", err))
+          .finally(() => {
+            if (submitBtn) {
+              submitBtn.innerHTML = '<i class="bi bi-check2-circle"></i> Added!';
+              setTimeout(() => {
+                submitBtn.innerHTML = originalBtnHtml;
+                submitBtn.disabled = false;
+              }, 1500);
+            }
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>
