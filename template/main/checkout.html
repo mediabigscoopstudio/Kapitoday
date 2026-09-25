@@ -1,6 +1,12 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
+{% block 'title' %}Secure Checkout - Kapi Today{% endblock 'title' %}
+{% block 'meta' %}
+<meta name="description" content="Securely complete your purchase at Kapi Today. Get the freshest Indian coffee delivered directly to your doorstep.">
+<meta name="keywords" content="coffee checkout, buy coffee online, secure payment, Kapi Today">
+{% endblock 'meta' %}
+
 {% block 'body' %}
 <style>
 .checkout-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
@@ -77,11 +83,36 @@
                 {% endfor %}
             </div>
             
+            <!-- Coupon Section -->
+            <div style="margin: 25px 0; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+                {% if applied_coupon %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #e8f5e9; padding: 10px 15px; border-radius: 6px; border: 1px dashed #4caf50;">
+                        <span style="color: #2e7d32; font-weight: 600;"><i class="bi bi-tag-fill"></i> Code applied: {{ applied_coupon }}</span>
+                        <form method="POST" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" name="remove_coupon" style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 14px; font-weight: bold;">Remove</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <form method="POST" style="display: flex; gap: 10px; margin: 0;">
+                        {% csrf_token %}
+                        <input type="text" name="coupon_code" placeholder="Discount code" class="form-control" style="padding: 10px; flex: 1;">
+                        <button type="submit" name="apply_coupon" style="background: #333; color: #fff; border: none; border-radius: 6px; padding: 0 20px; font-weight: 600; cursor: pointer;">Apply</button>
+                    </form>
+                {% endif %}
+            </div>
+
             <div style="margin-top: 20px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;">
                     <span>Subtotal</span>
                     <span>₹{{ subtotal }}</span>
                 </div>
+                {% if discount > 0 %}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #2e7d32; font-weight: 500;">
+                    <span>Discount</span>
+                    <span>-₹{{ discount }}</span>
+                </div>
+                {% endif %}
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;">
                     <span>Shipping</span>
                     <span>{% if shipping_charge == 0 %}Free{% else %}₹{{ shipping_charge }}{% endif %}</span>

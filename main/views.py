@@ -365,6 +365,9 @@ def get_razorpay_client():
         return None
     return razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_KEY_SECRET))
 
+from dash.models import Offer
+from django.utils import timezone
+
 @login_required(login_url='/?trigger_login=true')
 def checkout(request):
     try:
@@ -378,12 +381,64 @@ def checkout(request):
         return redirect('/shop')
 
     subtotal = sum((item.variant.price if item.variant else 0) * item.quantity for item in cart_items)
-    shipping_charge = 0 if subtotal > 999 else 50
-    total = subtotal + shipping_charge
+    
+    discount = 0
+    applied_coupon = request.session.get('applied_coupon')
+    coupon_msg = ""
+    
+    # Handle Coupon Apply/Remove
+    if request.method == 'POST':
+        if 'apply_coupon' in request.POST:
+            code = request.POST.get('coupon_code', '').strip()
+            # Validate coupon
+            now = timezone.now()
+            offer = Offer.objects.filter(coupon_code__iexact=code, status='Active', valid_from__lte=now, valid_to__gte=now).first()
+            if offer:
+                # Basic check (skipping complex condition logic for now, applying flat/percentage)
+                request.session['applied_coupon'] = offer.coupon_code
+                coupon_msg = "Coupon applied successfully!"
+            else:
+                coupon_msg = "Invalid or expired coupon."
+        elif 'remove_coupon' in request.POST:
+            if 'applied_coupon' in request.session:
+                del request.session['applied_coupon']
+            coupon_msg = "Coupon removed."
+        return redirect('/checkout/')
+
+    # Calculate Discount
+    if applied_coupon:
+        now = timezone.now()
+        offer = Offer.objects.filter(coupon_code__iexact=applied_coupon, status='Active', valid_from__lte=now, valid_to__gte=now).first()
+        if offer:
+            if offer.action_type == 'percentage_off':
+                discount = (subtotal * offer.discount_value) / 100
+                if offer.max_discount_cap and discount > offer.max_discount_cap:
+                    discount = offer.max_discount_cap
+            elif offer.action_type == 'flat_off':
+                discount = offer.discount_value
+                if discount > subtotal:
+                    discount = subtotal
+        else:
+            if 'applied_coupon' in request.session:
+                del request.session['applied_coupon']
+            applied_coupon = None
+
+    total_after_discount = subtotal - discount
+    shipping_charge = 0 if total_after_discount > 999 else 50
+    
+    # Check automatic free shipping offer
+    auto_shipping_offer = Offer.objects.filter(trigger='automatic', action_type='free_shipping', status='Active').first()
+    if auto_shipping_offer and total_after_discount >= (auto_shipping_offer.min_order_amount or 0):
+        shipping_charge = 0
+        
+    total = total_after_discount + shipping_charge
+    request.session['discount_amt'] = float(discount)
     
     context = {
         'cart_items': cart_items,
         'subtotal': subtotal,
+        'discount': discount,
+        'applied_coupon': applied_coupon,
         'shipping_charge': shipping_charge,
         'total': total,
         'customer': customer,
@@ -421,8 +476,13 @@ def verify_payment(request):
                 customer = Customers.objects.get(user=request.user)
                 cart = Cart.objects.get(customer=customer)
                 
+                applied_coupon = request.session.get('applied_coupon', '')
+                discount_amt = request.session.get('discount_amt', 0)
+                
                 order = Order.objects.create(
                     customer=customer,
+                    coupon_code=applied_coupon,
+                    discount=discount_amt,
                     email=customer.email or request.user.email,
                     phone=customer.phone_number or '',
                     full_name=data.get('full_name', 'Customer'),
@@ -442,6 +502,10 @@ def verify_payment(request):
                 
                 # Empty cart
                 cart.cart_items.all().delete()
+                if 'applied_coupon' in request.session:
+                    del request.session['applied_coupon']
+                if 'discount_amt' in request.session:
+                    del request.session['discount_amt']
                 
                 # Send confirmation email
                 try:
