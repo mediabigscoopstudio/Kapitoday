@@ -1671,72 +1671,38 @@
     </div>
  
     <div class="products-grid">
-      <!-- Product 1 -->
-      <div class="product-card reveal">
+      {% for product in bestseller_products %}
+      <div class="product-card reveal reveal-delay-{{ forloop.counter0 }}">
         <div class="product-img">
-          <img src="{% static 'main/images/product_1.webp' %}" alt="Classic South Indian Filter Blend">
+          <a href="{% url 'product_detail' category_slug=product.category.slug subcategory_slug=product.sub_category.slug|default:'all' product_slug=product.slug %}">
+            {% if product.thumbnail %}
+            <img src="{{ product.thumbnail.url }}" alt="{{ product.name }}">
+            {% else %}
+            <img src="{% static 'main/images/product_1.webp' %}" alt="{{ product.name }}">
+            {% endif %}
+          </a>
+          {% if forloop.first %}
           <span class="product-badge bestseller">Bestseller</span>
+          {% endif %}
         </div>
         <div class="product-body">
-          <div class="product-origin">Chikmagalur</div>
-          <div class="product-name">Classic South Indian Filter Blend</div>
-          <div class="product-notes">Chocolate · Nutty · Full Body</div>
+          <div class="product-origin">{{ product.category.title }}</div>
+          <a href="{% url 'product_detail' category_slug=product.category.slug subcategory_slug=product.sub_category.slug|default:'all' product_slug=product.slug %}" style="text-decoration:none;">
+            <div class="product-name">{{ product.name }}</div>
+          </a>
+          <div class="product-notes">{{ product.meta_keywords|default:"Premium Quality" }}</div>
           <div class="product-bottom">
-            <div class="product-price"><span class="from">from</span> ₹399</div>
-            <button class="btn-add-cart" aria-label="Add to cart"><i class="bi bi-plus"></i></button>
+            <div class="product-price">
+              {% with first_variant=product.product_variant.first %}
+              <span class="from">from</span> ₹{{ first_variant.price|default:"399" }}
+              {% endwith %}
+            </div>
+            <!-- Quick Link to Product -->
+            <a href="{% url 'product_detail' category_slug=product.category.slug subcategory_slug=product.sub_category.slug|default:'all' product_slug=product.slug %}" class="btn-add-cart" aria-label="View product" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none;"><i class="bi bi-plus"></i></a>
           </div>
         </div>
       </div>
- 
-      <!-- Product 2 -->
-      <div class="product-card reveal reveal-delay-1">
-        <div class="product-img">
-          <img src="{% static 'main/about/estate_wayanad.webp' %}" alt="Monsoon Malabar">
-          <span class="product-badge new">New</span>
-        </div>
-        <div class="product-body">
-          <div class="product-origin">Malabar Coast</div>
-          <div class="product-name">Monsoon Malabar Single Origin</div>
-          <div class="product-notes">Earthy · Spicy · Low Acid</div>
-          <div class="product-bottom">
-            <div class="product-price"><span class="from">from</span> ₹549</div>
-            <button class="btn-add-cart" aria-label="Add to cart"><i class="bi bi-plus"></i></button>
-          </div>
-        </div>
-      </div>
- 
-      <!-- Product 3 -->
-      <div class="product-card reveal reveal-delay-2">
-        <div class="product-img">
-          <img src="{% static 'main/about/estate_coorg.webp' %}" alt="Coorg Estate">
-        </div>
-        <div class="product-body">
-          <div class="product-origin">Coorg</div>
-          <div class="product-name">Coorg Estate Dark Roast</div>
-          <div class="product-notes">Smoky · Bold · Intense</div>
-          <div class="product-bottom">
-            <div class="product-price"><span class="from">from</span> ₹649</div>
-            <button class="btn-add-cart" aria-label="Add to cart"><i class="bi bi-plus"></i></button>
-          </div>
-        </div>
-      </div>
- 
-      <!-- Product 4 -->
-      <div class="product-card reveal reveal-delay-3">
-        <div class="product-img">
-          <img src="{% static 'main/about/estate_chikmagalur.webp' %}" alt="Wayanad Robusta">
-          <span class="product-badge bestseller">Bestseller</span>
-        </div>
-        <div class="product-body">
-          <div class="product-origin">Wayanad</div>
-          <div class="product-name">Wayanad Robusta Peaberry</div>
-          <div class="product-notes">Cocoa · Walnut · Creamy</div>
-          <div class="product-bottom">
-            <div class="product-price"><span class="from">from</span> ₹499</div>
-            <button class="btn-add-cart" aria-label="Add to cart"><i class="bi bi-plus"></i></button>
-          </div>
-        </div>
-      </div>
+      {% endfor %}
     </div>
   </div>
   <br><br>

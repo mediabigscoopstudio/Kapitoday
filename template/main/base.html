@@ -90,27 +90,27 @@
 
               <!-- Mega Menu -->
               <div class="mega-menu">
-                <!-- Column 1: By Type -->
+                <!-- Column 1: Categories -->
                 <div class="mega-col">
-                  <div class="mega-col-title">By Type</div>
+                  <div class="mega-col-title">By Category</div>
                   <ul class="mega-links">
-                    <li><a href="#">Filter Coffee</a></li>
-                    <li><a href="#">Espresso Blends</a></li>
-                    <li><a href="#">Pour Over</a></li>
-                    <li><a href="#">Cold Brew</a></li>
-                    <li><a href="#">Instant Coffee <span class="tag tag-new">New</span></a></li>
+                    {% for cat in nav_categories|slice:":4" %}
+                    <li><a href="{% url 'shop_category' category_slug=cat.slug %}">{{ cat.title }}</a></li>
+                    {% endfor %}
+                    <li><a href="/shop" style="font-weight: 600;">Shop All →</a></li>
                   </ul>
                 </div>
 
-                <!-- Column 2: By Origin -->
+                <!-- Column 2: More Links -->
                 <div class="mega-col">
-                  <div class="mega-col-title">By Origin</div>
+                  <div class="mega-col-title">More Collections</div>
                   <ul class="mega-links">
-                    <li><a href="#">Coorg</a></li>
-                    <li><a href="#">Chikmagalur</a></li>
-                    <li><a href="#">Wayanad</a></li>
-                    <li><a href="#">Nilgiris</a></li>
-                    <li><a href="#">Araku Valley <span class="tag tag-new">New</span></a></li>
+                    {% for cat in nav_categories|slice:"4:" %}
+                    <li><a href="{% url 'shop_category' category_slug=cat.slug %}">{{ cat.title }}</a></li>
+                    {% endfor %}
+                    <li><a href="/about">Our Story</a></li>
+                    <li><a href="/content">Coffee Journal</a></li>
+                    <li><a href="/learn">Brew Guides</a></li>
                   </ul>
                 </div>
 
@@ -316,13 +316,11 @@
 
             <!-- Column 3: Coffee Origins -->
             <div class="col-lg-2 col-md-6">
-              <h5>Our Origins</h5>
+              <h5>Our Categories</h5>
               <ul class="footer-links">
-                <li><a href="#">Coorg</a></li>
-                <li><a href="#">Chikmagalur</a></li>
-                <li><a href="#">Wayanad</a></li>
-                <li><a href="#">Nilgiris</a></li>
-                <li><a href="#">Araku Valley</a></li>
+                {% for cat in nav_categories %}
+                <li><a href="{% url 'shop_category' category_slug=cat.slug %}">{{ cat.title }}</a></li>
+                {% endfor %}
               </ul>
             </div>
 

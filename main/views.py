@@ -16,7 +16,20 @@ from django.db.models import Prefetch, F
 from dash.models import ArticleCategory, Author, Article, ArticleFAQ, ArticleHowTo
 
 def index(request):
-    return render(request, 'main/index.html')
+    from dash.models import Product
+    bestseller_names = [
+        'Kapi Today Araku Valley Medium Roast',
+        'Kapi Today Chikmagalur Medium Roast',
+        'Kapi Today South Indian Coffee Filter',
+        'Kapi Today Wayanad Dark Roast'
+    ]
+    bestseller_products = []
+    for name in bestseller_names:
+        prod = Product.objects.filter(name__icontains=name.replace('Kapi Today ', '')).first()
+        if prod:
+            bestseller_products.append(prod)
+    
+    return render(request, 'main/index.html', {'bestseller_products': bestseller_products})
 
 def about(request):
     return render(request, 'main/about.html')

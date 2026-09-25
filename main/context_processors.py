@@ -36,3 +36,12 @@ def google_client_id(request):
     return {
         'GOOGLE_CLIENT_ID': getattr(settings, 'GOOGLE_CLIENT_ID', '')
     }
+
+from dash.models import Category
+def nav_categories_processor(request):
+    # Fetch categories and their subcategories for the mega menu
+    # Let's say we get the active categories
+    categories = Category.objects.prefetch_related('subcategories').all()
+    return {
+        'nav_categories': categories
+    }

@@ -69,6 +69,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "main.context_processors.cart_processor",
                 "main.context_processors.google_client_id",
+                "main.context_processors.nav_categories_processor",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
