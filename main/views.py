@@ -647,12 +647,19 @@ def fc_verify_payment(request):
                 )
                 
                 for item in cart.cart_items.all():
+                    v = item.variant or item.product.product_variant.first()
+                    price = v.price if v else 0
+                    gst = v.gst if v else 0
                     OrderItem.objects.create(
                         order=order,
                         product=item.product,
                         variant=item.variant,
                         product_name=item.product.name,
-                        variant_name=item.variant.name if item.variant else ''
+                        variant_name=item.variant.name if item.variant else '',
+                        price=price,
+                        gst=gst,
+                        quantity=item.quantity,
+                        total=price * item.quantity
                     )
                 
                 cart.cart_items.all().delete()
