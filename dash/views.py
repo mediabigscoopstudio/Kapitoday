@@ -1183,7 +1183,7 @@ def edit_article(request, id):
         art.save()
         messages.success(request, 'Article updated successfully!')
         return redirect('article_list')
-    return render(request, 'dash/articles/edit_article.html', {'article': art, 'categories': categories, 'authors': authors})
+    return render(request, 'dash/articles/edit_article.html', {'data': art, 'categories': categories, 'authors': authors})
 
 @user_passes_test(superadmin_required, login_url=('/login_view'))
 def delete_article(request, id):
