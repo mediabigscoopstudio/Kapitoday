@@ -1003,3 +1003,205 @@ def validate_coupon(request):
     except Offer.DoesNotExist:
         return JsonResponse({'valid': False, 'message': 'Invalid coupon code.'})
  
+
+# ==========================================
+# CONTENT MANAGEMENT (Articles, Authors, Categories)
+# ==========================================
+from .models import ArticleCategory, Author, Article
+from django.utils.text import slugify
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def article_category_list(request):
+    categories = ArticleCategory.objects.all().order_by('-id')
+    return render(request, 'dash/article_categories/article_category.html', {'categories': categories})
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def add_article_category(request):
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        meta_title = request.POST.get('meta_title')
+        meta_description = request.POST.get('meta_description')
+        meta_keywords = request.POST.get('meta_keywords')
+        slug = request.POST.get('slug') or slugify(title)
+        
+        cat = ArticleCategory(
+            title=title, description=description, meta_title=meta_title,
+            meta_description=meta_description, meta_keywords=meta_keywords, slug=slug
+        )
+        if 'category_image' in request.FILES:
+            cat.category_image = request.FILES['category_image']
+        cat.save()
+        messages.success(request, 'Article Category added successfully!')
+        return redirect('article_category_list')
+    return render(request, 'dash/article_categories/add_article_category.html')
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def edit_article_category(request, id):
+    cat = get_object_or_404(ArticleCategory, id=id)
+    if request.method == 'POST':
+        cat.title = request.POST.get('title')
+        cat.description = request.POST.get('description')
+        cat.meta_title = request.POST.get('meta_title')
+        cat.meta_description = request.POST.get('meta_description')
+        cat.meta_keywords = request.POST.get('meta_keywords')
+        cat.slug = request.POST.get('slug') or slugify(cat.title)
+        if 'category_image' in request.FILES:
+            cat.category_image = request.FILES['category_image']
+        cat.save()
+        messages.success(request, 'Article Category updated successfully!')
+        return redirect('article_category_list')
+    return render(request, 'dash/article_categories/edit_article_category.html', {'cat': cat})
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def delete_article_category(request, id):
+    cat = get_object_or_404(ArticleCategory, id=id)
+    cat.delete()
+    messages.success(request, 'Article Category deleted successfully!')
+    return redirect('article_category_list')
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def enable_article_category(request, id):
+    cat = get_object_or_404(ArticleCategory, id=id)
+    cat.status = 'Enabled'
+    cat.save()
+    return redirect('article_category_list')
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def disable_article_category(request, id):
+    cat = get_object_or_404(ArticleCategory, id=id)
+    cat.status = 'Disabled'
+    cat.save()
+    return redirect('article_category_list')
+
+# Authors
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def author_list(request):
+    authors = Author.objects.all().order_by('-id')
+    return render(request, 'dash/authors/author.html', {'authors': authors})
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def add_author(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        bio = request.POST.get('bio')
+        author = Author(name=name, bio=bio)
+        if 'profile_image' in request.FILES:
+            author.profile_image = request.FILES['profile_image']
+        author.save()
+        messages.success(request, 'Author added successfully!')
+        return redirect('author_list')
+    return render(request, 'dash/authors/add_author.html')
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def edit_author(request, id):
+    author = get_object_or_404(Author, id=id)
+    if request.method == 'POST':
+        author.name = request.POST.get('name')
+        author.bio = request.POST.get('bio')
+        if 'profile_image' in request.FILES:
+            author.profile_image = request.FILES['profile_image']
+        author.save()
+        messages.success(request, 'Author updated successfully!')
+        return redirect('author_list')
+    return render(request, 'dash/authors/edit_author.html', {'author': author})
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def delete_author(request, id):
+    author = get_object_or_404(Author, id=id)
+    author.delete()
+    messages.success(request, 'Author deleted successfully!')
+    return redirect('author_list')
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def enable_author(request, id):
+    author = get_object_or_404(Author, id=id)
+    author.status = 'Enabled'
+    author.save()
+    return redirect('author_list')
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def disable_author(request, id):
+    author = get_object_or_404(Author, id=id)
+    author.status = 'Disabled'
+    author.save()
+    return redirect('author_list')
+
+# Articles
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def article_list(request):
+    articles = Article.objects.all().order_by('-id')
+    return render(request, 'dash/articles/article.html', {'articles': articles})
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def add_article(request):
+    categories = ArticleCategory.objects.all()
+    authors = Author.objects.all()
+    if request.method == 'POST':
+        art = Article()
+        art.title = request.POST.get('title')
+        art.author_id = request.POST.get('author')
+        art.category_id = request.POST.get('category')
+        art.description = request.POST.get('description')
+        art.meta_title = request.POST.get('meta_title', '')
+        art.meta_description = request.POST.get('meta_description', '')
+        art.meta_keywords = request.POST.get('meta_keywords', '')
+        art.content = request.POST.get('content', '')
+        
+        if 'banner_image' in request.FILES:
+            art.banner_image = request.FILES['banner_image']
+        if 'thumbnail_image' in request.FILES:
+            art.thumbnail_image = request.FILES['thumbnail_image']
+            
+        art.save()
+        messages.success(request, 'Article added successfully!')
+        return redirect('article_list')
+    return render(request, 'dash/articles/add_article.html', {'categories': categories, 'authors': authors})
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def edit_article(request, id):
+    art = get_object_or_404(Article, id=id)
+    categories = ArticleCategory.objects.all()
+    authors = Author.objects.all()
+    if request.method == 'POST':
+        art.title = request.POST.get('title')
+        if request.POST.get('author'):
+            art.author_id = request.POST.get('author')
+        if request.POST.get('category'):
+            art.category_id = request.POST.get('category')
+        art.description = request.POST.get('description')
+        art.meta_title = request.POST.get('meta_title', '')
+        art.meta_description = request.POST.get('meta_description', '')
+        art.meta_keywords = request.POST.get('meta_keywords', '')
+        art.content = request.POST.get('content', '')
+        
+        if 'banner_image' in request.FILES:
+            art.banner_image = request.FILES['banner_image']
+        if 'thumbnail_image' in request.FILES:
+            art.thumbnail_image = request.FILES['thumbnail_image']
+            
+        art.save()
+        messages.success(request, 'Article updated successfully!')
+        return redirect('article_list')
+    return render(request, 'dash/articles/edit_article.html', {'article': art, 'categories': categories, 'authors': authors})
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def delete_article(request, id):
+    art = get_object_or_404(Article, id=id)
+    art.delete()
+    messages.success(request, 'Article deleted successfully!')
+    return redirect('article_list')
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def enable_article(request, id):
+    art = get_object_or_404(Article, id=id)
+    art.status = 'Enabled'
+    art.save()
+    return redirect('article_list')
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def disable_article(request, id):
+    art = get_object_or_404(Article, id=id)
+    art.status = 'Disabled'
+    art.save()
+    return redirect('article_list')

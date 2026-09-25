@@ -1,0 +1,28 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Edit Author{% endblock 'title' %}
+{% block 'body' %}
+<div class="container-fluid">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5>Edit Author</h5>
+                <div class="mb-3">
+                    <label>Name</label>
+                    <input type="text" name="name" value="{{ author.name }}" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label>Bio</label>
+                    <textarea name="bio" class="form-control" rows="4">{{ author.bio }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label>Current Image</label>
+                    {% if author.profile_image %}<img src="{{ author.profile_image.url }}" height="50">{% endif %}
+                    <input type="file" name="profile_image" class="form-control mt-2">
+                </div>
+                <button type="submit" class="btn btn-primary">Update Author</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock 'body' %}

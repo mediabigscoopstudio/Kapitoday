@@ -7,7 +7,7 @@
         <div class="flex-grow-1">
             <h4 class="fs-18 fw-semibold m-0">Articles</h4> 
         </div>
-        <a aria-label="Add Editor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Add Articles" href="/dash/add_article">Add Articles</a>
+        <a aria-label="Add Editor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Add Articles" href="{% url 'add_article' %}">Add Articles</a>
     </div>
     <div class="row">
         <div class="col-12">
@@ -55,15 +55,15 @@
                                     
                                     {% if i.status == "Enabled" %}
                                     <td>
-                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Disable Article" href="/dash/disable_article/{{i.id}}">Disable</a>
-                                        <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Article" href="/dash/edit_article/{{i.id}}">Edit</a>
-                                        <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Article" href="/dash/delete_article/{{i.id}}">Delete</a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Disable Article" href="{% url \'disable_article\' i.id %}">Disable</a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Article" href="{% url 'edit_article' i.id %}">Edit</a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Article" href="{% url 'delete_article' i.id %}">Delete</a>
                                     </td>
                                     {% elif i.status == "Disabled" %}
                                     <td>
-                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Enable Article" href="/dash/enable_article/{{i.id}}">Enable</a>
-                                        <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Article" href="/dash/edit_article/{{i.id}}">Edit</a>
-                                        <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Article" href="/dash/delete_article/{{i.id}}">Delete</a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Enable Article" href="{% url \'enable_article\' i.id %}">Enable</a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Article" href="{% url 'edit_article' i.id %}">Edit</a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Article" href="{% url 'delete_article' i.id %}">Delete</a>
                                     </td>
                                     {% endif %}
                                 </tr>

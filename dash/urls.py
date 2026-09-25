@@ -55,6 +55,28 @@ urlpatterns = [
     path('get_product_variants',      views.get_product_variants, name='get_product_variants'),
     path('validate_coupon',           views.validate_coupon,      name='validate_coupon'),
     
+
+    # Content CMS
+    path("article_category_list", views.article_category_list, name='article_category_list'),
+    path("add_article_category", views.add_article_category, name='add_article_category'),
+    path("edit_article_category/<id>", views.edit_article_category, name='edit_article_category'),
+    path("delete_article_category/<id>", views.delete_article_category, name='delete_article_category'),
+    path("enable_article_category/<id>", views.enable_article_category, name='enable_article_category'),
+    path("disable_article_category/<id>", views.disable_article_category, name='disable_article_category'),
+
+    path("author_list", views.author_list, name='author_list'),
+    path("add_author", views.add_author, name='add_author'),
+    path("edit_author/<id>", views.edit_author, name='edit_author'),
+    path("delete_author/<id>", views.delete_author, name='delete_author'),
+    path("enable_author/<id>", views.enable_author, name='enable_author'),
+    path("disable_author/<id>", views.disable_author, name='disable_author'),
+
+    path("article_list", views.article_list, name='article_list'),
+    path("add_article", views.add_article, name='add_article'),
+    path("edit_article/<id>", views.edit_article, name='edit_article'),
+    path("delete_article/<id>", views.delete_article, name='delete_article'),
+    path("enable_article/<id>", views.enable_article, name='enable_article'),
+    path("disable_article/<id>", views.disable_article, name='disable_article'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

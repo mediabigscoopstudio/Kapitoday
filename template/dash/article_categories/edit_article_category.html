@@ -1,0 +1,32 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Edit Article Category{% endblock 'title' %}
+{% block 'body' %}
+<div class="container-fluid">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5>Edit Article Category</h5>
+                <div class="mb-3">
+                    <label>Title</label>
+                    <input type="text" name="title" value="{{ cat.title }}" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label>Slug (optional)</label>
+                    <input type="text" name="slug" value="{{ cat.slug }}" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label>Description</label>
+                    <textarea name="description" class="form-control" rows="4">{{ cat.description }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label>Current Image</label>
+                    {% if cat.category_image %}<img src="{{ cat.category_image.url }}" height="50">{% endif %}
+                    <input type="file" name="category_image" class="form-control mt-2">
+                </div>
+                <button type="submit" class="btn btn-primary">Update Category</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock 'body' %}
