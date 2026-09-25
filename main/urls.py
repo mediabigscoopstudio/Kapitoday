@@ -44,6 +44,7 @@ urlpatterns = [
     path("<slug:category_slug>/", views.content, name='category_detail'),
     path("<slug:category_slug>/<slug:article_slug>/", views.article_detail, name='article_detail'),
     
+    path('api/search/', views.search_products_api, name='search_products_api'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

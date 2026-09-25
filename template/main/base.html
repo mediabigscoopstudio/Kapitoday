@@ -22,6 +22,58 @@
   <link rel="stylesheet" href="{% static 'main/css/checkout.css' %}">
 
   
+
+<style>
+/* Search Dropdown */
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 300px;
+    background: #fff;
+    border: 1px solid #eee;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1060;
+    display: none;
+}
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-bottom: 1px solid #f5f5f5;
+    text-decoration: none;
+    color: var(--kapi-espresso);
+    transition: background 0.2s;
+}
+.search-result-item:hover {
+    background: #fdfaf4;
+}
+.search-result-img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.search-result-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0;
+}
+.search-result-price {
+    font-size: 0.8rem;
+    color: var(--kapi-sienna);
+    margin: 0;
+}
+.search-no-results {
+    padding: 15px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #888;
+}
+</style>
+
 </head>
 <body>
   <div class="page-wrapper">
@@ -126,6 +178,229 @@
 
   </div> <!-- /.page-wrapper -->
 
+<!-- FAST CHECKOUT DRAWER -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="fastCheckoutDrawer" aria-labelledby="fcDrawerLabel" style="width: 100%; max-width: 500px; border-left: none; box-shadow: -5px 0 25px rgba(0,0,0,0.1); background-color: #fdfaf4;">
+        <form style="display:none;">{% csrf_token %}</form>
+        
+        <!-- Header & Progress -->
+        <div style="background: #3A2A1D; color: #fff;">
+            <div style="padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h5 style="margin: 0; font-family: serif; font-size: 1.2rem; color: #fdfaf4;">Kapi Today Checkout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" style="filter: invert(1); opacity: 0.8;"></button>
+            </div>
+            <div id="fcProgress" style="display: flex; background: #4a3625; padding: 10px 20px; font-size: 0.75rem; color: rgba(255,255,255,0.6); justify-content: space-between;">
+                <span class="fc-pstep active" id="fc-ps-cart">Cart</span> →
+                <span class="fc-pstep" id="fc-ps-address">Address</span> →
+                <span class="fc-pstep" id="fc-ps-offers">Offers</span> →
+                <span class="fc-pstep" id="fc-ps-payment">Payment</span>
+            </div>
+        </div>
+
+        <div class="fc-body" id="fcBody" style="padding: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; flex: 1;">
+            
+            <!-- STEP 1: CART -->
+            <div id="fc-step-cart" class="fc-step-container active" style="padding: 20px; display:block;">
+                <div id="fc-cart-items-container">
+                    {% include 'main/partials/fc_cart_items.html' with cart_items=global_cart_items %}
+                </div>
+            </div>
+
+            <!-- STEP 2: LOGIN -->
+            <div id="fc-step-login" class="fc-step-container" style="padding: 20px; display:none; text-align:center;">
+                <h3 style="font-family: serif; color: #3A2A1D; margin-bottom: 15px; margin-top:20px;">Welcome to Kapi Today</h3>
+                <p style="color:#666; font-size:0.9rem;">Log in to view your saved addresses, orders and exclusive offers.</p>
+                <div id="fcGoogleBtnContainer" style="margin-top: 30px; display: flex; justify-content: center;">
+                    <!-- Google button renders here -->
+                </div>
+            </div>
+
+            <!-- STEP 3: ADDRESS -->
+            <div id="fc-step-address" class="fc-step-container" style="padding: 20px; display:none;">
+                <h6 style="font-weight:700; color:#3A2A1D; margin-bottom:15px;">Deliver To</h6>
+                <div id="fc-address-list"></div>
+                <hr style="border:0; border-top:1px dashed #ddd; margin: 20px 0;">
+                <h6 style="font-weight:700; color:#3A2A1D; margin-bottom:15px;">Add New Address</h6>
+                <form id="fc-address-form">
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="fc-name" class="form-control" placeholder="Full Name" required>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="fc-line1" class="form-control" placeholder="House No, Building, Street" required>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="fc-line2" class="form-control" placeholder="Locality / Landmark">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="fc-city" class="form-control" placeholder="City" required>
+                        <input type="text" id="fc-state" class="form-control" placeholder="State" required>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" id="fc-pin" class="form-control" placeholder="Pincode" required pattern="[0-9]{6}">
+                    </div>
+                </form>
+            </div>
+
+            <!-- STEP 4: OFFERS -->
+            <div id="fc-step-offers" class="fc-step-container" style="padding: 20px; display:none;">
+                <h6 style="font-weight:700; color:#3A2A1D; margin-bottom:15px;">Available Offers</h6>
+                
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <input type="text" id="fc-coupon-input" class="form-control" placeholder="Enter coupon code">
+                    <button onclick="fcApplyCoupon()" style="background:#333; color:#fff; border:none; border-radius:6px; padding:0 20px; font-weight:600;">Apply</button>
+                </div>
+                
+                <div id="fc-applied-coupon-msg" style="display:none; background:#e8f5e9; padding:10px 15px; border-radius:6px; border:1px dashed #4caf50; margin-bottom:20px; align-items:center; justify-content:space-between;">
+                    <span style="color:#2e7d32; font-weight:600;"><i class="bi bi-tag-fill"></i> <span id="fc-applied-code"></span></span>
+                    <button onclick="fcRemoveCoupon()" style="background:none; border:none; color:#d32f2f; cursor:pointer; font-weight:bold;">Remove</button>
+                </div>
+                
+                <div id="fc-offers-list"></div>
+            </div>
+
+            <!-- STEP 5: CONFIRMATION -->
+            <div id="fc-step-success" class="fc-step-container" style="padding: 40px 20px; display:none; text-align:center;">
+                <i class="bi bi-check-circle-fill" style="font-size:4rem; color:#2e7d32;"></i>
+                <h3 style="font-family:serif; color:#3A2A1D; margin-top:20px;">Order Placed!</h3>
+                <p style="color:#666;">Order #<span id="fc-success-id"></span></p>
+                <div style="margin-top:30px; text-align:left; background:#fff; padding:20px; border-radius:8px; border:1px solid #eee;">
+                    <p style="margin-bottom:10px;"><i class="bi bi-check-circle-fill" style="color:#2e7d32; margin-right:8px;"></i> Order Confirmed</p>
+                    <p style="margin-bottom:10px; color:#aaa;"><i class="bi bi-circle" style="margin-right:8px;"></i> Preparing</p>
+                    <p style="color:#aaa; margin:0;"><i class="bi bi-circle" style="margin-right:8px;"></i> Out for Delivery</p>
+                </div>
+                <button onclick="window.location.reload()" style="background:#3A2A1D; color:#fff; border:none; padding:12px 30px; border-radius:25px; margin-top:30px; font-weight:bold; width:100%;">Continue Shopping</button>
+            </div>
+            
+        </div>
+        
+        <!-- Sticky Footer -->
+        <div class="fc-footer" id="fcFooter" style="padding: 15px 20px; background: #fff; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display:none;">
+            <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:#555; margin-bottom:5px;">
+                <span>Item Total</span><span id="fc-subtotal">₹0</span>
+            </div>
+            <div id="fc-discount-row" style="display:none; justify-content:space-between; font-size:0.9rem; color:#2e7d32; font-weight:500; margin-bottom:5px;">
+                <span>Discount</span><span id="fc-discount">-₹0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:#555; margin-bottom:10px;">
+                <span>Shipping</span><span id="fc-shipping">₹0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:700; color:#3A2A1D; border-top:1px dashed #ddd; padding-top:10px;">
+                <span>Total</span><span id="fc-total">₹0</span>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button id="fc-back-btn" onclick="fcPrevStep()" style="display:none; width:30%; background:#f4f4f4; color:#555; text-align:center; padding:15px; border-radius:8px; font-weight:700; font-size:1rem; border:1px solid #ddd; cursor:pointer;">&larr; Back</button>
+                <button id="fc-cta-btn" onclick="fcNextStep()" style="flex:1; background:#a67c52; color:#fff; text-align:center; padding:15px; border-radius:8px; font-weight:700; font-size:1.1rem; border:none; cursor:pointer;">Continue to Login &rarr;</button>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- ============================
+         MAIN CONTENT
+         ============================ -->
+    <main class="main-content">
+      {% block 'body' %}
+        
+      {% endblock 'body' %}
+      
+    </main>
+
+
+    <!-- ============================
+         FOOTER
+         ============================ -->
+    <footer class="footer-kapi">
+      <div class="footer-top-border"></div>
+
+      <div class="footer-main">
+        <div class="container">
+          <div class="row g-4 g-lg-5">
+
+            <!-- Column 1: About -->
+            <div class="col-lg-4 col-md-6">
+              <div class="footer-about">
+                <div class="footer-logo">
+                  <a href="/">
+                    <img src="/static/main/logos/LogoDark.webp" alt="Kapi Today" style="height: 100px;">
+                  </a>
+                </div>
+                <p>Authentic, artisanal, estate-grown specialty coffee from the Western Ghats of South India. Every cup tells the story of our land, our farmers, and our heritage.</p>
+                <div class="footer-social">
+                  <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                  <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                  <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                  <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column 2: Quick Links -->
+            <div class="col-lg-2 col-md-6">
+              <h5>Quick Links</h5>
+              <ul class="footer-links">
+                <li><a href="/shop">Shop Coffee</a></li>
+                <li><a href="/about">Our Story</a></li>
+                <li><a href="/learn">Brew Guides</a></li>
+                <li><a href="/content">Our Content</a></li>
+                <li><a href="/support">Contact Us</a></li>
+              </ul>
+            </div>
+
+            <!-- Column 3: Coffee Origins -->
+            <div class="col-lg-2 col-md-6">
+              <h5>Our Categories</h5>
+              <ul class="footer-links">
+                {% for cat in nav_categories %}
+                <li><a href="{% url 'shop_category' category_slug=cat.slug %}">{{ cat.title }}</a></li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <!-- Column 4: Newsletter -->
+            <div class="col-lg-4 col-md-6">
+              <h5>Stay Brewed</h5>
+              <p style="font-size:var(--text-sm);color:var(--kapi-sand);margin-bottom:var(--space-lg);">
+                Join our newsletter for brew tips, new arrivals, and stories from the plantations.
+              </p>
+              <div class="footer-newsletter">
+                <div class="input-group">
+                  <input type="email" class="form-control" placeholder="Your email address" aria-label="Email">
+                  <button class="btn-subscribe" type="button">Subscribe</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="footer-bottom">
+        <div class="container">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <p>© 2026 Kapi Today. All rights reserved.</p>
+            <div class="d-flex gap-3 align-items-center flex-wrap justify-content-center">
+              <a href="#">Privacy Policy</a>
+              <a href="#">Terms of Service</a>
+              <a href="#">Shipping &amp; Returns</a>
+              <!-- Pinecode Studio Credit -->
+              <button
+                class="pinecode-credit"
+                id="pinecodeCreditBtn"
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded="false"
+                aria-controls="pinecodeModal"
+              >
+                <span class="pc-dot" aria-hidden="true"></span>
+                Designed &amp; Developed by <span class="pc-name">Pinecode Studio</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+  
   <!-- Bootstrap 5 JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -698,6 +973,64 @@
         });
     }
 
+</script>
+
+
+<script>
+// Live Search Logic
+function initSearch(inputId, resultsId) {
+    const input = document.getElementById(inputId);
+    const results = document.getElementById(resultsId);
+    if (!input || !results) return;
+    
+    let debounceTimer;
+    
+    input.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+            results.style.display = 'none';
+            return;
+        }
+        
+        debounceTimer = setTimeout(() => {
+            fetch(`/api/search/?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    results.innerHTML = '';
+                    if (data.products && data.products.length > 0) {
+                        data.products.forEach(p => {
+                            results.innerHTML += `
+                                <a href="${p.url}" class="search-result-item">
+                                    <img src="${p.image}" class="search-result-img" alt="${p.name}">
+                                    <div>
+                                        <p class="search-result-title">${p.name}</p>
+                                        <p class="search-result-price">₹${p.price}</p>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                    } else {
+                        results.innerHTML = '<div class="search-no-results">No products found.</div>';
+                    }
+                    results.style.display = 'block';
+                });
+        }, 300);
+    });
+    
+    // Close on click outside
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !results.contains(e.target)) {
+            results.style.display = 'none';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initSearch('kapiSearchInput', 'kapiSearchResults');
+    initSearch('kapiSearchInputMobile', 'kapiSearchResultsMobile');
+});
 </script>
 
 </body>

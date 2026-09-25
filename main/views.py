@@ -885,3 +885,32 @@ def api_support_message(request, support_id):
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False})
 
+
+
+from django.http import JsonResponse
+from dash.models import Product
+
+def search_products_api(request):
+    query = request.GET.get('q', '').strip()
+    if len(query) < 2:
+        return JsonResponse({'products': []})
+        
+    products = Product.objects.prefetch_related('product_variant').filter(name__icontains=query, slug__isnull=False)[:5]
+    
+    results = []
+    for p in products:
+        price = p.product_variant.first().price if p.product_variant.exists() else "N/A"
+        img = p.thumbnail.url if p.thumbnail else "/static/main/images/placeholder_coffee.webp"
+        
+        # Need category and subcategory slug to build URL
+        cat_slug = p.category.slug if p.category else "all"
+        sub_slug = p.sub_category.slug if p.sub_category else "all"
+        
+        results.append({
+            'name': p.name,
+            'price': price,
+            'image': img,
+            'url': f"/shop/{cat_slug}/{sub_slug}/{p.slug}/"
+        })
+        
+    return JsonResponse({'products': results})
