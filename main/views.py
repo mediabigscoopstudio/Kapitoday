@@ -247,8 +247,8 @@ def google_login(request):
                     customer_cart = Cart.objects.filter(customer=customer).first()
                     if customer_cart and customer_cart != session_cart:
                         # Merge session cart items into customer cart
-                        for item in session_cart.items.all():
-                            existing_item = customer_cart.items.filter(product=item.product, variant=item.variant).first()
+                        for item in session_cart.cart_items.all():
+                            existing_item = customer_cart.cart_items.filter(product=item.product, variant=item.variant).first()
                             if existing_item:
                                 existing_item.quantity += item.quantity
                                 existing_item.save()
