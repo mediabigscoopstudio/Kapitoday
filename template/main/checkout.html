@@ -1,7 +1,7 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block content %}
+{% block 'body' %}
 <style>
 .checkout-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
 .checkout-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; }
@@ -152,4 +152,4 @@ document.getElementById('pay-btn').onclick = function(e) {
     e.preventDefault();
 }
 </script>
-{% endblock %}
+{% endblock 'body' %}
