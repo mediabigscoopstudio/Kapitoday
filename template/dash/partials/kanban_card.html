@@ -1,0 +1,19 @@
+<div class="k-card" onclick="window.location.href='{% url \'order_detail\' order.id %}'">
+    <div class="k-card-header">
+        <span class="k-id">#{{ order.id }}</span>
+        <span class="k-date">{{ order.created_at|date:"M d, g:i A" }}</span>
+    </div>
+    <div class="k-title">{{ order.full_name }}</div>
+    <div class="k-meta">
+        <i class="bi bi-geo-alt"></i> {{ order.city }}, {{ order.state }}<br>
+        <i class="bi bi-box"></i> {{ order.order_items.count }} items
+    </div>
+    <div class="k-footer">
+        <span class="k-amount">₹{{ order.total }}</span>
+        {% if order.payment_status == 'paid' %}
+            <span class="k-payment paid"><i class="bi bi-check-circle-fill"></i> PAID</span>
+        {% else %}
+            <span class="k-payment pending"><i class="bi bi-clock-history"></i> PENDING</span>
+        {% endif %}
+    </div>
+</div>

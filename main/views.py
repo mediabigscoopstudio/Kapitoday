@@ -354,3 +354,115 @@ def subscribe_newsletter(request):
         return JsonResponse({'success': True, 'message': 'Successfully subscribed!'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+import razorpay
+
+def get_razorpay_client():
+    if not getattr(settings, 'RAZORPAY_API_KEY', None) or not getattr(settings, 'RAZORPAY_KEY_SECRET', None):
+        return None
+    return razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_KEY_SECRET))
+
+@login_required(login_url='/?trigger_login=true')
+def checkout(request):
+    try:
+        customer = Customers.objects.get(user=request.user)
+        cart = Cart.objects.get(customer=customer)
+        cart_items = cart.cart_items.all()
+    except (Customers.DoesNotExist, Cart.DoesNotExist):
+        return redirect('/')
+        
+    if not cart_items:
+        return redirect('/shop')
+
+    subtotal = sum((item.variant.price if item.variant else 0) * item.quantity for item in cart_items)
+    shipping_charge = 0 if subtotal > 999 else 50
+    total = subtotal + shipping_charge
+    
+    context = {
+        'cart_items': cart_items,
+        'subtotal': subtotal,
+        'shipping_charge': shipping_charge,
+        'total': total,
+        'customer': customer,
+    }
+    
+    client = get_razorpay_client()
+    if client:
+        amount = int(total * 100)
+        try:
+            razorpay_order = client.order.create(dict(amount=amount, currency="INR", payment_capture='1'))
+            context['razorpay_order_id'] = razorpay_order['id']
+            context['razorpay_merchant_key'] = settings.RAZORPAY_API_KEY
+            context['amount'] = amount
+        except Exception as e:
+            print("Razorpay Error:", e)
+            
+    return render(request, 'main/checkout.html', context)
+
+@csrf_exempt
+def verify_payment(request):
+    if request.method == "POST":
+        data = request.POST
+        # data will contain razorpay_payment_id, razorpay_order_id, razorpay_signature, plus our custom form fields
+        client = get_razorpay_client()
+        if client:
+            try:
+                # verify the signature
+                client.utility.verify_payment_signature({
+                    'razorpay_order_id': data.get('razorpay_order_id'),
+                    'razorpay_payment_id': data.get('razorpay_payment_id'),
+                    'razorpay_signature': data.get('razorpay_signature')
+                })
+                
+                # Payment successful, create Order
+                customer = Customers.objects.get(user=request.user)
+                cart = Cart.objects.get(customer=customer)
+                
+                order = Order.objects.create(
+                    customer=customer,
+                    email=customer.email or request.user.email,
+                    phone=customer.phone_number or '',
+                    full_name=data.get('full_name', 'Customer'),
+                    address_line_1=data.get('address_line_1', ''),
+                    address_line_2=data.get('address_line_2', ''),
+                    city=data.get('city', ''),
+                    state=data.get('state', ''),
+                    pincode=data.get('pincode', ''),
+                    total=data.get('total_amount', 0),
+                    payment_method='razorpay',
+                    razorpay_order_id=data.get('razorpay_order_id'),
+                    razorpay_payment_id=data.get('razorpay_payment_id'),
+                    razorpay_signature=data.get('razorpay_signature'),
+                    payment_status='paid',
+                    status='processing'
+                )
+                
+                # Empty cart
+                cart.cart_items.all().delete()
+                
+                # Send confirmation email
+                try:
+                    from django.core.mail import EmailMultiAlternatives
+                    from django.template.loader import render_to_string
+                    base_url = request.build_absolute_uri('/')[:-1]
+                    html_content = render_to_string('emails/order_confirmation.html', {'order': order, 'base_url': base_url})
+                    msg = EmailMultiAlternatives('Order Confirmation - Kapi Today', 'Your order is confirmed!', settings.DEFAULT_FROM_EMAIL, [order.email])
+                    msg.attach_alternative(html_content, "text/html")
+                    msg.send(fail_silently=False)
+                    # Send tracking email immediately as requested
+                    track_html = render_to_string('emails/track_order.html', {'order': order, 'base_url': base_url})
+                    msg2 = EmailMultiAlternatives('Track Your Kapi Today Order', 'Track your coffee order!', settings.DEFAULT_FROM_EMAIL, [order.email])
+                    msg2.attach_alternative(track_html, "text/html")
+                    msg2.send(fail_silently=False)
+
+                except Exception as e:
+                    print("Order email failed:", e)
+
+                return JsonResponse({'status': 'success', 'order_id': order.id})
+            except Exception as e:
+                print("Payment verification failed", e)
+                return JsonResponse({'status': 'failure', 'error': str(e)})
+    return JsonResponse({'status': 'invalid'})

@@ -708,7 +708,14 @@
               e.preventDefault();
               google.accounts.id.prompt(); // Shows the One Tap popup
             });
-          });
+          });          
+          // Auto-trigger if URL has ?trigger_login=true
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('trigger_login') === 'true') {
+              setTimeout(() => {
+                  google.accounts.id.prompt();
+              }, 500);
+          }
         }
       });
     </script>

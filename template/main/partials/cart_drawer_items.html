@@ -62,7 +62,7 @@
     <span class="cart-subtotal-value">₹{{ global_cart_total }}</span>
   </div>
   <div class="cart-tax-note">Taxes & shipping calculated at checkout</div>
-  <a href="#" class="btn-checkout">
+  <a href="{% url 'checkout' %}" class="btn-checkout">
     Proceed to Checkout <i class="bi bi-arrow-right" style="margin-left:6px;"></i>
   </a>
   <button class="btn-continue-shopping" type="button" data-bs-dismiss="offcanvas">

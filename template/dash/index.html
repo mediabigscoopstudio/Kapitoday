@@ -1,198 +1,234 @@
 {% extends "dash/base.html" %}
-{% block 'title' %}Welcome back {{user.username}}{% endblock 'title' %}
+{% block 'title' %}Dashboard - Kanban Orders{% endblock 'title' %}
 {% block 'css' %}
 <style>
-    .order-id {
-        font-family: monospace;
-        font-size: 12px;
+    /* Kanban Styles */
+    .kanban-board {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 20px;
+        gap: 20px;
+        height: calc(100vh - 170px); 
+        align-items: flex-start;
+    }
+    .kanban-board::-webkit-scrollbar {
+        height: 8px;
+    }
+    .kanban-board::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 10px;
+    }
+    .kanban-column {
+        min-width: 320px;
+        max-width: 320px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        max-height: 100%;
+        border: 1px solid #e2e8f0;
+    }
+    .kanban-header {
+        padding: 15px;
+        font-weight: 700;
+        color: #334155;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #e2e8f0;
+        border-radius: 8px 8px 0 0;
+    }
+    .kanban-header.pending { border-bottom-color: #f59e0b; }
+    .kanban-header.processing { border-bottom-color: #3b82f6; }
+    .kanban-header.shipped { border-bottom-color: #8b5cf6; }
+    .kanban-header.delivered { border-bottom-color: #10b981; }
+    .kanban-header.cancelled { border-bottom-color: #ef4444; }
+    .kanban-header.returned { border-bottom-color: #64748b; }
+
+    .kanban-header .badge {
+        background: #e2e8f0;
+        color: #475569;
+        font-size: 11px;
+    }
+    .kanban-cards {
+        padding: 10px;
+        overflow-y: auto;
+        flex: 1;
+    }
+    .kanban-cards::-webkit-scrollbar { width: 4px; }
+    .kanban-cards::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    
+    .k-card {
+        background: #fff;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        border: 1px solid #e2e8f0;
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .k-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        border-color: #cbd5e1;
+    }
+    .k-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .k-id {
+        font-size: 11px;
         font-weight: 700;
         color: #6b3a1f;
         background: #f5efe6;
-        padding: 3px 8px;
-        border-radius: 6px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-decoration: none;
     }
-    .status-pill {
+    .k-id:hover { text-decoration: underline; }
+    .k-date {
         font-size: 11px;
-        font-weight: 700;
-        padding: 3px 10px;
-        border-radius: 20px;
-        display: inline-block;
+        color: #94a3b8;
     }
+    .k-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 2px;
+        color: #1e293b;
+    }
+    .k-meta {
+        font-size: 12px;
+        color: #64748b;
+        margin-bottom: 10px;
+    }
+    .k-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 10px;
+        border-top: 1px solid #f1f5f9;
+    }
+    .k-amount {
+        font-size: 13px;
+        font-weight: 700;
+        color: #059669;
+    }
+    .k-payment {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+    .k-payment.paid { background: #d1fae5; color: #059669; }
+    .k-payment.pending { background: #fef3c7; color: #d97706; }
 </style>
 {% endblock 'css' %}
 
 {% block 'body' %}
 <div class="container-fluid">
-
     <div class="py-3 d-flex align-items-sm-center flex-sm-row flex-column">
         <div class="flex-grow-1">
-            <h4 class="fs-18 fw-semibold m-0">Orders</h4>
-            <p class="text-muted mb-0" style="font-size:13px;">{{ orders.paginator.count }} total orders</p>
+            <h4 class="fs-18 fw-semibold m-0">Orders Kanban Board</h4>
+            <p class="text-muted mb-0" style="font-size:13px;">Manage all {{ all_orders_count }} orders across all fulfillment stages</p>
         </div>
-        <a aria-label="Register Order" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Register Order" href="/create_order">Register Order</a>
+        <a aria-label="Register Order" class="btn btn-sm btn-primary" href="{% url 'create_order' %}">
+            <i class="bi bi-plus-lg"></i> Create Manual Order
+        </a>
     </div>
 
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead style="background:#faf8f6; border-bottom:2px solid #f0ebe5;">
-                        <tr>
-                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px; padding:14px 16px;">Order ID</th>
-                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Customer</th>
-                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Contact</th>
-                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Location</th>
-                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Amount</th>
-                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Payment</th>
-                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Status</th>
-                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Date</th>
-                            <th style="font-size:11px; font-weight:700; color:#6b3a1f; text-transform:uppercase; letter-spacing:0.5px;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for i in orders %}
-                        <tr>
-                            <!-- Order ID -->
-                            <td style="padding:14px 16px;">
-                                <span class="order-id">#{{ i.id }}</span>
-                                {% if i.awb_code %}
-                                <span class="d-block" style="font-size:10px; color:#bbb; margin-top:3px;">AWB: {{ i.awb_code }}</span>
-                                {% endif %}
-                            </td>
-
-                            <!-- Customer -->
-                            <td>
-                                <span style="font-size:13px; font-weight:600; color:#1a0a00; display:block;">{{ i.full_name }}</span>
-                                {% if i.customer %}
-                                <span style="font-size:11px; color:#bbb;">{{ i.customer.user.email }}</span>
-                                {% else %}
-                                <span style="font-size:11px; color:#bbb;">Guest</span>
-                                {% endif %}
-                            </td>
-
-                            <!-- Contact -->
-                            <td style="font-size:12px; color:#666;">{{ i.phone }}</td>
-
-                            <!-- Location -->
-                            <td>
-                                <span style="font-size:12px; color:#666; display:block;">{{ i.city }}, {{ i.state }}</span>
-                                <span style="font-size:11px; color:#bbb;">{{ i.pincode }}</span>
-                            </td>
-
-                            <!-- Amount -->
-                            <td>
-                                <span style="font-size:13px; font-weight:700; color:#1a0a00;">₹{{ i.total }}</span>
-                                {% if i.discount > 0 %}
-                                <span style="font-size:10px; color:#16a34a; display:block;">-₹{{ i.discount }} off</span>
-                                {% endif %}
-                            </td>
-
-                            <!-- Payment -->
-                            <td>
-                                {% if i.payment_method == 'razorpay' %}
-                                <span class="status-pill" style="background:#eff6ff; color:#2563eb;">Razorpay</span>
-                                {% else %}
-                                <span class="status-pill" style="background:#fef3c7; color:#d97706;">COD</span>
-                                {% endif %}
-                                <span class="d-block" style="font-size:10px; margin-top:3px;
-                                    {% if i.payment_status == 'paid' %}color:#16a34a;
-                                    {% elif i.payment_status == 'pending' %}color:#d97706;
-                                    {% else %}color:#dc2626;{% endif %}
-                                    font-weight:600;">
-                                    {{ i.payment_status|title }}
-                                </span>
-                            </td>
-
-                            <!-- Status -->
-                            <td>
-                                {% if i.status == 'pending' %}
-                                <span class="status-pill" style="background:#fef3c7; color:#d97706;">Pending</span>
-                                {% elif i.status == 'paid' %}
-                                <span class="status-pill" style="background:#ede9fe; color:#7c3aed;">Paid</span>
-                                {% elif i.status == 'processing' %}
-                                <span class="status-pill" style="background:#e0f2fe; color:#0891b2;">Processing</span>
-                                {% elif i.status == 'ready_for_pickup' %}
-                                <span class="status-pill" style="background:#fff7ed; color:#ea580c;">Ready for Pickup</span>
-                                {% elif i.status == 'shipped' %}
-                                <span class="status-pill" style="background:#dbeafe; color:#2563eb;">Shipped</span>
-                                {% elif i.status == 'out_for_delivery' %}
-                                <span class="status-pill" style="background:#fdf4ff; color:#a21caf;">Out for Delivery</span>
-                                {% elif i.status == 'delivered' %}
-                                <span class="status-pill" style="background:#dcfce7; color:#16a34a;">Delivered</span>
-                                {% elif i.status == 'cancelled' %}
-                                <span class="status-pill" style="background:#fee2e2; color:#dc2626;">Cancelled</span>
-                                {% elif i.status == 'return_requested' %}
-                                <span class="status-pill" style="background:#fce7f3; color:#be185d;">Return Requested</span>
-                                {% elif i.status == 'returned' %}
-                                <span class="status-pill" style="background:#f3e8ff; color:#7c3aed;">Returned</span>
-                                {% elif i.status == 'refunded' %}
-                                <span class="status-pill" style="background:#fee2e2; color:#dc2626;">Refunded</span>
-                                {% elif i.status == 'payment_failed' %}
-                                <span class="status-pill" style="background:#fee2e2; color:#dc2626;">Payment Failed</span>
-                                {% endif %}
-                            </td>
-
-                            <!-- Date -->
-                            <td style="font-size:12px; color:#888;">
-                                {{ i.created_at|date:"d M Y" }}
-                                <span class="d-block" style="font-size:11px; color:#bbb;">{{ i.created_at|date:"h:i A" }}</span>
-                            </td>
-
-                            <!-- Action -->
-                            <td>
-                                <a href="/order_detail/{{ i.id }}" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="View Order Details">
-                                    <i class="mdi mdi-eye fs-16 align-middle"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="9" class="text-center text-muted py-5">No orders found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <!-- Kanban Board Container -->
+    <div class="kanban-board">
+        
+        <!-- PENDING -->
+        <div class="kanban-column">
+            <div class="kanban-header pending">
+                <span>NEW / PENDING</span>
+                <span class="badge">{{ grouped_orders.pending|length }}</span>
             </div>
-
-            <!-- Pagination -->
-            {% if orders.has_other_pages %}
-            <div class="d-flex align-items-center justify-content-between px-4 py-3" style="border-top:1px solid #f0ebe5;">
-                <p class="mb-0" style="font-size:12.5px; color:#888;">
-                    Showing {{ orders.start_index }}–{{ orders.end_index }} of {{ orders.paginator.count }} orders
-                </p>
-                <nav>
-                    <ul class="pagination pagination-sm mb-0 gap-1">
-                        {% if orders.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ orders.previous_page_number }}" style="border-radius:6px;">
-                                <i class="mdi mdi-chevron-left"></i>
-                            </a>
-                        </li>
-                        {% endif %}
-                        {% for num in orders.paginator.page_range %}
-                            {% if orders.number == num %}
-                            <li class="page-item active">
-                                <span class="page-link" style="background:#c8882a; border-color:#c8882a; border-radius:6px;">{{ num }}</span>
-                            </li>
-                            {% elif num > orders.number|add:'-3' and num < orders.number|add:'3' %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ num }}" style="border-radius:6px;">{{ num }}</a>
-                            </li>
-                            {% endif %}
-                        {% endfor %}
-                        {% if orders.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ orders.next_page_number }}" style="border-radius:6px;">
-                                <i class="mdi mdi-chevron-right"></i>
-                            </a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
+            <div class="kanban-cards">
+                {% for o in grouped_orders.pending %}
+                    {% include 'dash/partials/kanban_card.html' with order=o %}
+                {% endfor %}
             </div>
-            {% endif %}
-
         </div>
+
+        <!-- PROCESSING -->
+        <div class="kanban-column">
+            <div class="kanban-header processing">
+                <span>PROCESSING</span>
+                <span class="badge">{{ grouped_orders.processing|length }}</span>
+            </div>
+            <div class="kanban-cards">
+                {% for o in grouped_orders.processing %}
+                    {% include 'dash/partials/kanban_card.html' with order=o %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- SHIPPED & OUT FOR DELIVERY -->
+        <div class="kanban-column">
+            <div class="kanban-header shipped">
+                <span>SHIPPED / IN TRANSIT</span>
+                <span class="badge">{{ grouped_orders.shipped|length|add:grouped_orders.out_for_delivery|length }}</span>
+            </div>
+            <div class="kanban-cards">
+                {% for o in grouped_orders.shipped %}
+                    {% include 'dash/partials/kanban_card.html' with order=o %}
+                {% endfor %}
+                {% for o in grouped_orders.out_for_delivery %}
+                    {% include 'dash/partials/kanban_card.html' with order=o %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- DELIVERED -->
+        <div class="kanban-column">
+            <div class="kanban-header delivered">
+                <span>DELIVERED</span>
+                <span class="badge">{{ grouped_orders.delivered|length }}</span>
+            </div>
+            <div class="kanban-cards">
+                {% for o in grouped_orders.delivered %}
+                    {% include 'dash/partials/kanban_card.html' with order=o %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- RETURNS & REFUNDS -->
+        <div class="kanban-column">
+            <div class="kanban-header returned">
+                <span>RETURNS / REFUNDS</span>
+                <span class="badge">{{ grouped_orders.return_requested|length|add:grouped_orders.returned|length|add:grouped_orders.refunded|length }}</span>
+            </div>
+            <div class="kanban-cards">
+                {% for o in grouped_orders.return_requested %}
+                    {% include 'dash/partials/kanban_card.html' with order=o %}
+                {% endfor %}
+                {% for o in grouped_orders.returned %}
+                    {% include 'dash/partials/kanban_card.html' with order=o %}
+                {% endfor %}
+                {% for o in grouped_orders.refunded %}
+                    {% include 'dash/partials/kanban_card.html' with order=o %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- CANCELLED -->
+        <div class="kanban-column">
+            <div class="kanban-header cancelled">
+                <span>CANCELLED</span>
+                <span class="badge">{{ grouped_orders.cancelled|length }}</span>
+            </div>
+            <div class="kanban-cards">
+                {% for o in grouped_orders.cancelled %}
+                    {% include 'dash/partials/kanban_card.html' with order=o %}
+                {% endfor %}
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock 'body' %}

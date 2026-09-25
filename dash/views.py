@@ -29,10 +29,33 @@ from django.core.paginator import Paginator
 @user_passes_test(superadmin_required, login_url=('/login_view'))
 def index(request):
     all_orders = Order.objects.all().order_by('-created_at')
-    paginator  = Paginator(all_orders, 20)
-    page       = request.GET.get('page')
-    orders     = paginator.get_page(page)
-    return render(request,'dash/index.html', {'orders': orders})
+    
+    grouped_orders = {
+        'pending': [],
+        'processing': [],
+        'shipped': [],
+        'out_for_delivery': [],
+        'delivered': [],
+        'cancelled': [],
+        'return_requested': [],
+        'returned': [],
+        'refunded': [],
+    }
+    
+    for order in all_orders:
+        if order.status in grouped_orders:
+            grouped_orders[order.status].append(order)
+        else:
+            grouped_orders['pending'].append(order)
+            
+    paginator = Paginator(all_orders, 20)
+    orders = paginator.get_page(request.GET.get('page'))
+            
+    return render(request, 'dash/index.html', {
+        'orders': orders,
+        'grouped_orders': grouped_orders,
+        'all_orders_count': all_orders.count()
+    })
 
 # Category Management Section
 

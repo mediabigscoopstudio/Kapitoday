@@ -20,6 +20,9 @@ urlpatterns = [
     path("shop/", views.shop, name='shop'),
     path("shop/category/<slug:category_slug>/", views.shop, name='shop_category'),
     path("shop/add-to-cart/", views.add_to_cart, name='add_to_cart'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('verify_payment/', views.verify_payment, name='verify_payment'),
+
     path("<slug:category_slug>/<slug:subcategory_slug>/<slug:product_slug>/", views.product_detail, name='product_detail'),
     
     # Must come after exact matches to avoid catching them

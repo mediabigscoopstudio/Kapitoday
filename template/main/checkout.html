@@ -1,0 +1,155 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.checkout-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+.checkout-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; }
+@media (max-width: 768px) {
+    .checkout-grid { grid-template-columns: 1fr; }
+}
+.checkout-section { background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.checkout-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 25px; color: var(--text-color); }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; color: #555; }
+.form-control { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; }
+.form-control:focus { outline: none; border-color: var(--primary-color); }
+.order-summary-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+.order-summary-item:last-child { border-bottom: none; }
+.summary-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+.summary-details { flex: 1; padding: 0 15px; }
+.summary-details h6 { margin: 0; font-size: 1rem; font-weight: 600; }
+.summary-details p { margin: 4px 0 0; font-size: 0.85rem; color: #666; }
+.summary-price { font-weight: 700; }
+.total-line { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; border-top: 2px dashed #ddd; font-size: 1.2rem; font-weight: 700; }
+.pay-btn { display: block; width: 100%; padding: 15px; background: var(--primary-color, #a67c52); color: #fff; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 30px; transition: opacity 0.2s; }
+.pay-btn:hover { opacity: 0.9; }
+</style>
+
+<div class="checkout-container">
+    <div class="checkout-grid">
+        <!-- Left: Shipping Address -->
+        <div class="checkout-section">
+            <h2 class="checkout-title">Shipping Information</h2>
+            <form id="checkout-form">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" class="form-control" name="full_name" value="{{ customer.user.get_full_name|default:'' }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Address Line 1</label>
+                    <input type="text" class="form-control" name="address_line_1" required placeholder="House No, Building, Street">
+                </div>
+                <div class="form-group">
+                    <label>Address Line 2 (Optional)</label>
+                    <input type="text" class="form-control" name="address_line_2" placeholder="Locality, Landmark">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" class="form-control" name="city" required>
+                    </div>
+                    <div class="form-group">
+                        <label>State</label>
+                        <input type="text" class="form-control" name="state" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Pincode</label>
+                    <input type="text" class="form-control" name="pincode" required pattern="[0-9]{6}">
+                </div>
+            </form>
+        </div>
+
+        <!-- Right: Order Summary -->
+        <div class="checkout-section">
+            <h2 class="checkout-title">Order Summary</h2>
+            <div class="order-items">
+                {% for item in cart_items %}
+                <div class="order-summary-item">
+                    <img src="{% if item.product.images.first %}{{ item.product.images.first.image.url }}{% endif %}" class="summary-img" alt="{{ item.product.name }}">
+                    <div class="summary-details">
+                        <h6>{{ item.product.name }}</h6>
+                        <p>{% if item.variant %}{{ item.variant.title }}{% endif %} &times; {{ item.quantity }}</p>
+                    </div>
+                    <div class="summary-price">₹{% widthratio item.variant.price|default:0 1 item.quantity %}</div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;">
+                    <span>Subtotal</span>
+                    <span>₹{{ subtotal }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #555;">
+                    <span>Shipping</span>
+                    <span>{% if shipping_charge == 0 %}Free{% else %}₹{{ shipping_charge }}{% endif %}</span>
+                </div>
+                <div class="total-line">
+                    <span>Total</span>
+                    <span>₹{{ total }}</span>
+                </div>
+            </div>
+
+            <button type="button" class="pay-btn" id="pay-btn">Proceed to Pay ₹{{ total }}</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.getElementById('pay-btn').onclick = function(e) {
+    const form = document.getElementById('checkout-form');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    var options = {
+        "key": "{{ razorpay_merchant_key }}",
+        "amount": "{{ amount }}",
+        "currency": "INR",
+        "name": "Kapi Today",
+        "description": "Coffee Order",
+        "image": "{% static 'main/logos/Vector.webp' %}",
+        "order_id": "{{ razorpay_order_id }}",
+        "handler": function (response) {
+            // Add address details to response
+            const formData = new FormData(form);
+            formData.append('razorpay_payment_id', response.razorpay_payment_id);
+            formData.append('razorpay_order_id', response.razorpay_order_id);
+            formData.append('razorpay_signature', response.razorpay_signature);
+            formData.append('total_amount', '{{ total }}');
+            
+            fetch("{% url 'verify_payment' %}", {
+                method: "POST",
+                body: formData
+            }).then(res => res.json()).then(data => {
+                if (data.status === 'success') {
+                    Swal.fire('Success!', 'Your order has been placed securely.', 'success').then(() => {
+                        window.location.href = "/";
+                    });
+                } else {
+                    Swal.fire('Error', 'Payment verification failed.', 'error');
+                }
+            });
+        },
+        "prefill": {
+            "name": form.full_name.value,
+            "email": "{{ customer.email|default:user.email }}",
+            "contact": "{{ customer.phone_number|default:'' }}"
+        },
+        "theme": {
+            "color": "#3A2A1D"
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.on('payment.failed', function (response){
+            Swal.fire('Payment Failed', response.error.description, 'error');
+    });
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+{% endblock %}
