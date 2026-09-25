@@ -1261,23 +1261,29 @@ def disable_article(request, id):
 # ============================================================
 from dash.models import SupportQuery, SupportMessage
 
+import json
+from django.views.decorators.csrf import csrf_exempt
+
+
 @user_passes_test(superadmin_required, login_url=('/login_view'))
 def support_kanban(request):
     queries = SupportQuery.objects.all().order_by('-updated_at')
     
-    kanban = {
-        'OPEN': [],
-        'BOT_HANDLING': [],
-        'ESCALATED': [],
-        'HUMAN_REVIEW': [],
-        'ACTION_REQUIRED': [],
-        'RESOLVED': [],
-        'CLOSED': [],
+    status_map = {
+        'OPEN': 'Open',
+        'BOT_HANDLING': 'Bot Handling',
+        'ESCALATED': 'Escalated',
+        'HUMAN_REVIEW': 'Human Review',
+        'ACTION_REQUIRED': 'Action Required',
+        'RESOLVED': 'Resolved',
+        'CLOSED': 'Closed',
     }
     
+    kanban = {name: [] for name in status_map.values()}
+    
     for q in queries:
-        if q.status in kanban:
-            kanban[q.status].append(q)
+        if q.status in status_map:
+            kanban[status_map[q.status]].append(q)
             
     return render(request, 'dash/support/kanban.html', {'kanban': kanban, 'total_queries': queries.count()})
 

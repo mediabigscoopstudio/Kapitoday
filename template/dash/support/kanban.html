@@ -31,7 +31,7 @@
     {% for status, items in kanban.items %}
     <div class="kanban-col">
         <div class="kanban-col-header">
-            <span>{{ status|replace:"_"," "|title }}</span>
+            <span>{{ status }}</span>
             <span class="badge bg-secondary rounded-pill">{{ items|length }}</span>
         </div>
         <div class="kanban-cards">
