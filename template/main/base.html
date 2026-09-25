@@ -51,9 +51,21 @@
     <div class="utility-bar desktop-nav">
       <div class="container">
         <div class="d-flex justify-content-end align-items-center gap-4">
-          <a href="#" class="util-link">
-            <i class="bi bi-person"></i> My Account
-          </a>
+          {% if request.user.is_authenticated %}
+            <div class="dropdown" style="display:inline-block;">
+              <a href="#" class="util-link dropdown-toggle" data-bs-toggle="dropdown" style="text-decoration:none;">
+                <i class="bi bi-person-check-fill"></i> Hi, {{ request.user.first_name|default:request.user.username }}
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/admin/">Account Settings</a></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}?next=/">Logout</a></li>
+              </ul>
+            </div>
+          {% else %}
+            <a href="#" class="util-link google-login-trigger">
+              <i class="bi bi-person"></i> My Account
+            </a>
+          {% endif %}
           <button class="util-link" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-label="Open cart" style="background:none;border:none;cursor:pointer;">
             <i class="bi bi-bag"></i> Cart
             <span class="cart-count" style="position:absolute;top:-6px;right:-10px;font-size:9px;width:16px;height:16px;background:var(--kapi-charcoal);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;">{{ global_cart_count|default:"0" }}</span>
@@ -160,7 +172,11 @@
       </a>
 
       <div class="mobile-icons">
-        <a href="#" aria-label="Account"><i class="bi bi-person"></i></a>
+        {% if request.user.is_authenticated %}
+        <a href="/admin/" aria-label="Account Settings"><i class="bi bi-person-check-fill"></i></a>
+        {% else %}
+        <a href="#" class="google-login-trigger" aria-label="Account"><i class="bi bi-person"></i></a>
+        {% endif %}
         <button type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-label="Cart" style="background:none;border:none;padding:0;color:var(--kapi-charcoal);font-size:20px;position:relative;cursor:pointer;">
           <i class="bi bi-bag"></i>
           <span class="cart-count" style="position:absolute;top:-6px;right:-10px;font-size:9px;width:16px;height:16px;background:var(--kapi-charcoal);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;">{{ global_cart_count|default:"0" }}</span>
@@ -185,7 +201,12 @@
           <a href="/content" class="nav-mobile-link active">Our Content</a>
         </nav>
         <div class="mobile-util-links">
-          <a href="#"><i class="bi bi-person"></i> My Account</a>
+          {% if request.user.is_authenticated %}
+          <a href="/admin/"><i class="bi bi-person-check-fill"></i> Account Settings</a>
+          <a href="{% url 'logout' %}?next=/"><i class="bi bi-box-arrow-right"></i> Logout</a>
+          {% else %}
+          <a href="#" class="google-login-trigger"><i class="bi bi-person"></i> My Account</a>
+          {% endif %}
           <a href="#" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer"><i class="bi bi-bag"></i> Cart ({{ global_cart_count|default:"0" }})</a>
         </div>
       </div>
@@ -632,5 +653,53 @@
       });
     });
   </script>
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      function handleCredentialResponse(response) {
+        // Send the token to the backend
+        fetch('/auth/google-login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ credential: response.credential })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            window.location.reload();
+          } else {
+            console.error('Login failed', data.error);
+            alert('Login failed: ' + data.error);
+          }
+        })
+        .catch(err => {
+          console.error('Error sending token', err);
+        });
+      }
+
+      window.onload = function () {
+        // Only initialize if GOOGLE_CLIENT_ID is available (i.e., not logged in and configured)
+        const clientId = '{{ GOOGLE_CLIENT_ID|escapejs }}';
+        if (clientId) {
+          google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleCredentialResponse
+          });
+          
+          // Attach to all elements with class 'google-login-trigger'
+          const triggers = document.querySelectorAll('.google-login-trigger');
+          triggers.forEach(trigger => {
+            trigger.addEventListener('click', function(e) {
+              e.preventDefault();
+              google.accounts.id.prompt(); // Shows the One Tap popup
+            });
+          });
+        }
+      };
+    </script>
 </body>
+
 </html>

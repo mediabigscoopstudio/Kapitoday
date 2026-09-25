@@ -6,6 +6,8 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('auth/google-login/', views.google_login, name='google_login'),
+
     path("", views.index, name='index'),
     path("about", views.about, name='about'),
     path("learn", views.learn, name='learn'),

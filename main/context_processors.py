@@ -1,3 +1,4 @@
+from django.conf import settings
 from dash.models import Cart, CartItem, Customers
 
 def cart_processor(request):
@@ -29,4 +30,9 @@ def cart_processor(request):
         'global_cart_items': cart_items,
         'global_cart_total': cart_total,
         'global_cart_count': cart_count,
+    }
+
+def google_client_id(request):
+    return {
+        'GOOGLE_CLIENT_ID': getattr(settings, 'GOOGLE_CLIENT_ID', '')
     }

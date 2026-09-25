@@ -1,3 +1,13 @@
+
+import json
+from django.conf import settings
+from django.contrib.auth import login
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from django.views.decorators.csrf import csrf_exempt
+
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, F
@@ -196,3 +206,59 @@ def add_to_cart(request):
             
         return redirect(request.META.get('HTTP_REFERER', '/shop/'))
     return redirect('/shop/')
+
+
+@csrf_exempt
+def google_login(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            token = data.get('credential')
+            
+            # Verify the token
+            idinfo = id_token.verify_oauth2_token(
+                token, 
+                google_requests.Request(), 
+                settings.GOOGLE_CLIENT_ID
+            )
+            
+            # Extract user info
+            email = idinfo.get('email')
+            first_name = idinfo.get('given_name', '')
+            last_name = idinfo.get('family_name', '')
+            
+            if not email:
+                return JsonResponse({'success': False, 'error': 'No email provided by Google.'})
+            
+            # Create or get user
+            user, created = User.objects.get_or_create(username=email, defaults={
+                'email': email,
+                'first_name': first_name,
+                'last_name': last_name,
+            })
+            
+            # Send welcome email if created
+            if created:
+                try:
+                    send_mail(
+                        'Welcome to Kapi Today!',
+                        f'Hi {first_name},\n\nThank you for joining Kapi Today. Explore our premium South Indian filter coffees and estate single origins!\n\nCheers,\nThe Kapi Today Team',
+                        settings.DEFAULT_FROM_EMAIL,
+                        [email],
+                        fail_silently=True,
+                    )
+                except Exception as e:
+                    print("Could not send email:", e)
+            
+            # Log the user in
+            login(request, user)
+            
+            return JsonResponse({'success': True, 'first_name': first_name, 'created': created})
+            
+        except ValueError:
+            # Invalid token
+            return JsonResponse({'success': False, 'error': 'Invalid token'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
