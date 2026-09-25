@@ -365,7 +365,7 @@ def get_razorpay_client():
         return None
     return razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_KEY_SECRET))
 
-from dash.models import Offer
+from dash.models import Offer, Order
 from django.utils import timezone
 
 @login_required(login_url='/?trigger_login=true')
