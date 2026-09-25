@@ -26,9 +26,35 @@ def logout_view(request):
 
 from django.core.paginator import Paginator
 
+from datetime import timedelta
+from django.utils import timezone
+
 @user_passes_test(superadmin_required, login_url=('/login_view'))
 def index(request):
-    all_orders = Order.objects.all().order_by('-created_at')
+    time_filter = request.GET.get('time_filter', 'last_6_months')
+    now = timezone.now()
+    
+    orders_qs = Order.objects.all().order_by('-created_at')
+    
+    if time_filter == 'today':
+        start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        orders_qs = orders_qs.filter(created_at__gte=start_date)
+    elif time_filter == 'this_week':
+        start_date = now - timedelta(days=now.weekday())
+        start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        orders_qs = orders_qs.filter(created_at__gte=start_date)
+    elif time_filter == 'this_month':
+        start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        orders_qs = orders_qs.filter(created_at__gte=start_date)
+    elif time_filter == 'this_quarter':
+        quarter_month = ((now.month - 1) // 3) * 3 + 1
+        start_date = now.replace(month=quarter_month, day=1, hour=0, minute=0, second=0, microsecond=0)
+        orders_qs = orders_qs.filter(created_at__gte=start_date)
+    elif time_filter == 'last_6_months':
+        start_date = now - timedelta(days=180)
+        orders_qs = orders_qs.filter(created_at__gte=start_date)
+        
+    all_orders = orders_qs
     
     grouped_orders = {
         'pending': [],
@@ -54,7 +80,8 @@ def index(request):
     return render(request, 'dash/index.html', {
         'orders': orders,
         'grouped_orders': grouped_orders,
-        'all_orders_count': all_orders.count()
+        'all_orders_count': all_orders.count(),
+        'current_filter': time_filter
     })
 
 # Category Management Section
