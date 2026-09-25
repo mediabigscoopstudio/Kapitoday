@@ -1,6 +1,6 @@
 {% extends "main/base.html" %}
-{% block title %}My Orders | Kapi Today{% endblock %}
-{% block content %}
+{% block 'title' %}My Orders | Kapi Today{% endblock 'title' %}
+{% block 'body' %}
 <div class="container py-5" style="margin-top: 100px;">
     <h2 class="mb-4" style="color: var(--kapi-coffee);">My Orders</h2>
     {% if orders %}
@@ -41,4 +41,4 @@
         </div>
     {% endif %}
 </div>
-{% endblock %}
+{% endblock 'body' %}

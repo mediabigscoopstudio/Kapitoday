@@ -1,6 +1,6 @@
 {% extends "main/base.html" %}
-{% block title %}Support {{ query.support_id }} | Kapi Today{% endblock %}
-{% block css %}
+{% block 'title' %}Support {{ query.support_id }} | Kapi Today{% endblock 'title' %}
+{% block 'css' %}
 <style>
     .chat-box { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding: 20px; background: #fff; border-radius: 10px; }
     .msg-bubble { max-width: 80%; padding: 12px 18px; border-radius: 20px; font-size: 14.5px; line-height: 1.4; }
@@ -9,8 +9,8 @@
     .msg-agent { background: var(--kapi-gold); color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
     .msg-meta { font-size: 10px; opacity: 0.7; margin-top: 5px; display: block; text-align: right; }
 </style>
-{% endblock %}
-{% block content %}
+{% endblock 'css' %}
+{% block 'body' %}
 <div class="container py-5" style="margin-top: 100px; max-width: 800px;">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -43,8 +43,8 @@
         </div>
     </div>
 </div>
-{% endblock %}
-{% block script %}
+{% endblock 'body' %}
+{% block 'script' %}
 <script>
     const chatBox = document.getElementById('chatBox');
     const chatForm = document.getElementById('chatForm');
@@ -95,4 +95,4 @@
         });
     }
 </script>
-{% endblock %}
+{% endblock 'script' %}
