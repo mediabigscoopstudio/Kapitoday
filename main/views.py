@@ -434,6 +434,30 @@ def checkout(request):
     total = total_after_discount + shipping_charge
     request.session['discount_amt'] = float(discount)
     
+
+    # Get available coupon offers for slider
+    available_offers = Offer.objects.filter(status='Active', trigger='coupon', valid_to__gte=timezone.now()).exclude(coupon_code__isnull=True).exclude(coupon_code='')
+    
+    # Get unique past addresses from past orders for this customer
+    # Since sqlite doesn't support .distinct('field'), we will filter uniquely in python
+    past_orders = Order.objects.filter(customer=customer).exclude(address_line_1='').order_by('-created_at')
+    seen_addresses = set()
+    past_addresses = []
+    for o in past_orders:
+        addr_key = f"{o.address_line_1}-{o.pincode}".lower()
+        if addr_key not in seen_addresses:
+            seen_addresses.add(addr_key)
+            past_addresses.append({
+                'full_name': o.full_name,
+                'address_line_1': o.address_line_1,
+                'address_line_2': o.address_line_2,
+                'city': o.city,
+                'state': o.state,
+                'pincode': o.pincode
+            })
+            if len(past_addresses) >= 5:
+                break
+
     context = {
         'cart_items': cart_items,
         'subtotal': subtotal,
@@ -442,6 +466,8 @@ def checkout(request):
         'shipping_charge': shipping_charge,
         'total': total,
         'customer': customer,
+        'available_offers': available_offers,
+        'past_addresses': past_addresses,
     }
     
     client = get_razorpay_client()

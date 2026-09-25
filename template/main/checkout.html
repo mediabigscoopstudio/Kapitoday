@@ -30,13 +30,45 @@
 .total-line { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 20px; border-top: 2px dashed #ddd; font-size: 1.2rem; font-weight: 700; }
 .pay-btn { display: block; width: 100%; padding: 15px; background: var(--primary-color, #a67c52); color: #fff; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; margin-top: 30px; transition: opacity 0.2s; }
 .pay-btn:hover { opacity: 0.9; }
+
+.coupon-marquee-wrapper { overflow: hidden; white-space: nowrap; position: relative; width: 100%; margin: 20px 0; }
+.coupon-marquee-track { display: inline-flex; animation: marquee 20s linear infinite; gap: 15px; }
+.coupon-marquee-wrapper:hover .coupon-marquee-track { animation-play-state: paused; }
+@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(calc(-50% - 7.5px)); } }
+
+.coupon-card { display: inline-flex; flex-direction: column; min-width: 220px; max-width: 220px; background: #fffaf0; border: 2px dashed #d4a373; padding: 12px 15px; border-radius: 8px; cursor: pointer; transition: background 0.2s; position: relative; }
+.coupon-card:hover { background: #fbeedb; border-color: #c08552; }
+.coupon-card .c-code { font-weight: 800; font-size: 1.1rem; color: #3A2A1D; margin-bottom: 4px; display: flex; justify-content: space-between; }
+.coupon-card .c-desc { font-size: 0.8rem; color: #666; white-space: normal; line-height: 1.3; }
+
+.address-pills { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; }
+.address-pills::-webkit-scrollbar { height: 4px; }
+.address-pills::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+.address-pill { border: 1px solid #ddd; padding: 12px; border-radius: 8px; cursor: pointer; min-width: 220px; font-size: 0.85rem; color: #555; background: #fff; transition: all 0.2s; }
+.address-pill:hover, .address-pill.active { border-color: #a67c52; background: #fdfaf4; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.address-pill b { display: block; margin-bottom: 4px; font-size: 0.95rem; color: #333; }
 </style>
+
 
 <div class="checkout-container">
     <div class="checkout-grid">
         <!-- Left: Shipping Address -->
         <div class="checkout-section">
             <h2 class="checkout-title">Shipping Information</h2>
+            {% if past_addresses %}
+            <div style="margin-bottom: 5px; font-size: 0.9rem; font-weight: 600; color: #555;">Select from saved addresses:</div>
+            <div class="address-pills">
+                {% for addr in past_addresses %}
+                <div class="address-pill" onclick="fillAddress('{{ addr.full_name|escapejs }}', '{{ addr.address_line_1|escapejs }}', '{{ addr.address_line_2|escapejs }}', '{{ addr.city|escapejs }}', '{{ addr.state|escapejs }}', '{{ addr.pincode|escapejs }}', this)">
+                    <b>{{ addr.full_name }}</b>
+                    {{ addr.address_line_1 }}<br>
+                    {% if addr.address_line_2 %}{{ addr.address_line_2 }}<br>{% endif %}
+                    {{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}
+                </div>
+                {% endfor %}
+            </div>
+            <hr style="border: 0; border-top: 1px dashed #ddd; margin-bottom: 20px;">
+            {% endif %}
             <form id="checkout-form">
                 <div class="form-group">
                     <label>Full Name</label>
@@ -83,6 +115,28 @@
                 {% endfor %}
             </div>
             
+            <!-- Coupon Marquee -->
+            {% if available_offers %}
+            <div class="coupon-marquee-wrapper">
+                <div class="coupon-marquee-track">
+                    <!-- Original List -->
+                    {% for offer in available_offers %}
+                    <div class="coupon-card" onclick="applyCoupon('{{ offer.coupon_code }}')">
+                        <div class="c-code">{{ offer.coupon_code }} <i class="bi bi-tag"></i></div>
+                        <div class="c-desc">{{ offer.description }}</div>
+                    </div>
+                    {% endfor %}
+                    <!-- Duplicated List for seamless infinite scroll -->
+                    {% for offer in available_offers %}
+                    <div class="coupon-card" onclick="applyCoupon('{{ offer.coupon_code }}')">
+                        <div class="c-code">{{ offer.coupon_code }} <i class="bi bi-tag"></i></div>
+                        <div class="c-desc">{{ offer.description }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
             <!-- Coupon Section -->
             <div style="margin: 25px 0; padding-bottom: 20px; border-bottom: 1px solid #eee;">
                 {% if applied_coupon %}
@@ -96,7 +150,7 @@
                 {% else %}
                     <form method="POST" style="display: flex; gap: 10px; margin: 0;">
                         {% csrf_token %}
-                        <input type="text" name="coupon_code" placeholder="Discount code" class="form-control" style="padding: 10px; flex: 1;">
+                        <input type="text" id="couponCodeInput" name="coupon_code" placeholder="Discount code" class="form-control" style="padding: 10px; flex: 1;">
                         <button type="submit" name="apply_coupon" style="background: #333; color: #fff; border: none; border-radius: 6px; padding: 0 20px; font-weight: 600; cursor: pointer;">Apply</button>
                     </form>
                 {% endif %}
@@ -181,6 +235,30 @@ document.getElementById('pay-btn').onclick = function(e) {
     });
     rzp1.open();
     e.preventDefault();
+}
+</script>
+<script>
+function applyCoupon(code) {
+    const input = document.querySelector('input[name="coupon_code"]');
+    const applyBtn = document.querySelector('button[name="apply_coupon"]');
+    if(input && applyBtn) {
+        input.value = code;
+        applyBtn.click();
+    }
+}
+
+function fillAddress(name, line1, line2, city, state, pin, element) {
+    const form = document.getElementById('checkout-form');
+    form.full_name.value = name;
+    form.address_line_1.value = line1;
+    form.address_line_2.value = line2;
+    form.city.value = city;
+    form.state.value = state;
+    form.pincode.value = pin;
+    
+    // UI highlight
+    document.querySelectorAll('.address-pill').forEach(el => el.classList.remove('active'));
+    element.classList.add('active');
 }
 </script>
 {% endblock 'body' %}
