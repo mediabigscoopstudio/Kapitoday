@@ -1,4 +1,4 @@
-<div class="k-card" onclick="window.location.href='{% url \'order_detail\' order.id %}'">
+<div class="k-card" onclick="window.location.href='{% url "order_detail" order.id %}'">
     <div class="k-card-header">
         <span class="k-id">#{{ order.id }}</span>
         <span class="k-date">{{ order.created_at|date:"M d, g:i A" }}</span>
