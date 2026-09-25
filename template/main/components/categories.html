@@ -1,26 +1,158 @@
 
-<section class="kapi-categories-section py-5">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="section-title h5 mb-0 fw-bold">Shop by Category</h2>
-            <a href="/shop" class="text-gold fw-bold text-decoration-none">See All &rarr;</a>
-        </div>
-        
-        <div class="category-strip-container">
-            <div class="category-strip">
-                {% for cat in categories %}
-                <a href="/shop?category={{ cat.slug }}" class="category-card">
-                    <div class="category-img-wrapper">
-                        {% if cat.category_image %}
-                        <img src="{{ cat.category_image.url }}" alt="{{ cat.title }}">
-                        {% else %}
-                        <div class="category-placeholder"></div>
-                        {% endif %}
-                    </div>
-                    <div class="category-name">{{ cat.title }}</div>
-                </a>
-                {% endfor %}
-            </div>
+<style>
+.kapi-categories-section {
+    background-color: #FAF6E9; /* Cream color */
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    margin-top: -40px;
+    position: relative;
+    z-index: 10;
+    padding: 2rem 0;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+}
+
+.category-strip-wrapper {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.5rem 1rem;
+}
+.category-strip-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+.category-strip {
+    display: flex;
+    gap: 2.5rem;
+    align-items: center;
+    width: max-content;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.category-item:hover {
+    transform: translateY(-3px);
+}
+
+.category-icon-wrapper {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #EAE0D5;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 2px solid #fff;
+}
+
+.category-icon-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.category-text-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.category-title {
+    color: #2C1810;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.category-subtitle {
+    color: #8B6642;
+    font-size: 0.75rem;
+    margin: 0;
+    font-weight: 500;
+}
+</style>
+
+<section class="kapi-categories-section">
+    <div class="category-strip-wrapper">
+        <div class="category-strip">
+            
+            <a href="/shop" class="category-item">
+                <div class="category-icon-wrapper">
+                    <img src="/static/main/images/home/roast-dark.webp" alt="All Coffee">
+                </div>
+                <div class="category-text-wrapper">
+                    <p class="category-title">All Coffee</p>
+                    <p class="category-subtitle">Shop All</p>
+                </div>
+            </a>
+            
+            <a href="/shop/single-origin/" class="category-item">
+                <div class="category-icon-wrapper">
+                    <img src="/static/main/images/home/roast-light.webp" alt="Single Origin">
+                </div>
+                <div class="category-text-wrapper">
+                    <p class="category-title">Single Origin</p>
+                    <p class="category-subtitle">Estate Fresh</p>
+                </div>
+            </a>
+            
+            <a href="/shop/south-indian/" class="category-item">
+                <div class="category-icon-wrapper">
+                    <img src="/static/main/images/home/brew-1.webp" alt="South Indian">
+                </div>
+                <div class="category-text-wrapper">
+                    <p class="category-title">South Indian</p>
+                    <p class="category-subtitle">Traditional</p>
+                </div>
+            </a>
+            
+            <a href="/shop/instant-coffee/" class="category-item">
+                <div class="category-icon-wrapper">
+                    <img src="/static/main/images/home/brew-2.webp" alt="Instant Coffee">
+                </div>
+                <div class="category-text-wrapper">
+                    <p class="category-title">Instant Coffee</p>
+                    <p class="category-subtitle">Quick & Rich</p>
+                </div>
+            </a>
+            
+            <a href="/shop/nespresso-pods/" class="category-item">
+                <div class="category-icon-wrapper">
+                    <img src="/static/main/images/home/brew-4.webp" alt="Nespresso Pods">
+                </div>
+                <div class="category-text-wrapper">
+                    <p class="category-title">Nespresso Pods</p>
+                    <p class="category-subtitle">Convenience</p>
+                </div>
+            </a>
+
+            <a href="/shop/ground-coffee/" class="category-item">
+                <div class="category-icon-wrapper">
+                    <img src="/static/main/images/home/roast-malabar.webp" alt="Ground Coffee">
+                </div>
+                <div class="category-text-wrapper">
+                    <p class="category-title">Ground Coffee</p>
+                    <p class="category-subtitle">Everyday Brew</p>
+                </div>
+            </a>
+
+            <a href="/shop/equipments/" class="category-item">
+                <div class="category-icon-wrapper">
+                    <img src="/static/main/images/home/roast-dark.webp" alt="Equipments">
+                </div>
+                <div class="category-text-wrapper">
+                    <p class="category-title">Equipments</p>
+                    <p class="category-subtitle">Brew Better</p>
+                </div>
+            </a>
+            
         </div>
     </div>
 </section>

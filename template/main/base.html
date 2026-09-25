@@ -876,6 +876,7 @@
 
 
 <script>
+
 // Live Search Logic
 function initSearch(inputId, resultsId) {
     const input = document.getElementById(inputId);
@@ -884,6 +885,17 @@ function initSearch(inputId, resultsId) {
     
     let debounceTimer;
     
+    // Close dropdown on click outside
+    document.addEventListener('click', function(e) {
+        if (!input.contains(e.target) && !results.contains(e.target)) {
+            results.style.display = 'none';
+        }
+    });
+
+    input.addEventListener('focus', function() {
+        if (this.value.trim().length >= 2) results.style.display = 'block';
+    });
+
     input.addEventListener('input', function() {
         clearTimeout(debounceTimer);
         const query = this.value.trim();
@@ -892,6 +904,33 @@ function initSearch(inputId, resultsId) {
             results.style.display = 'none';
             return;
         }
+        
+        debounceTimer = setTimeout(() => {
+            fetch(`/api/search/?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    results.innerHTML = '';
+                    if (data.products && data.products.length > 0) {
+                        data.products.forEach(p => {
+                            results.innerHTML += `
+                                <a href="${p.url}" class="search-result-item d-flex align-items-center gap-2 p-2 border-bottom text-decoration-none" style="color:var(--kapi-espresso);">
+                                    <img src="${p.image}" class="search-result-img rounded" style="width:40px; height:40px; object-fit:cover;" alt="${p.name}">
+                                    <div>
+                                        <p class="search-result-title mb-0 fw-bold" style="font-size:0.85rem;">${p.name}</p>
+                                        <p class="search-result-price mb-0" style="font-size:0.8rem; color:#888;">₹${p.price}</p>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                    } else {
+                        results.innerHTML = '<div class="search-no-results p-3 text-center text-muted">No products found.</div>';
+                    }
+                    results.style.display = 'block';
+                })
+                .catch(err => console.error("Search error", err));
+        }, 300);
+    });
+}
         
         debounceTimer = setTimeout(() => {
             fetch(`/api/search/?q=${encodeURIComponent(query)}`)

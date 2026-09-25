@@ -22,12 +22,12 @@
             <!-- Right Actions -->
             <div class="col-4 d-flex justify-content-end align-items-center gap-3">
                 <!-- Search Bar -->
-                <div class="search-bar position-relative">
-                    <i class="bi bi-search"></i>
-                    <input type="text" id="kapiSearchInput" placeholder="Search coffee, equipment..." autocomplete="off">
+                <form class="search-bar position-relative" action="/shop" method="GET">
+                    <button type="submit" style="background:transparent; border:none; padding:0; margin-right:8px;"><i class="bi bi-search text-muted"></i></button>
+                    <input type="text" name="q" id="kapiSearchInput" placeholder="Search coffee, equipment..." autocomplete="off" style="border:none; outline:none; background:transparent;">
                     <!-- Search Results Dropdown -->
-                    <div id="kapiSearchResults" class="search-results-dropdown shadow-sm rounded-3"></div>
-                </div>
+                    <div id="kapiSearchResults" class="search-results-dropdown shadow-sm rounded-3" style="position:absolute; top:110%; left:0; width:300px; background:#fff; z-index:9999; display:none; max-height:400px; overflow-y:auto; border:1px solid #eee;"></div>
+                </form>
                 
                 <!-- Account Dropdown -->
                 {% if request.user.is_authenticated %}
@@ -85,11 +85,11 @@
   <div class="offcanvas-body">
     
     <!-- Mobile Search -->
-    <div class="search-bar position-relative w-100 mb-4 border rounded-3 px-3 py-2">
-        <i class="bi bi-search"></i>
-        <input type="text" id="kapiSearchInputMobile" class="border-0 w-75 bg-transparent" placeholder="Search..." autocomplete="off">
-        <div id="kapiSearchResultsMobile" class="search-results-dropdown shadow-sm rounded-3"></div>
-    </div>
+    <form class="search-bar position-relative w-100 mb-4 border rounded-3 px-3 py-2 d-flex align-items-center" action="/shop" method="GET">
+        <button type="submit" style="background:transparent; border:none; padding:0; margin-right:8px;"><i class="bi bi-search text-muted"></i></button>
+        <input type="text" name="q" id="kapiSearchInputMobile" class="border-0 w-100 bg-transparent" placeholder="Search..." autocomplete="off" style="outline:none;">
+        <div id="kapiSearchResultsMobile" class="search-results-dropdown shadow-sm rounded-3" style="position:absolute; top:110%; left:0; width:100%; background:#fff; z-index:9999; display:none; max-height:400px; overflow-y:auto; border:1px solid #eee;"></div>
+    </form>
     
     <nav class="mobile-nav-links d-flex flex-column gap-3">
         <a href="/shop">Shop</a>
