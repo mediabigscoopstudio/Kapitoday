@@ -293,7 +293,7 @@ def google_login(request):
                         [email]
                     )
                     msg.attach_alternative(html_content, "text/html")
-                    msg.send(fail_silently=True)
+                    msg.send(fail_silently=False)
                 except Exception as e:
                     print("Could not send email:", e)
             
@@ -347,7 +347,7 @@ def subscribe_newsletter(request):
                     [email]
                 )
                 msg.attach_alternative(html_content, "text/html")
-                msg.send(fail_silently=True)
+                msg.send(fail_silently=False)
             except Exception as e:
                 print("Newsletter email failed:", e)
                 
