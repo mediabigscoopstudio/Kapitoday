@@ -21,7 +21,15 @@ urlpatterns = [
     path("shop/category/<slug:category_slug>/", views.shop, name='shop_category'),
     path("shop/add-to-cart/", views.add_to_cart, name='add_to_cart'),
     path('checkout/', views.checkout, name='checkout'),
-    path('verify_payment/', views.verify_payment, name='verify_payment'),
+        path('verify_payment/', views.verify_payment, name='verify_payment'),
+    
+    # Fast Checkout APIs
+    path('api/fc/state/', views.fc_get_state, name='fc_get_state'),
+    path('api/fc/cart/update/', views.fc_update_cart, name='fc_update_cart'),
+    path('api/fc/coupon/apply/', views.fc_apply_coupon, name='fc_apply_coupon'),
+    path('api/fc/payment/init/', views.fc_init_payment, name='fc_init_payment'),
+    path('api/fc/payment/verify/', views.fc_verify_payment, name='fc_verify_payment'),
+
 
     path("<slug:category_slug>/<slug:subcategory_slug>/<slug:product_slug>/", views.product_detail, name='product_detail'),
     

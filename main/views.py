@@ -181,43 +181,19 @@ def add_to_cart(request):
             cart=cart,
             product=product,
             variant=variant,
-            defaults={'quantity': quantity}
+            defaults={'quantity': 0}
         )
-        
-        if not created:
-            cart_item.quantity += quantity
-            if cart_item.quantity <= 0:
-                cart_item.delete()
-            else:
-                cart_item.save()
-        elif cart_item.quantity <= 0:
+        cart_item.quantity += quantity
+        if cart_item.quantity <= 0:
             cart_item.delete()
+        else:
+            cart_item.save()
             
-        # AJAX Response handling
-        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('Accept') == 'application/json'
-        if is_ajax:
-            cart_items = cart.cart_items.all().select_related('product', 'variant')
-            cart_total = sum((item.variant.price if item.variant else 0) * item.quantity for item in cart_items)
-            cart_count = sum(item.quantity for item in cart_items)
-            
-            from django.template.loader import render_to_string
-            context = {
-                'global_cart_items': cart_items,
-                'global_cart_total': cart_total,
-                'global_cart_count': cart_count,
-            }
-            cart_html = render_to_string('main/partials/cart_drawer_items.html', context, request=request)
-            
-            return JsonResponse({
-                'success': True,
-                'cart_count': cart_count,
-                'cart_total': cart_total,
-                'cart_html': cart_html
-            })
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.headers.get('Accept') == 'application/json':
+            return fc_get_state(request)
             
         return redirect(request.META.get('HTTP_REFERER', '/shop/'))
     return redirect('/shop/')
-
 
 @csrf_exempt
 def google_login(request):
@@ -368,120 +344,8 @@ def get_razorpay_client():
 from dash.models import Offer, Order
 from django.utils import timezone
 
-@login_required(login_url='/?trigger_login=true')
 def checkout(request):
-    try:
-        customer = Customers.objects.get(user=request.user)
-        cart = Cart.objects.get(customer=customer)
-        cart_items = cart.cart_items.all()
-    except (Customers.DoesNotExist, Cart.DoesNotExist):
-        return redirect('/')
-        
-    if not cart_items:
-        return redirect('/shop')
-
-    subtotal = sum((item.variant.price if item.variant else 0) * item.quantity for item in cart_items)
-    
-    discount = 0
-    applied_coupon = request.session.get('applied_coupon')
-    coupon_msg = ""
-    
-    # Handle Coupon Apply/Remove
-    if request.method == 'POST':
-        if 'apply_coupon' in request.POST:
-            code = request.POST.get('coupon_code', '').strip()
-            # Validate coupon
-            now = timezone.now()
-            offer = Offer.objects.filter(coupon_code__iexact=code, status='Active', valid_from__lte=now, valid_to__gte=now).first()
-            if offer:
-                # Basic check (skipping complex condition logic for now, applying flat/percentage)
-                request.session['applied_coupon'] = offer.coupon_code
-                coupon_msg = "Coupon applied successfully!"
-            else:
-                coupon_msg = "Invalid or expired coupon."
-        elif 'remove_coupon' in request.POST:
-            if 'applied_coupon' in request.session:
-                del request.session['applied_coupon']
-            coupon_msg = "Coupon removed."
-        return redirect('/checkout/')
-
-    # Calculate Discount
-    if applied_coupon:
-        now = timezone.now()
-        offer = Offer.objects.filter(coupon_code__iexact=applied_coupon, status='Active', valid_from__lte=now, valid_to__gte=now).first()
-        if offer:
-            if offer.action_type == 'percentage_off':
-                discount = (subtotal * offer.discount_value) / 100
-                if offer.max_discount_cap and discount > offer.max_discount_cap:
-                    discount = offer.max_discount_cap
-            elif offer.action_type == 'flat_off':
-                discount = offer.discount_value
-                if discount > subtotal:
-                    discount = subtotal
-        else:
-            if 'applied_coupon' in request.session:
-                del request.session['applied_coupon']
-            applied_coupon = None
-
-    total_after_discount = subtotal - discount
-    shipping_charge = 0 if total_after_discount > 999 else 50
-    
-    # Check automatic free shipping offer
-    auto_shipping_offer = Offer.objects.filter(trigger='automatic', action_type='free_shipping', status='Active').first()
-    if auto_shipping_offer and total_after_discount >= (auto_shipping_offer.min_order_amount or 0):
-        shipping_charge = 0
-        
-    total = total_after_discount + shipping_charge
-    request.session['discount_amt'] = float(discount)
-    
-
-    # Get available coupon offers for slider
-    available_offers = Offer.objects.filter(status='Active', trigger='coupon', valid_to__gte=timezone.now()).exclude(coupon_code__isnull=True).exclude(coupon_code='')
-    
-    # Get unique past addresses from past orders for this customer
-    # Since sqlite doesn't support .distinct('field'), we will filter uniquely in python
-    past_orders = Order.objects.filter(customer=customer).exclude(address_line_1='').order_by('-created_at')
-    seen_addresses = set()
-    past_addresses = []
-    for o in past_orders:
-        addr_key = f"{o.address_line_1}-{o.pincode}".lower()
-        if addr_key not in seen_addresses:
-            seen_addresses.add(addr_key)
-            past_addresses.append({
-                'full_name': o.full_name,
-                'address_line_1': o.address_line_1,
-                'address_line_2': o.address_line_2,
-                'city': o.city,
-                'state': o.state,
-                'pincode': o.pincode
-            })
-            if len(past_addresses) >= 5:
-                break
-
-    context = {
-        'cart_items': cart_items,
-        'subtotal': subtotal,
-        'discount': discount,
-        'applied_coupon': applied_coupon,
-        'shipping_charge': shipping_charge,
-        'total': total,
-        'customer': customer,
-        'available_offers': available_offers,
-        'past_addresses': past_addresses,
-    }
-    
-    client = get_razorpay_client()
-    if client:
-        amount = int(total * 100)
-        try:
-            razorpay_order = client.order.create(dict(amount=amount, currency="INR", payment_capture='1'))
-            context['razorpay_order_id'] = razorpay_order['id']
-            context['razorpay_merchant_key'] = settings.RAZORPAY_API_KEY
-            context['amount'] = amount
-        except Exception as e:
-            print("Razorpay Error:", e)
-            
-    return render(request, 'main/checkout.html', context)
+    return redirect('/?open_checkout=true')
 
 @csrf_exempt
 def verify_payment(request):
@@ -556,3 +420,242 @@ def verify_payment(request):
                 print("Payment verification failed", e)
                 return JsonResponse({'status': 'failure', 'error': str(e)})
     return JsonResponse({'status': 'invalid'})
+
+# ==========================================
+# FAST CHECKOUT APIS
+# ==========================================
+from django.template.loader import render_to_string
+
+def _calculate_fc_totals(request, cart_items):
+    subtotal = sum((item.variant.price if item.variant else 0) * item.quantity for item in cart_items)
+    
+    discount = 0
+    applied_coupon = request.session.get('applied_coupon')
+    
+    if applied_coupon:
+        now = timezone.now()
+        offer = Offer.objects.filter(coupon_code__iexact=applied_coupon, status='Active', valid_from__lte=now, valid_to__gte=now).first()
+        if offer:
+            if offer.action_type == 'percentage_off':
+                discount = (subtotal * offer.discount_value) / 100
+                if offer.max_discount_cap and discount > offer.max_discount_cap:
+                    discount = offer.max_discount_cap
+            elif offer.action_type == 'flat_off':
+                discount = offer.discount_value
+                if discount > subtotal:
+                    discount = subtotal
+        else:
+            del request.session['applied_coupon']
+            applied_coupon = None
+
+    total_after_discount = float(subtotal) - float(discount)
+    shipping_charge = 0 if total_after_discount > 999 else 50
+    
+    auto_shipping_offer = Offer.objects.filter(trigger='automatic', action_type='free_shipping', status='Active').first()
+    if auto_shipping_offer and total_after_discount >= float(auto_shipping_offer.min_order_amount or 0):
+        shipping_charge = 0
+        
+    total = total_after_discount + shipping_charge
+    request.session['discount_amt'] = float(discount)
+    
+    return float(subtotal), float(discount), applied_coupon, float(shipping_charge), float(total)
+
+
+def fc_get_state(request):
+    cart = _get_or_create_cart(request)
+    cart_items = cart.cart_items.all().select_related('product', 'variant')
+    
+    subtotal, discount, applied_coupon, shipping_charge, total = _calculate_fc_totals(request, cart_items)
+    
+    is_authenticated = request.user.is_authenticated
+    past_addresses = []
+    
+    if is_authenticated:
+        customer, _ = Customers.objects.get_or_create(user=request.user)
+        past_orders = Order.objects.filter(customer=customer).exclude(address_line_1='').order_by('-created_at')
+        seen_addresses = set()
+        for o in past_orders:
+            addr_key = f"{o.address_line_1}-{o.pincode}".lower()
+            if addr_key not in seen_addresses:
+                seen_addresses.add(addr_key)
+                past_addresses.append({
+                    'full_name': o.full_name,
+                    'address_line_1': o.address_line_1,
+                    'address_line_2': o.address_line_2,
+                    'city': o.city,
+                    'state': o.state,
+                    'pincode': o.pincode
+                })
+                if len(past_addresses) >= 5:
+                    break
+                    
+    now = timezone.now()
+    offers = Offer.objects.filter(status='Active', trigger='coupon', valid_to__gte=now).exclude(coupon_code__isnull=True).exclude(coupon_code='')
+    available_offers = [{'code': o.coupon_code, 'desc': o.description} for o in offers]
+    
+    # Get up to 3 recommended products (random or latest)
+    from dash.models import Product
+    cart_product_ids = [item.product.id for item in cart_items]
+    recommended = Product.objects.filter(status='Enabled').exclude(id__in=cart_product_ids).order_by('?')[:3]
+    
+    # Render the cart items HTML so we don't have to build it in JS
+    cart_html = render_to_string('main/partials/fc_cart_items.html', {
+        'cart_items': cart_items,
+        'recommended': recommended
+    }, request=request)
+    
+    return JsonResponse({
+        'success': True,
+        'is_authenticated': is_authenticated,
+        'cart_count': sum(i.quantity for i in cart_items),
+        'cart_html': cart_html,
+        'subtotal': subtotal,
+        'discount': discount,
+        'applied_coupon': applied_coupon,
+        'shipping_charge': shipping_charge,
+        'total': total,
+        'past_addresses': past_addresses,
+        'available_offers': available_offers
+    })
+
+
+@csrf_exempt
+def fc_update_cart(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        action = data.get('action') # 'add', 'sub', 'remove'
+        item_id = data.get('item_id')
+        
+        cart_item = get_object_or_404(CartItem, id=item_id)
+        
+        if action == 'add':
+            cart_item.quantity += 1
+            cart_item.save()
+        elif action == 'sub':
+            if cart_item.quantity > 1:
+                cart_item.quantity -= 1
+                cart_item.save()
+            else:
+                cart_item.delete()
+        elif action == 'remove':
+            cart_item.delete()
+            
+        return fc_get_state(request)
+    return JsonResponse({'success': False})
+
+
+@csrf_exempt
+def fc_apply_coupon(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        code = data.get('code', '').strip()
+        action = data.get('action', 'apply')
+        
+        if action == 'remove':
+            if 'applied_coupon' in request.session:
+                del request.session['applied_coupon']
+            return fc_get_state(request)
+            
+        now = timezone.now()
+        offer = Offer.objects.filter(coupon_code__iexact=code, status='Active', valid_from__lte=now, valid_to__gte=now).first()
+        if offer:
+            request.session['applied_coupon'] = offer.coupon_code
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid or expired coupon.'})
+            
+        return fc_get_state(request)
+    return JsonResponse({'success': False})
+
+
+@csrf_exempt
+def fc_init_payment(request):
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': 'Not logged in'})
+            
+        cart = _get_or_create_cart(request)
+        cart_items = cart.cart_items.all()
+        if not cart_items:
+            return JsonResponse({'success': False, 'error': 'Cart is empty'})
+            
+        subtotal, discount, applied_coupon, shipping_charge, total = _calculate_fc_totals(request, cart_items)
+        amount = int(total * 100)
+        
+        client = get_razorpay_client()
+        if client:
+            try:
+                razorpay_order = client.order.create(dict(amount=amount, currency="INR", payment_capture='1'))
+                return JsonResponse({
+                    'success': True,
+                    'key': settings.RAZORPAY_API_KEY,
+                    'amount': amount,
+                    'order_id': razorpay_order['id'],
+                    'total': total,
+                })
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)})
+                
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+
+@csrf_exempt
+def fc_verify_payment(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        client = get_razorpay_client()
+        if client:
+            try:
+                client.utility.verify_payment_signature({
+                    'razorpay_order_id': data.get('razorpay_order_id'),
+                    'razorpay_payment_id': data.get('razorpay_payment_id'),
+                    'razorpay_signature': data.get('razorpay_signature')
+                })
+                
+                customer = Customers.objects.get(user=request.user)
+                cart = Cart.objects.get(customer=customer)
+                
+                applied_coupon = request.session.get('applied_coupon', '')
+                discount_amt = request.session.get('discount_amt', 0)
+                
+                order = Order.objects.create(
+                    customer=customer,
+                    coupon_code=applied_coupon,
+                    discount=discount_amt,
+                    email=customer.email or request.user.email,
+                    phone=customer.phone_number or '',
+                    full_name=data.get('full_name', 'Customer'),
+                    address_line_1=data.get('address_line_1', ''),
+                    address_line_2=data.get('address_line_2', ''),
+                    city=data.get('city', ''),
+                    state=data.get('state', ''),
+                    pincode=data.get('pincode', ''),
+                    total=data.get('total_amount', 0),
+                    payment_method='razorpay',
+                    razorpay_order_id=data.get('razorpay_order_id'),
+                    razorpay_payment_id=data.get('razorpay_payment_id'),
+                    razorpay_signature=data.get('razorpay_signature'),
+                    payment_status='paid',
+                    status='pending'
+                )
+                
+                for item in cart.cart_items.all():
+                    OrderItem.objects.create(
+                        order=order,
+                        product=item.product,
+                        variant=item.variant,
+                        product_name=item.product.name,
+                        variant_name=item.variant.title if item.variant else ''
+                    )
+                
+                cart.cart_items.all().delete()
+                if 'applied_coupon' in request.session:
+                    del request.session['applied_coupon']
+                if 'discount_amt' in request.session:
+                    del request.session['discount_amt']
+                
+                # We could send email here if we want, ignoring for brevity of the API
+                
+                return JsonResponse({'success': True, 'order_db_id': order.id})
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False})
