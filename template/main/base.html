@@ -94,23 +94,21 @@
                 <div class="mega-col">
                   <div class="mega-col-title">By Category</div>
                   <ul class="mega-links">
-                    {% for cat in nav_categories|slice:":4" %}
+                    {% for cat in nav_categories %}
                     <li><a href="{% url 'shop_category' category_slug=cat.slug %}">{{ cat.title }}</a></li>
                     {% endfor %}
-                    <li><a href="/shop" style="font-weight: 600;">Shop All →</a></li>
+                    <li><a href="/shop" style="font-weight: 600;">Shop All Categories →</a></li>
                   </ul>
                 </div>
 
-                <!-- Column 2: More Links -->
+                <!-- Column 2: More Collections -->
                 <div class="mega-col">
                   <div class="mega-col-title">More Collections</div>
                   <ul class="mega-links">
-                    {% for cat in nav_categories|slice:"4:" %}
-                    <li><a href="{% url 'shop_category' category_slug=cat.slug %}">{{ cat.title }}</a></li>
+                    {% for p in nav_coffee_products %}
+                    <li><a href="{% url 'product_detail' category_slug=p.category.slug subcategory_slug=p.sub_category.slug|default:'all' product_slug=p.slug %}">{{ p.name|truncatechars:30 }}</a></li>
                     {% endfor %}
-                    <li><a href="/about">Our Story</a></li>
-                    <li><a href="/content">Coffee Journal</a></li>
-                    <li><a href="/learn">Brew Guides</a></li>
+                    <li><a href="/shop" style="font-weight: 600;">Explore All Coffee →</a></li>
                   </ul>
                 </div>
 
@@ -118,28 +116,31 @@
                 <div class="mega-col">
                   <div class="mega-col-title">Brew Gear</div>
                   <ul class="mega-links">
-                    <li><a href="#">Brass Davara Set</a></li>
-                    <li><a href="#">South Indian Filter</a></li>
-                    <li><a href="#">Pour Over Kit</a></li>
-                    <li><a href="#">Gift Boxes <span class="tag tag-sale">Sale</span></a></li>
-                    <li><a href="#">All Products →</a></li>
+                    {% for p in nav_accessories %}
+                    <li><a href="{% url 'product_detail' category_slug=p.category.slug subcategory_slug=p.sub_category.slug|default:'all' product_slug=p.slug %}">{{ p.name|truncatechars:30 }}</a></li>
+                    {% endfor %}
+                    <li><a href="/shop" style="font-weight: 600;">All Accessories →</a></li>
                   </ul>
                 </div>
 
                 <!-- Column 4: Featured Product -->
                 <div class="mega-col">
-                  <a href="#" class="mega-featured">
+                  {% if nav_featured_product %}
+                  <a href="{% url 'product_detail' category_slug=nav_featured_product.category.slug subcategory_slug=nav_featured_product.sub_category.slug|default:'all' product_slug=nav_featured_product.slug %}" class="mega-featured">
                     <div class="mega-featured-img">
-                      <!-- Replace with real product image -->
-                      <span class="img-placeholder"><i class="bi bi-cup-hot" style="font-size:32px;color:var(--kapi-sand);"></i></span>
+                      {% if nav_featured_product.thumbnail %}
+                      <img src="{{ nav_featured_product.thumbnail.url }}" alt="{{ nav_featured_product.name }}">
+                      {% else %}
+                      <img src="/static/main/images/product_1.webp" alt="{{ nav_featured_product.name }}">
+                      {% endif %}
                     </div>
                     <div class="mega-featured-body">
-                      <div class="mega-featured-label">Featured</div>
-                      <div class="mega-featured-name">Monsoon Malabar Single Origin</div>
-                      <div class="mega-featured-price">₹549</div>
+                      <div class="mega-featured-title">Featured: {{ nav_featured_product.name }}</div>
+                      <div class="mega-featured-desc">{{ nav_featured_product.meta_description|default:'Experience the rich, bold flavors of our featured roast.'|truncatechars:50 }}</div>
                       <span class="mega-featured-cta">Shop Now →</span>
                     </div>
                   </a>
+                  {% endif %}
                 </div>
               </div>
             </div>

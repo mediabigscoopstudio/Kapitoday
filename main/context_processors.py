@@ -37,11 +37,22 @@ def google_client_id(request):
         'GOOGLE_CLIENT_ID': getattr(settings, 'GOOGLE_CLIENT_ID', '')
     }
 
-from dash.models import Category
+from dash.models import Category, Product
 def nav_categories_processor(request):
-    # Fetch categories and their subcategories for the mega menu
-    # Let's say we get the active categories
     categories = Category.objects.prefetch_related('subcategories').all()
+    
+    # Exclude Accessories to get coffee categories only
+    coffee_products = Product.objects.exclude(category__title__icontains='Accessories').order_by('-id')[:4]
+    
+    # Get Accessories
+    accessories = Product.objects.filter(category__title__icontains='Accessories')[:4]
+    
+    # Get Featured Product
+    featured_product = Product.objects.filter(name__icontains='Chikmagalur Medium Roast').first()
+    
     return {
-        'nav_categories': categories
+        'nav_categories': categories,
+        'nav_coffee_products': coffee_products,
+        'nav_accessories': accessories,
+        'nav_featured_product': featured_product,
     }
