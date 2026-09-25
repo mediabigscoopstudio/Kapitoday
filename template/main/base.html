@@ -54,16 +54,16 @@
           {% if request.user.is_authenticated %}
             <div class="dropdown" style="display:inline-block;">
               <a href="#" class="util-link dropdown-toggle" data-bs-toggle="dropdown" style="text-decoration:none;">
-                <i class="bi bi-person-check-fill"></i> Hi, {{ request.user.first_name|default:request.user.username }}
+                <i class="bi bi-person-check-fill"></i> Hi, {{ request.user.first_name }}
               </a>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="/admin/">Account Settings</a></li>
-                <li><a class="dropdown-item" href="{% url 'logout' %}?next=/">Logout</a></li>
+                <li><a class="dropdown-item" href="#">My Orders</a></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
               </ul>
             </div>
           {% else %}
             <a href="#" class="util-link google-login-trigger">
-              <i class="bi bi-person"></i> My Account
+              <i class="bi bi-person"></i> Account
             </a>
           {% endif %}
           <button class="util-link" type="button" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer" aria-label="Open cart" style="background:none;border:none;cursor:pointer;">
@@ -202,10 +202,10 @@
         </nav>
         <div class="mobile-util-links">
           {% if request.user.is_authenticated %}
-          <a href="/admin/"><i class="bi bi-person-check-fill"></i> Account Settings</a>
-          <a href="{% url 'logout' %}?next=/"><i class="bi bi-box-arrow-right"></i> Logout</a>
+          <a href="#"><i class="bi bi-bag-check"></i> My Orders</a>
+          <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
           {% else %}
-          <a href="#" class="google-login-trigger"><i class="bi bi-person"></i> My Account</a>
+          <a href="#" class="google-login-trigger"><i class="bi bi-person"></i> Account</a>
           {% endif %}
           <a href="#" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer"><i class="bi bi-bag"></i> Cart ({{ global_cart_count|default:"0" }})</a>
         </div>

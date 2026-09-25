@@ -262,3 +262,10 @@ def google_login(request):
             return JsonResponse({'success': False, 'error': str(e)})
             
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+from django.contrib.auth import logout as auth_logout
+from django.shortcuts import redirect
+
+def custom_logout(request):
+    auth_logout(request)
+    return redirect('/')
