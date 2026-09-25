@@ -1633,3 +1633,237 @@
   border-color: var(--kapi-brass);
   color: var(--kapi-brass);
 }
+
+/* --- SHOP & PRODUCT TILE CSS --- */
+
+  .shop-hero {
+    background: var(--kapi-cream);
+    padding: var(--space-4xl) 0 var(--space-xl) 0;
+    text-align: center;
+    border-bottom: 1px solid rgba(139, 90, 43, 0.1);
+  }
+  
+  .shop-hero-heading {
+    font-family: var(--font-heading);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    color: var(--kapi-charcoal);
+    margin-bottom: var(--space-md);
+  }
+  
+  .shop-hero-sub {
+    font-size: var(--text-lg);
+    color: var(--kapi-brown);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Grid Layout strictly conforming to user request */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Mobile: 2 columns */
+    gap: 16px;
+    padding: var(--space-2xl) 0;
+  }
+
+  @media (min-width: 768px) {
+    .product-grid {
+      grid-template-columns: repeat(3, 1fr); /* Tablet: 3 columns */
+      gap: 20px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .product-grid {
+      grid-template-columns: repeat(4, 1fr); /* Desktop: 4 columns */
+      gap: 24px;
+    }
+  }
+
+  /* Premium Card Styles */
+  .kapi-card {
+    background: #FAFAFA;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    font-family: var(--font-body);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(0,0,0,0.04);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .kapi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  }
+
+  .kapi-card-img-wrap {
+    position: relative;
+    padding-top: 85%; /* Reduced from 100% to make tile shorter */
+    background: #F0EBE1;
+    display: block;
+    overflow: hidden;
+  }
+  .kapi-card-img-wrap img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .kapi-card:hover .kapi-card-img-wrap img {
+    transform: scale(1.04);
+  }
+
+  /* Top Left Pill Badge */
+  .badge-top-left {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #4A3B32;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 4px;
+    backdrop-filter: blur(4px);
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+  }
+  .badge-top-left:hover {
+    background: var(--kapi-charcoal);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+  
+  /* Top Right Heart Badge */
+  .badge-top-right {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: #fff;
+    color: #333;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    border: none; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    z-index: 2;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+  }
+  .badge-top-right:hover {
+    color: #D9534F;
+    transform: scale(1.05);
+  }
+
+  /* Card Body */
+  .kapi-card-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .kapi-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem; /* Reduced size */
+    font-weight: 700;
+    color: #1A1A1A;
+    margin-bottom: 6px;
+    text-decoration: none;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  a.kapi-title-link { text-decoration: none; }
+  a.kapi-title-link:hover .kapi-title { color: var(--kapi-brass); }
+
+  /* Reviews */
+  .kapi-reviews {
+    display: flex; align-items: center; gap: 4px; font-size: 0.75rem; margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .kapi-reviews .bi-star-fill { color: #F5A623; }
+
+  /* Variant Selection - Horizontal Scroll */
+  .variant-label {
+    font-weight: 700; font-size: 0.75rem; color: #333; margin-bottom: 8px;
+  }
+  .variant-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 6px;
+    margin-bottom: 16px;
+    padding-bottom: 4px; /* breathing room */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+  }
+  .variant-grid::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+  
+  .v-box input[type="radio"] { display: none; }
+  .v-label-pill {
+    display: inline-block;
+    padding: 5px 12px;
+    border: 1px solid #E0E0E0;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #444;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .v-label-pill:hover {
+    border-color: #283618;
+  }
+  .v-box input[type="radio"]:checked + .v-label-pill {
+    background: #283618;
+    color: #fff;
+    border-color: #283618;
+  }
+
+  /* Price and Qty Row */
+  .price-qty-row {
+    display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px;
+  }
+  .price-block { display: flex; flex-direction: column; }
+  .price-main { font-size: 1.4rem; font-weight: 800; color: #111; line-height: 1; display: flex; align-items: baseline; gap: 6px; }
+  .price-tax { font-size: 0.65rem; color: #888; margin-top: 4px; }
+  
+  .qty-selector {
+    display: flex; align-items: center; border: 1px solid #E0E0E0; border-radius: 6px; background: #fff; overflow: hidden;
+  }
+  .qty-btn {
+    background: transparent; border: none; padding: 4px 8px; cursor: pointer; font-size: 1rem; color: #111;
+  }
+  .qty-btn:hover { background: #F5F5F5; }
+  .qty-input {
+    width: 30px; text-align: center; border: none; font-size: 0.9rem; font-weight: 700; padding: 0; background: transparent;
+    pointer-events: none;
+  }
+
+  /* Add to Cart Button */
+  .btn-add-cart-dark {
+    width: 100%;
+    background: #283618;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex; justify-content: center; align-items: center; gap: 6px;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-add-cart-dark:hover { background: #1c2611; }
+  .btn-add-cart-dark:active { transform: scale(0.98); }
+
