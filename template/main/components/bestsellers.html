@@ -1,79 +1,137 @@
 
-<section class="kapi-bestsellers-section py-5 bg-white">
-    <div class="container">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-5">
-            <div>
-                <div class="text-gold fw-bold text-uppercase mb-2" style="letter-spacing: 1px; font-size: 0.8rem;">FRESHLY ROASTED</div>
-                <h2 class="display-6 fw-bold mb-2" style="font-family: var(--font-heading); color: var(--kapi-espresso);">Our Bestsellers</h2>
-                <p class="text-muted mb-0">Loved by coffee drinkers across India. Discover your perfect cup.</p>
+<style>
+/* Base bestsellers styles */
+.bestsellers-scroll-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Firefox */
+}
+.bestsellers-scroll-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+.bestseller-item {
+    scroll-snap-align: start;
+    flex: 0 0 calc(85vw - 1rem);
+}
+@media (min-width: 768px) {
+    .bestseller-item {
+        flex: 0 0 calc(50vw - 1.5rem);
+    }
+}
+@media (min-width: 992px) {
+    .bestseller-item {
+        flex: 0 0 calc(25% - 1.125rem);
+    }
+}
+
+
+</style>
+
+<section class="kapi-bestsellers py-5" style="background-color: var(--kapi-cream, #FAF6F0);">
+    <div class="container py-5">
+        <div class="row mb-5 align-items-end">
+            <div class="col-lg-8">
+                <div class="text-gold text-uppercase fw-bold mb-3" style="letter-spacing: 1.5px; font-size: 0.8rem;">FRESHLY ROASTED</div>
+                <h2 class="display-4 fw-bold mb-3" style="font-family: var(--font-heading); color: var(--kapi-espresso);">Our Bestsellers</h2>
+                <p class="text-muted fs-5 mb-0" style="max-width: 600px;">Loved by coffee drinkers across India. Discover your perfect cup.</p>
             </div>
-            <div class="mt-3 mt-md-0 d-flex align-items-center gap-3">
-                <a href="/shop" class="text-dark fw-bold text-decoration-none">View All Products &rarr;</a>
-                <div class="d-none d-md-flex gap-2">
-                    <button class="btn btn-outline-dark rounded-circle" style="width: 40px; height: 40px; padding: 0;"><i class="bi bi-chevron-left"></i></button>
-                    <button class="btn btn-outline-dark rounded-circle" style="width: 40px; height: 40px; padding: 0;"><i class="bi bi-chevron-right"></i></button>
-                </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0 d-none d-lg-block">
+                <a href="/shop" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-bold" style="border-color: var(--kapi-espresso); color: var(--kapi-espresso);">Shop All Coffee &rarr;</a>
             </div>
         </div>
 
-        <div class="row g-4 flex-nowrap overflow-auto bestsellers-scroll" style="scrollbar-width: none;">
+        <div class="bestsellers-scroll-container px-3 px-lg-0 mx-n3 mx-lg-0">
             {% for p in bestseller_products %}
-            <div class="col-10 col-md-6 col-lg-3">
-                <div class="card h-100 border-0 shadow-sm kapi-product-card rounded-4 overflow-hidden">
-                    <div class="position-relative">
+            <div class="bestseller-item">
+                <div class="kapi-card" style="height: 100%;">
+                    
+                    <!-- Image & Badges -->
+                    <div class="kapi-card-img-wrap">
+                      <a href="/{{ p.category.slug }}/{{ p.sub_category.slug|default:'all' }}/{{ p.slug }}/" style="display:block; width:100%; height:100%;">
                         {% if p.thumbnail %}
-                        <img src="{{ p.thumbnail.url }}" class="card-img-top object-fit-cover" alt="{{ p.name }}" style="height: 250px;">
+                          <img src="{{ p.thumbnail.url }}" alt="{{ p.name }}">
                         {% else %}
-                        <div class="bg-light" style="height: 250px;"></div>
+                          <img src="/static/main/logos/LogoMain.webp" alt="Placeholder" style="object-fit: contain; padding: 15px; background:#fff;">
                         {% endif %}
-                        <!-- Badges -->
-                        <div class="position-absolute top-0 start-0 m-3">
-                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Bestseller</span>
-                        </div>
-                        <div class="position-absolute top-0 end-0 m-3">
-                            <button class="btn btn-light rounded-circle shadow-sm" style="width: 35px; height: 35px; padding: 0;"><i class="bi bi-heart"></i></button>
-                        </div>
+                      </a>
+                      
+                      {% if p.category %}
+                      <a href="/shop/category/{{ p.category.slug }}/" class="badge-top-left" style="text-decoration:none; transition:transform 0.2s;">
+                        <i class="bi bi-vinyl-fill" style="color:#6C4430;"></i> {{ p.category.title }}
+                      </a>
+                      {% endif %}
+                      
+                      <button type="button" class="badge-top-right" aria-label="Add to Wishlist">
+                        <i class="bi bi-heart"></i>
+                      </button>
                     </div>
-                    <div class="card-body p-4 d-flex flex-column">
-                        <h5 class="card-title fw-bold" style="color: var(--kapi-espresso); font-family: var(--font-heading); font-size: 1.1rem;">{{ p.name }}</h5>
-                        <p class="card-text text-muted small mb-2">{{ p.category.title }} &bull; 100% Arabica</p>
+
+                    <!-- Card Body -->
+                    <div class="kapi-card-body">
+                      <a href="/{{ p.category.slug }}/{{ p.sub_category.slug|default:'all' }}/{{ p.slug }}/" class="kapi-title-link">
+                        <h3 class="kapi-title">{{ p.name }}</h3>
+                      </a>
+                      
+                      <div class="kapi-reviews">
+                        <i class="bi bi-star-fill"></i> <strong>4.8</strong> <span style="color:#888;">(320 reviews)</span>
+                      </div>
+
+                      <!-- Form / Add to Cart Section -->
+                      <form action="{% url 'add_to_cart' %}" method="POST" class="add-to-cart-form" style="margin-top:auto; display:flex; flex-direction:column;">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ p.id }}">
                         
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="bi bi-star-fill text-warning me-1" style="font-size: 0.8rem;"></i>
-                            <span class="fw-bold small me-1">4.8</span>
-                            <span class="text-muted small">(150)</span>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <span class="fs-5 fw-bold text-dark" id="price_display_{{ p.id }}">
-                                {% if p.product_variant.first %}₹{{ p.product_variant.first.price }}{% else %}N/A{% endif %}
-                            </span>
-                            <span class="text-muted text-decoration-line-through small">₹499</span>
-                            <span class="badge bg-danger rounded-pill">20% OFF</span>
-                        </div>
-
-                        <form action="/add_to_cart/{{ p.id }}/" method="POST" class="mt-auto">
-                            {% csrf_token %}
-                            <!-- Variant Selector -->
-                            {% if p.product_variant.all %}
-                            <div class="d-flex gap-2 mb-3 variant-selector-pills">
-                                {% for v in p.product_variant.all %}
-                                <input type="radio" class="btn-check" name="variant_id" id="v_{{ p.id }}_{{ v.id }}" autocomplete="off" value="{{ v.id }}" {% if forloop.first %}checked{% endif %} onchange="document.getElementById('price_display_{{ p.id }}').innerText = '₹{{ v.price }}';">
-                                <label class="btn btn-outline-secondary rounded-pill py-1 px-3 flex-fill text-center" style="font-size: 0.85rem;" for="v_{{ p.id }}_{{ v.id }}">{{ v.name }}</label>
-                                {% endfor %}
+                        {% if p.product_variant.all %}
+                          <div class="variant-label">Select Weight</div>
+                          <div class="variant-grid">
+                            {% for v in p.product_variant.all %}
+                            <div class="v-box">
+                              <input type="radio" name="variant_id" id="home_v_{{ p.id }}_{{ v.id }}" value="{{ v.id }}" 
+                                     {% if forloop.first %}checked{% endif %} 
+                                     onchange="document.getElementById('home_price_main_{{ p.id }}').innerText = '₹{{ v.price }}';">
+                              <label class="v-label-pill" for="home_v_{{ p.id }}_{{ v.id }}">
+                                {{ v.name }}
+                              </label>
                             </div>
-                            {% endif %}
-                            
-                            <input type="hidden" name="quantity" value="1">
-                            
-                            <button type="submit" class="btn btn-dark w-100 rounded-pill py-2 fw-bold" style="background-color: var(--kapi-plantation-dark); border: none;" {% if not p.product_variant.all %}disabled{% endif %}>
-                                <i class="bi bi-bag me-1"></i> Add to Cart
-                            </button>
-                        </form>
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+                        
+                        <div class="price-qty-row">
+                          <div class="price-block">
+                            <div class="price-main" id="home_price_main_{{ p.id }}">
+                              {% if p.product_variant.first %}₹{{ p.product_variant.first.price }}{% else %}N/A{% endif %}
+                            </div>
+                            <div class="price-tax">Inclusive of all taxes</div>
+                          </div>
+                          
+                          <div class="qty-selector">
+                            <button type="button" class="qty-btn" onclick="let inp=document.getElementById('home_qty_{{ p.id }}'); inp.value=Math.max(1, parseInt(inp.value)-1);">&minus;</button>
+                            <input type="number" id="home_qty_{{ p.id }}" name="quantity" value="1" min="1" class="qty-input" readonly>
+                            <button type="button" class="qty-btn" onclick="let inp=document.getElementById('home_qty_{{ p.id }}'); inp.value=parseInt(inp.value)+1;">&plus;</button>
+                          </div>
+                        </div>
+
+                        <button type="submit" class="btn-add-cart-dark" {% if not p.product_variant.all %}disabled{% endif %}>
+                          <i class="bi bi-bag"></i> Add to Cart
+                        </button>
+                      </form>
+
                     </div>
                 </div>
             </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted">
+                <p>No products available right now. Check back soon!</p>
+            </div>
             {% endfor %}
+        </div>
+        
+        <div class="d-block d-lg-none text-center mt-4">
+            <a href="/shop" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-bold w-100" style="border-color: var(--kapi-espresso); color: var(--kapi-espresso);">Shop All Coffee &rarr;</a>
         </div>
     </div>
 </section>
