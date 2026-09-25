@@ -55,13 +55,13 @@
                                     
                                     {% if i.status == "Enabled" %}
                                     <td>
-                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Disable Article" href="{% url \'disable_article\' i.id %}">Disable</a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Disable Article" href="{% url 'disable_article' i.id %}">Disable</a>
                                         <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Article" href="{% url 'edit_article' i.id %}">Edit</a>
                                         <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Article" href="{% url 'delete_article' i.id %}">Delete</a>
                                     </td>
                                     {% elif i.status == "Disabled" %}
                                     <td>
-                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Enable Article" href="{% url \'enable_article\' i.id %}">Enable</a>
+                                        <a aria-label="anchor" class="btn btn-sm bg-primary-subtle" data-bs-toggle="tooltip" data-bs-original-title="Enable Article" href="{% url 'enable_article' i.id %}">Enable</a>
                                         <a aria-label="anchor" class="btn btn-sm bg-success-subtle" data-bs-toggle="tooltip" data-bs-original-title="Edit Article" href="{% url 'edit_article' i.id %}">Edit</a>
                                         <a aria-label="anchor" class="btn btn-sm bg-danger-subtle" data-bs-toggle="tooltip" data-bs-original-title="Delete Article" href="{% url 'delete_article' i.id %}">Delete</a>
                                     </td>
