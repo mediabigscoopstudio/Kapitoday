@@ -1255,3 +1255,71 @@ def disable_article(request, id):
     art.status = 'Disabled'
     art.save()
     return redirect('article_list')
+
+# ============================================================
+# ADMIN: SUPPORT KANBAN
+# ============================================================
+from dash.models import SupportQuery, SupportMessage
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def support_kanban(request):
+    queries = SupportQuery.objects.all().order_by('-updated_at')
+    
+    kanban = {
+        'OPEN': [],
+        'BOT_HANDLING': [],
+        'ESCALATED': [],
+        'HUMAN_REVIEW': [],
+        'ACTION_REQUIRED': [],
+        'RESOLVED': [],
+        'CLOSED': [],
+    }
+    
+    for q in queries:
+        if q.status in kanban:
+            kanban[q.status].append(q)
+            
+    return render(request, 'dash/support/kanban.html', {'kanban': kanban, 'total_queries': queries.count()})
+
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def support_kanban_detail(request, support_id):
+    query = get_object_or_404(SupportQuery, support_id=support_id)
+    messages = query.messages.all().order_by('created_at')
+    return render(request, 'dash/support/kanban_detail.html', {'query': query, 'chat_messages': messages})
+
+@csrf_exempt
+@user_passes_test(superadmin_required, login_url=('/login_view'))
+def api_admin_support_action(request, support_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            query = SupportQuery.objects.get(support_id=support_id)
+            
+            action = data.get('action')
+            
+            if action == 'send_message':
+                message = data.get('message')
+                is_internal = data.get('is_internal', False)
+                SupportMessage.objects.create(
+                    support_query=query,
+                    sender_type='AGENT',
+                    sender_user=request.user,
+                    message=message,
+                    is_internal=is_internal
+                )
+                if not is_internal and query.status in ['ESCALATED', 'HUMAN_REVIEW', 'ACTION_REQUIRED']:
+                    # Assuming we move to ACTION_REQUIRED for customer or waiting for customer
+                    query.status = 'HUMAN_REVIEW' 
+                    
+            elif action == 'change_status':
+                query.status = data.get('status')
+                
+            elif action == 'change_priority':
+                query.priority = data.get('priority')
+                
+            query.save()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False})
+

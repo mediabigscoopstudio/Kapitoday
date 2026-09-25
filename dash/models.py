@@ -287,6 +287,9 @@ class Order(models.Model):
         ('cod',      'Cash on Delivery'),
     ]
 
+    # ── Display ID ──
+    display_order_id = models.CharField(max_length=50, unique=True, null=True, blank=True, db_index=True)
+
     # ── Customer ──
     customer       = models.ForeignKey(Customers, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     email          = models.EmailField()
@@ -614,3 +617,87 @@ class Subscriber(models.Model):
     
     def __str__(self):
         return self.email
+
+
+# ============================================================
+# SUPPORT & ORDER MANAGEMENT EXTENSIONS
+# ============================================================
+
+class SequenceCounter(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    value = models.PositiveIntegerField(default=1)
+
+    @classmethod
+    def get_next_value(cls, name):
+        from django.db import transaction
+        with transaction.atomic():
+            counter, created = cls.objects.select_for_update().get_or_create(name=name)
+            val = counter.value
+            counter.value += 1
+            counter.save()
+            return val
+
+
+class SupportQuery(models.Model):
+    STATUS_CHOICES = [
+        ('OPEN', 'Open'),
+        ('BOT_HANDLING', 'Bot Handling'),
+        ('ESCALATED', 'Escalated'),
+        ('HUMAN_REVIEW', 'Human Review'),
+        ('ACTION_REQUIRED', 'Action Required'),
+        ('RESOLVED', 'Resolved'),
+        ('CLOSED', 'Closed'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('LOW', 'Low'),
+        ('NORMAL', 'Normal'),
+        ('HIGH', 'High'),
+        ('URGENT', 'Urgent'),
+    ]
+
+    support_id    = models.CharField(max_length=50, unique=True, db_index=True)
+    customer      = models.ForeignKey(Customers, on_delete=models.CASCADE, related_name='support_queries')
+    order         = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True, related_name='support_queries')
+    order_item    = models.ForeignKey(OrderItem, on_delete=models.SET_NULL, null=True, blank=True)
+    product       = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    category      = models.CharField(max_length=100)
+    priority      = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='NORMAL')
+    status        = models.CharField(max_length=50, choices=STATUS_CHOICES, default='OPEN')
+    assigned_to   = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_support_queries')
+    
+    created_at    = models.DateTimeField(auto_now_add=True)
+    updated_at    = models.DateTimeField(auto_now=True)
+    last_customer_message_at = models.DateTimeField(null=True, blank=True)
+    last_agent_message_at    = models.DateTimeField(null=True, blank=True)
+    resolved_at   = models.DateTimeField(null=True, blank=True)
+    closed_at     = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.support_id} - {self.customer}"
+
+    def save(self, *args, **kwargs):
+        if not self.support_id:
+            seq = SequenceCounter.get_next_value('support_queries')
+            self.support_id = f"#{seq:04d}KTCS"
+        super().save(*args, **kwargs)
+
+
+class SupportMessage(models.Model):
+    SENDER_TYPES = [
+        ('CUSTOMER', 'Customer'),
+        ('BOT', 'Bot'),
+        ('AGENT', 'Agent'),
+        ('SYSTEM', 'System'),
+    ]
+    
+    support_query = models.ForeignKey(SupportQuery, on_delete=models.CASCADE, related_name='messages')
+    sender_type   = models.CharField(max_length=20, choices=SENDER_TYPES)
+    sender_user   = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    message       = models.TextField()
+    is_internal   = models.BooleanField(default=False)
+    created_at    = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message on {self.support_query.support_id} by {self.sender_type}"

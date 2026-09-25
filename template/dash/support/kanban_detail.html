@@ -1,0 +1,137 @@
+{% extends "dash/base.html" %}
+{% block 'title' %}Support {{ query.support_id }} | Kapi Today{% endblock %}
+{% block 'css' %}
+<style>
+    .info-label { font-size: 11px; text-transform: uppercase; color: #6c757d; font-weight: 700; letter-spacing: 0.5px; }
+    .info-value { font-size: 14px; color: #212529; font-weight: 500; margin-bottom: 15px; }
+    
+    .chat-container { height: calc(100vh - 250px); display: flex; flex-direction: column; background: #fff; border-radius: 8px; border: 1px solid #dee2e6; }
+    .chat-history { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #f8f9fa; }
+    .c-msg { max-width: 75%; padding: 10px 15px; border-radius: 8px; font-size: 13.5px; line-height: 1.4; position: relative; }
+    .c-msg-CUSTOMER { background: #fff; border: 1px solid #dee2e6; align-self: flex-start; }
+    .c-msg-BOT { background: #e9ecef; align-self: flex-start; }
+    .c-msg-AGENT { background: #d1e7dd; align-self: flex-end; }
+    .c-msg-INTERNAL { background: #fff3cd; align-self: flex-end; border: 1px dashed #ffc107; }
+    .c-msg-meta { font-size: 10px; color: #6c757d; margin-top: 5px; text-align: right; display: block; }
+    
+    .chat-input-area { padding: 15px; background: #fff; border-top: 1px solid #dee2e6; border-radius: 0 0 8px 8px; }
+</style>
+{% endblock %}
+{% block 'content' %}
+<div class="row h-100">
+    <div class="col-md-4">
+        <div class="d-flex align-items-center mb-3">
+            <a href="{% url 'support_kanban' %}" class="btn btn-sm btn-light me-2"><i class="mdi mdi-arrow-left"></i></a>
+            <h4 class="m-0 fw-bold">{{ query.support_id }}</h4>
+        </div>
+        
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <div class="info-label">Customer</div>
+                <div class="info-value">
+                    <i class="mdi mdi-account"></i> {{ query.customer.user.first_name }} {{ query.customer.user.last_name }}<br>
+                    <small class="text-muted"><i class="mdi mdi-email"></i> {{ query.customer.user.email }}</small><br>
+                    <small class="text-muted"><i class="mdi mdi-phone"></i> {{ query.customer.phone_number }}</small>
+                </div>
+                
+                <div class="info-label">Category</div>
+                <div class="info-value">{{ query.category }}</div>
+                
+                {% if query.order %}
+                <div class="info-label">Related Order</div>
+                <div class="info-value">
+                    <a href="{% url 'order_detail' query.order.id %}" target="_blank">{{ query.order.display_order_id }} <i class="mdi mdi-open-in-new"></i></a><br>
+                    <span class="badge bg-secondary">{{ query.order.get_status_display }}</span>
+                    <span class="badge bg-success">₹{{ query.order.total }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">Actions</h6>
+                
+                <div class="mb-3">
+                    <label class="info-label">Priority</label>
+                    <select class="form-select form-select-sm" id="prioritySelect">
+                        <option value="LOW" {% if query.priority == 'LOW' %}selected{% endif %}>LOW</option>
+                        <option value="NORMAL" {% if query.priority == 'NORMAL' %}selected{% endif %}>NORMAL</option>
+                        <option value="HIGH" {% if query.priority == 'HIGH' %}selected{% endif %}>HIGH</option>
+                        <option value="URGENT" {% if query.priority == 'URGENT' %}selected{% endif %}>URGENT</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="info-label">Status</label>
+                    <select class="form-select form-select-sm" id="statusSelect">
+                        <option value="OPEN" {% if query.status == 'OPEN' %}selected{% endif %}>OPEN</option>
+                        <option value="BOT_HANDLING" {% if query.status == 'BOT_HANDLING' %}selected{% endif %}>BOT HANDLING</option>
+                        <option value="ESCALATED" {% if query.status == 'ESCALATED' %}selected{% endif %}>ESCALATED</option>
+                        <option value="HUMAN_REVIEW" {% if query.status == 'HUMAN_REVIEW' %}selected{% endif %}>HUMAN REVIEW</option>
+                        <option value="ACTION_REQUIRED" {% if query.status == 'ACTION_REQUIRED' %}selected{% endif %}>ACTION REQUIRED</option>
+                        <option value="RESOLVED" {% if query.status == 'RESOLVED' %}selected{% endif %}>RESOLVED</option>
+                        <option value="CLOSED" {% if query.status == 'CLOSED' %}selected{% endif %}>CLOSED</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="chat-container">
+            <div class="chat-history" id="chatHistory">
+                {% for msg in chat_messages %}
+                <div class="c-msg {% if msg.is_internal %}c-msg-INTERNAL{% else %}c-msg-{{ msg.sender_type }}{% endif %}">
+                    {% if msg.sender_type != 'CUSTOMER' %}<div style="font-size: 10px; font-weight: bold; margin-bottom: 4px;">{% if msg.is_internal %}INTERNAL NOTE{% else %}{{ msg.sender_type }}{% endif %}</div>{% endif %}
+                    {{ msg.message|linebreaksbr }}
+                    <span class="c-msg-meta">{{ msg.created_at|time:"g:i A (d M)" }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="chat-input-area">
+                <div class="d-flex gap-2">
+                    <textarea class="form-control" id="replyText" rows="2" placeholder="Type a reply to the customer..."></textarea>
+                    <div class="d-flex flex-column gap-2">
+                        <button class="btn btn-primary" onclick="sendReply(false)">Send Reply</button>
+                        <button class="btn btn-warning text-dark" onclick="sendReply(true)">Add Note</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block 'script' %}
+<script>
+    const chatHistory = document.getElementById('chatHistory');
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+
+    function sendReply(isInternal) {
+        const text = document.getElementById('replyText').value.trim();
+        if(!text) return;
+        
+        fetch("{% url 'api_admin_support_action' query.support_id %}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+            body: JSON.stringify({action: 'send_message', message: text, is_internal: isInternal})
+        }).then(() => location.reload());
+    }
+
+    document.getElementById('prioritySelect').addEventListener('change', function() {
+        fetch("{% url 'api_admin_support_action' query.support_id %}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+            body: JSON.stringify({action: 'change_priority', priority: this.value})
+        }).then(() => location.reload());
+    });
+
+    document.getElementById('statusSelect').addEventListener('change', function() {
+        fetch("{% url 'api_admin_support_action' query.support_id %}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+            body: JSON.stringify({action: 'change_status', status: this.value})
+        }).then(() => location.reload());
+    });
+</script>
+{% endblock %}

@@ -370,7 +370,16 @@ def verify_payment(request):
                 applied_coupon = request.session.get('applied_coupon', '')
                 discount_amt = request.session.get('discount_amt', 0)
                 
+                from dash.models import SequenceCounter
+                from django.utils import timezone
+                
+                now_date = timezone.now()
+                date_str = now_date.strftime("%y%m%d")
+                seq_val = SequenceCounter.get_next_value(f"order_seq_{date_str}")
+                display_id = f"#KT{date_str}{seq_val:05d}"
+                
                 order = Order.objects.create(
+                    display_order_id=display_id,
                     customer=customer,
                     coupon_code=applied_coupon,
                     discount=discount_amt,
@@ -625,7 +634,16 @@ def fc_verify_payment(request):
                 applied_coupon = request.session.get('applied_coupon', '')
                 discount_amt = request.session.get('discount_amt', 0)
                 
+                from dash.models import SequenceCounter
+                from django.utils import timezone
+                
+                now_date = timezone.now()
+                date_str = now_date.strftime("%y%m%d")
+                seq_val = SequenceCounter.get_next_value(f"order_seq_{date_str}")
+                display_id = f"#KT{date_str}{seq_val:05d}"
+                
                 order = Order.objects.create(
+                    display_order_id=display_id,
                     customer=customer,
                     coupon_code=applied_coupon,
                     discount=discount_amt,
@@ -691,3 +709,170 @@ def fc_verify_payment(request):
             except Exception as e:
                 return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False})
+
+# ============================================================
+# CUSTOMER ACCOUNT: ORDERS & SUPPORT
+# ============================================================
+from django.contrib.auth.decorators import login_required
+from dash.models import SupportQuery, SupportMessage
+
+@login_required(login_url='/login/')
+def my_orders(request):
+    try:
+        customer = Customers.objects.get(user=request.user)
+        orders = Order.objects.filter(customer=customer).order_by('-created_at')
+    except Customers.DoesNotExist:
+        orders = []
+    return render(request, 'main/my_orders.html', {'orders': orders})
+
+@login_required(login_url='/login/')
+def my_order_detail(request, display_id):
+    try:
+        customer = Customers.objects.get(user=request.user)
+        order = Order.objects.get(display_order_id=display_id, customer=customer)
+    except (Customers.DoesNotExist, Order.DoesNotExist):
+        return redirect('my_orders')
+    return render(request, 'main/my_order_detail.html', {'order': order})
+
+@login_required(login_url='/login/')
+def support_list(request):
+    try:
+        customer = Customers.objects.get(user=request.user)
+        queries = SupportQuery.objects.filter(customer=customer).order_by('-updated_at')
+    except Customers.DoesNotExist:
+        queries = []
+    return render(request, 'main/support_list.html', {'queries': queries})
+
+@login_required(login_url='/login/')
+def support_create(request):
+    if request.method == 'POST':
+        try:
+            customer = Customers.objects.get(user=request.user)
+            category = request.POST.get('category')
+            order_id = request.POST.get('order_id')
+            message = request.POST.get('message')
+            
+            order = None
+            if order_id:
+                order = Order.objects.filter(id=order_id, customer=customer).first()
+                
+            query = SupportQuery.objects.create(
+                customer=customer,
+                order=order,
+                category=category,
+                status='BOT_HANDLING'
+            )
+            
+            SupportMessage.objects.create(
+                support_query=query,
+                sender_type='CUSTOMER',
+                sender_user=request.user,
+                message=message
+            )
+            
+            # Chatbot Initial Processing
+            bot_reply = process_chatbot_intent(query, message)
+            SupportMessage.objects.create(
+                support_query=query,
+                sender_type='BOT',
+                message=bot_reply
+            )
+            
+            return redirect('support_chat', support_id=query.support_id)
+        except Customers.DoesNotExist:
+            pass
+            
+    # GET request
+    try:
+        customer = Customers.objects.get(user=request.user)
+        orders = Order.objects.filter(customer=customer).order_by('-created_at')
+    except Customers.DoesNotExist:
+        orders = []
+        
+    preselect_order = request.GET.get('order')
+    return render(request, 'main/support_create.html', {'orders': orders, 'preselect_order': preselect_order})
+
+def process_chatbot_intent(query, message):
+    msg = message.lower()
+    
+    # 1. Order Status Intent
+    if any(x in msg for x in ['where is my order', 'order status', 'delivery', 'tracking']):
+        if query.order:
+            if query.order.status == 'delivered':
+                query.status = 'RESOLVED'
+                query.save()
+                return f"I can see that your order {query.order.display_order_id} was marked as Delivered! If you haven't received it, please reply and I'll escalate this immediately."
+            elif query.order.status == 'shipped':
+                return f"Your order {query.order.display_order_id} is currently Shipped and on its way! You can track it in your Orders page."
+            else:
+                return f"Your order {query.order.display_order_id} is currently {query.order.status.title()}. Our team is working on it!"
+        else:
+            return "Could you please specify which order you are asking about? You can select an order from the list."
+
+    # 2. Escalation Intents (Refund, Tampered, Damaged, Wrong Product)
+    if any(x in msg for x in ['refund', 'damaged', 'broken', 'tampered', 'wrong', 'missing', 'cancel', 'compensation']):
+        query.status = 'ESCALATED'
+        query.priority = 'HIGH'
+        query.save()
+        return "I understand this is a serious issue. I have escalated this directly to our Human Support Team. A specialist will review this and get back to you shortly."
+        
+    # 3. Fallback / General FAQ
+    return "Thank you for reaching out. I am your Kapi Today virtual assistant. If this requires a human touch, please reply 'escalate' or explain your issue in more detail and I will transfer you!"
+
+@login_required(login_url='/login/')
+def support_chat(request, support_id):
+    try:
+        customer = Customers.objects.get(user=request.user)
+        query = SupportQuery.objects.get(support_id=support_id, customer=customer)
+        messages = query.messages.all().order_by('created_at')
+    except (Customers.DoesNotExist, SupportQuery.DoesNotExist):
+        return redirect('customer_support')
+        
+    return render(request, 'main/support_chat.html', {'query': query, 'chat_messages': messages})
+
+@csrf_exempt
+@login_required(login_url='/login/')
+def api_support_message(request, support_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            message = data.get('message')
+            customer = Customers.objects.get(user=request.user)
+            query = SupportQuery.objects.get(support_id=support_id, customer=customer)
+            
+            # Save user message
+            SupportMessage.objects.create(
+                support_query=query,
+                sender_type='CUSTOMER',
+                sender_user=request.user,
+                message=message
+            )
+            
+            # If closed, reopen it
+            if query.status in ['CLOSED', 'RESOLVED']:
+                query.status = 'ESCALATED'
+                query.save()
+            
+            # If Bot Handling, process bot reply
+            bot_reply = None
+            if query.status == 'BOT_HANDLING':
+                if 'escalate' in message.lower() or 'human' in message.lower():
+                    query.status = 'ESCALATED'
+                    query.save()
+                    bot_reply = "I have escalated this to a human agent. They will assist you shortly."
+                else:
+                    bot_reply = process_chatbot_intent(query, message)
+                    
+            if bot_reply:
+                SupportMessage.objects.create(
+                    support_query=query,
+                    sender_type='BOT',
+                    message=bot_reply
+                )
+                
+            return JsonResponse({'success': True, 'bot_reply': bot_reply, 'status': query.status})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False})
+

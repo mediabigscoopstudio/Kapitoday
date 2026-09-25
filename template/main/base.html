@@ -58,8 +58,9 @@
                 <i class="bi bi-person-check-fill"></i> Hi, {{ request.user.first_name }}
               </a>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">My Orders</a></li>
-                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                <li><a class="dropdown-item" href="{% url 'my_orders' %}">My Orders</a></li>
+                <li><a class="dropdown-item" href="{% url 'customer_support' %}">Support</a></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
               </ul>
             </div>
           {% else %}
@@ -182,9 +183,10 @@
           <a href="#" aria-label="Account Settings" data-bs-toggle="dropdown"><i class="bi bi-person-check-fill"></i></a>
           <ul class="dropdown-menu dropdown-menu-end" style="position:absolute;">
             <li><h6 class="dropdown-header">Hi, {{ request.user.first_name }}</h6></li>
-            <li><a class="dropdown-item" href="#">My Orders</a></li>
+            <li><a class="dropdown-item" href="{% url 'my_orders' %}">My Orders</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+            <li><a class="dropdown-item" href="{% url 'customer_support' %}">Support</a></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
           </ul>
         </div>
         {% else %}
@@ -217,7 +219,7 @@
         </nav>
         <div class="mobile-util-links">
           {% if request.user.is_authenticated %}
-          <a href="#"><i class="bi bi-bag-check"></i> My Orders</a>
+          <a href="{% url 'my_orders' %}"><i class="bi bi-bag-check"></i> My Orders</a>
           <a href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
           {% else %}
           <a href="#" class="google-login-trigger"><i class="bi bi-person"></i> Account</a>

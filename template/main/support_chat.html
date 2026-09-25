@@ -1,0 +1,98 @@
+{% extends "main/base.html" %}
+{% block title %}Support {{ query.support_id }} | Kapi Today{% endblock %}
+{% block css %}
+<style>
+    .chat-box { height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding: 20px; background: #fff; border-radius: 10px; }
+    .msg-bubble { max-width: 80%; padding: 12px 18px; border-radius: 20px; font-size: 14.5px; line-height: 1.4; }
+    .msg-customer { background: var(--kapi-coffee); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg-bot { background: var(--kapi-cream); color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg-agent { background: var(--kapi-gold); color: white; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg-meta { font-size: 10px; opacity: 0.7; margin-top: 5px; display: block; text-align: right; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-5" style="margin-top: 100px; max-width: 800px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="m-0" style="color: var(--kapi-coffee);">{{ query.support_id }}</h3>
+            <p class="m-0 text-muted small">Status: <strong>{{ query.get_status_display }}</strong> {% if query.order %} | Order: {{ query.order.display_order_id }}{% endif %}</p>
+        </div>
+        <a href="{% url 'customer_support' %}" class="btn btn-outline-dark btn-sm">&larr; Back</a>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="background: #fdfaf4;">
+        <div class="card-body p-0">
+            <div class="chat-box" id="chatBox">
+                {% for msg in chat_messages %}
+                <div class="msg-bubble {% if msg.sender_type == 'CUSTOMER' %}msg-customer{% elif msg.sender_type == 'AGENT' %}msg-agent{% else %}msg-bot{% endif %}">
+                    {{ msg.message|linebreaksbr }}
+                    <span class="msg-meta">{{ msg.created_at|time:"g:i A" }} {% if msg.sender_type == 'BOT' %}🤖{% elif msg.sender_type == 'AGENT' %}👨‍💼{% endif %}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="p-3 bg-white border-top rounded-bottom">
+                {% if query.status == 'CLOSED' %}
+                <p class="text-center text-muted m-0">This query is closed.</p>
+                {% else %}
+                <form id="chatForm" class="d-flex gap-2">
+                    <input type="text" id="chatInput" class="form-control" placeholder="Type your message..." required>
+                    <button type="submit" class="btn btn-dark px-4">Send</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    const chatBox = document.getElementById('chatBox');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    
+    function scrollToBottom() {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    scrollToBottom();
+
+    if(chatForm) {
+        chatForm.addEventListener('submit', function(e){
+            e.preventDefault();
+            const msg = chatInput.value.trim();
+            if(!msg) return;
+
+            // Append instantly
+            const html = `
+                <div class="msg-bubble msg-customer">
+                    ${msg}
+                    <span class="msg-meta">Just now</span>
+                </div>
+            `;
+            chatBox.insertAdjacentHTML('beforeend', html);
+            scrollToBottom();
+            chatInput.value = '';
+
+            // Send via fetch
+            fetch("{% url 'api_support_message' query.support_id %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({message: msg})
+            }).then(r => r.json()).then(data => {
+                if(data.success && data.bot_reply) {
+                    const botHtml = `
+                        <div class="msg-bubble msg-bot">
+                            ${data.bot_reply}
+                            <span class="msg-meta">Just now 🤖</span>
+                        </div>
+                    `;
+                    chatBox.insertAdjacentHTML('beforeend', botHtml);
+                    scrollToBottom();
+                }
+            });
+        });
+    }
+</script>
+{% endblock %}

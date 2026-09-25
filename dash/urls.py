@@ -42,6 +42,10 @@ urlpatterns = [
     path('customers', views.customers, name='customers'),
     #Support Management urls
     path('support', views.support, name='support'),
+    path('support-kanban/', views.support_kanban, name='support_kanban'),
+    path('support-kanban/<str:support_id>/', views.support_kanban_detail, name='support_kanban_detail'),
+    path('api/admin-support/<str:support_id>/action/', views.api_admin_support_action, name='api_admin_support_action'),
+
     path('resolve_enquiry', views.resolve_enquiry, name='resolve_enquiry'),
     #Support Management urls
     path('intelligence', views.intelligence, name='intelligence'),

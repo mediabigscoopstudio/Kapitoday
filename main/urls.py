@@ -6,6 +6,13 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('my-orders/', views.my_orders, name='my_orders'),
+    path('my-orders/<str:display_id>/', views.my_order_detail, name='my_order_detail'),
+    path('support/', views.support_list, name='customer_support'),
+    path('support/new/', views.support_create, name='support_create'),
+    path('support/<str:support_id>/', views.support_chat, name='support_chat'),
+    path('api/support/<str:support_id>/message/', views.api_support_message, name='api_support_message'),
+
     path('auth/google-login/', views.google_login, name='google_login'),
     path('logout/', views.custom_logout, name='logout'),
     path('subscribe-newsletter/', views.subscribe_newsletter, name='subscribe_newsletter'),

@@ -1,0 +1,44 @@
+{% extends "main/base.html" %}
+{% block title %}Create Support Query | Kapi Today{% endblock %}
+{% block content %}
+<div class="container py-5" style="margin-top: 100px; max-width: 600px;">
+    <h2 class="mb-4 text-center" style="color: var(--kapi-coffee);">How can we help you?</h2>
+    
+    <div class="card border-0 shadow-sm" style="background: var(--kapi-cream);">
+        <div class="card-body p-4">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Issue Type</label>
+                    <select class="form-select" name="category" required>
+                        <option value="" disabled selected>Select an issue...</option>
+                        <option value="Delivery Delay">Delivery Delay / Where is my order?</option>
+                        <option value="Damaged/Tampered">Damaged or Tampered Product</option>
+                        <option value="Wrong/Missing Product">Wrong or Missing Product</option>
+                        <option value="Refund/Return">Refund or Return Request</option>
+                        <option value="Payment Issue">Payment Issue</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Select Order (Optional)</label>
+                    <select class="form-select" name="order_id">
+                        <option value="">-- No specific order --</option>
+                        {% for o in orders %}
+                        <option value="{{ o.id }}" {% if preselect_order == o.id|stringformat:"s" %}selected{% endif %}>{{ o.display_order_id }} ({{ o.created_at|date:"d M Y" }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Describe the problem</label>
+                    <textarea class="form-control" name="message" rows="4" required placeholder="Please provide details..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-dark w-100 fw-bold py-2">Start Chat</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
