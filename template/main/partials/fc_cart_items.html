@@ -12,10 +12,10 @@
                     <span>{{ item.quantity }}</span>
                     <button onclick="updateCartItem('{{ item.id }}', 'add')">&plus;</button>
                 </div>
-                <div class="fc-cart-price">₹{% widthratio item.variant.price|default:item.product.price|default:0 1 item.quantity %}</div>
+                <div class="fc-cart-price">₹{% widthratio item.variant.price|default:item.product.product_variant.first.price|default:0 1 item.quantity %}</div>
             </div>
             <div style="text-align:right; margin-top:5px;">
-                <button onclick="updateCartItem('{{ item.id }}', 'remove')" style="background:none;border:none;color:#d32f2f;font-size:0.75rem;cursor:pointer;padding:0;">Remove</button>
+                <button onclick="updateCartItem('{{ item.id }}', 'remove')" style="background:none;border:none;color:#999;font-size:1.1rem;cursor:pointer;padding:0; transition: color 0.2s;" onmouseover="this.style.color='#d32f2f'" onmouseout="this.style.color='#999'" title="Remove Item"><i class="bi bi-trash3"></i></button>
             </div>
         </div>
     </div>
@@ -30,15 +30,23 @@
 {% if recommended %}
 <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
     <h6 style="font-weight:700; color:#3A2A1D; margin-bottom:15px; font-family:serif;">You might also like</h6>
-    {% for rec in recommended %}
-    <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;">
-        <img src="{% if rec.thumbnail %}{{ rec.thumbnail.url }}{% else %}{% static 'main/logos/LogoMain.webp' %}{% endif %}" style="width:60px; height:60px; object-fit:cover; border-radius:6px;" alt="{{ rec.name }}">
-        <div style="flex:1;">
-            <div style="font-weight:600; font-size:0.9rem; color:#3A2A1D;">{{ rec.name }}</div>
-            <div style="font-weight:700; color:#2a8b41; font-size:0.85rem;">₹{{ rec.product_variant.first.price|default:'---' }}</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        {% for rec in recommended %}
+        <div style="background:#fff; border:1px solid #eee; border-radius:10px; overflow:hidden; position:relative; display:flex; flex-direction:column;">
+            <div style="aspect-ratio: 1; width: 100%; background: #f9f9f9;">
+                <img src="{% if rec.thumbnail %}{{ rec.thumbnail.url }}{% else %}{% static 'main/logos/LogoMain.webp' %}{% endif %}" style="width:100%; height:100%; object-fit:cover;" alt="{{ rec.name }}">
+            </div>
+            <div style="padding: 10px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                <div style="font-weight:600; font-size:0.85rem; color:#3A2A1D; line-height: 1.2; margin-bottom: 5px;">{{ rec.name|truncatechars:35 }}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                    <div style="font-weight:700; color:#2a8b41; font-size:0.85rem;">₹{{ rec.computed_price }}</div>
+                    <button onclick="fcAddRecommended('{{ rec.id }}', '{{ rec.computed_variant_id|default:'' }}')" style="background:#a67c52; color:#fff; border:none; width:28px; height:28px; border-radius:50%; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; transition: background 0.2s;" onmouseover="this.style.background='#8e6843'" onmouseout="this.style.background='#a67c52'">
+                        <i class="bi bi-plus-lg" style="font-size:14px;"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <button onclick="fcAddRecommended('{{ rec.id }}')" style="background:#a67c52; color:#fff; border:none; width:30px; height:30px; border-radius:50%; font-weight:bold; cursor:pointer;">+</button>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 {% endif %}

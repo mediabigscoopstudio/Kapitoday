@@ -238,7 +238,7 @@
         <!-- Header & Progress -->
         <div style="background: #3A2A1D; color: #fff;">
             <div style="padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
-                <h5 style="margin: 0; font-family: serif; font-size: 1.2rem;">Kapi Today Checkout</h5>
+                <h5 style="margin: 0; font-family: serif; font-size: 1.2rem; color: #fdfaf4;">Kapi Today Checkout</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" style="filter: invert(1); opacity: 0.8;"></button>
             </div>
             <div id="fcProgress" style="display: flex; background: #4a3625; padding: 10px 20px; font-size: 0.75rem; color: rgba(255,255,255,0.6); justify-content: space-between;">
@@ -339,7 +339,10 @@
             <div style="display:flex; justify-content:space-between; font-size:1.1rem; font-weight:700; color:#3A2A1D; border-top:1px dashed #ddd; padding-top:10px;">
                 <span>Total</span><span id="fc-total">₹0</span>
             </div>
-            <button id="fc-cta-btn" onclick="fcNextStep()" style="display:block; width:100%; background:#a67c52; color:#fff; text-align:center; padding:15px; border-radius:8px; font-weight:700; font-size:1.1rem; border:none; margin-top:15px; cursor:pointer;">Continue to Login &rarr;</button>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button id="fc-back-btn" onclick="fcPrevStep()" style="display:none; width:30%; background:#f4f4f4; color:#555; text-align:center; padding:15px; border-radius:8px; font-weight:700; font-size:1rem; border:1px solid #ddd; cursor:pointer;">&larr; Back</button>
+                <button id="fc-cta-btn" onclick="fcNextStep()" style="flex:1; background:#a67c52; color:#fff; text-align:center; padding:15px; border-radius:8px; font-weight:700; font-size:1.1rem; border:none; cursor:pointer;">Continue to Login &rarr;</button>
+            </div>
         </div>
 
     </div>
@@ -822,16 +825,18 @@
         });
     }
     
-    function fcAddRecommended(productId) {
-        // Find the first variant ID if any (we can assume default or None)
+    function fcAddRecommended(productId, variantId = '') {
+        let params = {
+            'product_id': productId,
+            'quantity': 1,
+            'csrfmiddlewaretoken': document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : ''
+        };
+        if (variantId) params['variant_id'] = variantId;
+        
         fetch('/shop/add-to-cart/', {
             method: 'POST',
             headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'},
-            body: new URLSearchParams({
-                'product_id': productId,
-                'quantity': 1,
-                'csrfmiddlewaretoken': document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : ''
-            })
+            body: new URLSearchParams(params)
         }).then(r => r.json()).then(data => {
             if(data.success) fcUpdateUI(data);
         });
@@ -981,18 +986,28 @@
         fcRenderStepCTA();
     }
     
+    function fcPrevStep() {
+        if(fcState.step === 'address') fcSetStep('cart');
+        else if(fcState.step === 'offers') fcSetStep('address');
+        else if(fcState.step === 'payment') fcSetStep('offers'); // Although payment triggers Razorpay directly
+    }
+    
     function fcRenderStepCTA() {
         let btn = document.getElementById('fc-cta-btn');
+        let backBtn = document.getElementById('fc-back-btn');
         if(fcState.step === 'cart') {
             btn.innerHTML = fcState.isAuthenticated ? 'Continue to Address &rarr;' : 'Continue to Login &rarr;';
+            if(backBtn) backBtn.style.display = 'none';
         } else if(fcState.step === 'login') {
             document.getElementById('fcFooter').style.display = 'none';
         } else if(fcState.step === 'address') {
             document.getElementById('fcFooter').style.display = 'block';
             btn.innerHTML = 'Continue to Offers &rarr;';
+            if(backBtn) backBtn.style.display = 'block';
         } else if(fcState.step === 'offers') {
             document.getElementById('fcFooter').style.display = 'block';
             btn.innerHTML = 'Proceed to Payment &rarr;';
+            if(backBtn) backBtn.style.display = 'block';
         }
     }
     

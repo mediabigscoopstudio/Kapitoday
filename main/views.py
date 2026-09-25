@@ -13,7 +13,8 @@ from django.core.paginator import Paginator
 from django.db.models import Prefetch, F
 
 # Import the CMS models from the dash app
-from dash.models import ArticleCategory, Author, Article, ArticleFAQ, ArticleHowTo
+from dash.models import ArticleCategory, Author, Article, ArticleFAQ, ArticleHowTo, Product, Variant, Cart, CartItem, Customers, Offer, Order, OrderItem, Category, SubCategory
+
 
 def index(request):
     from dash.models import Product
@@ -496,7 +497,14 @@ def fc_get_state(request):
     # Get up to 3 recommended products (random or latest)
     from dash.models import Product
     cart_product_ids = [item.product.id for item in cart_items]
-    recommended = Product.objects.exclude(id__in=cart_product_ids).order_by('?')[:3]
+    recommended_qs = Product.objects.prefetch_related('product_variant').filter(product_variant__isnull=False).distinct().exclude(id__in=cart_product_ids).order_by('?')[:3]
+    recommended = list(recommended_qs)
+    for r in recommended:
+        variants = list(r.product_variant.all())
+        v = variants[0] if variants else None
+        r.computed_price = v.price if v else None
+        r.computed_variant_id = v.id if v else ''
+
     
     # Render the cart items HTML so we don't have to build it in JS
     cart_html = render_to_string('main/partials/fc_cart_items.html', {
