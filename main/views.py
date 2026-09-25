@@ -276,13 +276,24 @@ def google_login(request):
             # Send welcome email if created
             if created:
                 try:
-                    send_mail(
+                    from django.core.mail import EmailMultiAlternatives
+                    from django.template.loader import render_to_string
+                    
+                    base_url = request.build_absolute_uri('/')[:-1]
+                    html_content = render_to_string('emails/welcome.html', {
+                        'first_name': first_name,
+                        'base_url': base_url
+                    })
+                    text_content = f'Hi {first_name},\n\nThank you for joining Kapi Today. Explore our premium South Indian filter coffees and estate single origins!\n\nCheers,\nThe Kapi Today Team'
+                    
+                    msg = EmailMultiAlternatives(
                         'Welcome to Kapi Today!',
-                        f'Hi {first_name},\n\nThank you for joining Kapi Today. Explore our premium South Indian filter coffees and estate single origins!\n\nCheers,\nThe Kapi Today Team',
+                        text_content,
                         settings.DEFAULT_FROM_EMAIL,
-                        [email],
-                        fail_silently=True,
+                        [email]
                     )
+                    msg.attach_alternative(html_content, "text/html")
+                    msg.send(fail_silently=True)
                 except Exception as e:
                     print("Could not send email:", e)
             
@@ -305,3 +316,41 @@ from django.shortcuts import redirect
 def custom_logout(request):
     auth_logout(request)
     return redirect('/')
+
+
+from django.views.decorators.http import require_POST
+from dash.models import Subscriber
+import json
+
+@require_POST
+def subscribe_newsletter(request):
+    try:
+        data = json.loads(request.body)
+        email = data.get('email', '').strip()
+        if not email:
+            return JsonResponse({'success': False, 'error': 'Email is required'})
+            
+        sub, created = Subscriber.objects.get_or_create(email=email)
+        
+        if created:
+            try:
+                from django.core.mail import EmailMultiAlternatives
+                from django.template.loader import render_to_string
+                base_url = request.build_absolute_uri('/')[:-1]
+                html_content = render_to_string('emails/newsletter.html', {'base_url': base_url})
+                text_content = "Thank you for subscribing to our newsletter! You're now officially part of the Kapi Culture.\n\nGet ready for early access to our exclusive product releases, seasonal estate blends, expert brewing tips, and stories straight from the coffee hills of South India."
+                
+                msg = EmailMultiAlternatives(
+                    'Welcome to the Kapi Culture!',
+                    text_content,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email]
+                )
+                msg.attach_alternative(html_content, "text/html")
+                msg.send(fail_silently=True)
+            except Exception as e:
+                print("Newsletter email failed:", e)
+                
+        return JsonResponse({'success': True, 'message': 'Successfully subscribed!'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

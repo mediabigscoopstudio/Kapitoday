@@ -608,3 +608,9 @@ class ArticleHowTo(models.Model):
 
     def __str__(self):
         return self.step_name
+class Subscriber(models.Model):
+    email = models.EmailField(unique=True)
+    subscribed_at = models.DateTimeField(default=timezone.now)
+    
+    def __str__(self):
+        return self.email

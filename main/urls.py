@@ -8,6 +8,7 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('auth/google-login/', views.google_login, name='google_login'),
     path('logout/', views.custom_logout, name='logout'),
+    path('subscribe-newsletter/', views.subscribe_newsletter, name='subscribe_newsletter'),
 
     path("", views.index, name='index'),
     path("about", views.about, name='about'),

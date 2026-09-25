@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Welcome to the Kapi Culture</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #FDFBF7;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #3A2D23;
+  }
+  .email-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #FDFBF7;
+    border: 1px solid #EBE4D5;
+  }
+  .header {
+    text-align: center;
+    padding: 40px 20px 20px;
+  }
+  .header img {
+    max-width: 150px;
+    height: auto;
+  }
+  .title {
+    text-align: center;
+    padding: 20px;
+  }
+  .title h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 36px;
+    color: #2E1B10;
+    margin: 0 0 10px 0;
+  }
+  .title p {
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: #8C705F;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .content {
+    padding: 20px 40px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #3A2D23;
+  }
+  .features {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid #EBE4D5;
+    border-bottom: 1px solid #EBE4D5;
+    margin: 30px 40px;
+  }
+  .features table {
+    width: 100%;
+  }
+  .features td {
+    width: 25%;
+    vertical-align: top;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #283618;
+    letter-spacing: 1px;
+    padding: 10px 5px;
+  }
+  .cta {
+    text-align: center;
+    padding: 30px;
+  }
+  .cta a {
+    display: inline-block;
+    background-color: #283618;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 15px 30px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .footer {
+    text-align: center;
+    padding: 30px;
+    font-size: 12px;
+    color: #8C705F;
+    background-color: #F4F0E6;
+  }
+</style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <img src="{{ base_url }}/static/main/logos/LogoMain.webp" alt="Kapi Today Logo">
+    </div>
+    
+    <div class="title">
+      <p>Welcome To</p>
+      <h1>Kapi Culture</h1>
+      <p>Good Coffee. Brighter Days.</p>
+    </div>
+    
+    <div class="content">
+      <p>Hi there,</p>
+      <p>Thank you for subscribing to our newsletter! You're now officially part of the Kapi Culture.</p>
+      <p>Get ready for early access to our exclusive product releases, seasonal estate blends, expert brewing tips, and stories straight from the coffee hills of South India.</p>
+    </div>
+    
+    <div class="features">
+      <table border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>🌿<br><br>Premium<br>South Indian<br>Coffees</td>
+          <td>🚚<br><br>Fast &amp; Secure<br>Delivery</td>
+          <td>☕<br><br>Brewing<br>Guides</td>
+          <td>🌱<br><br>A More<br>Sustainable<br>Tomorrow</td>
+        </tr>
+      </table>
+    </div>
+    
+    <div class="cta">
+      <a href="{{ base_url }}/shop">Explore Kapi Today &rarr;</a>
+    </div>
+    
+    <div class="footer">
+      <p>Sent from the hills of South India. &copy; {% now "Y" %} Kapi Today.</p>
+    </div>
+  </div>
+</body>
+</html>
