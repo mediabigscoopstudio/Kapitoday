@@ -1867,3 +1867,118 @@
   .btn-add-cart-dark:hover { background: #1c2611; }
   .btn-add-cart-dark:active { transform: scale(0.98); }
 
+
+/* ==========================================
+   STAGE 2: BRAND HEADER & NAVIGATION
+   ========================================== */
+
+/* Announcement Bar */
+.announcement-bar {
+    background-color: var(--kapi-brass-dark, #8B6914);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 8px 0;
+    text-transform: uppercase;
+}
+.announcement-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.9;
+}
+.announcement-item i {
+    font-size: 1rem;
+    color: var(--kapi-gold-accent, #C9A84C);
+}
+
+/* Header */
+.kapi-header {
+    background-color: var(--kapi-cream, #FAF6F0);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1040;
+}
+.desktop-nav-links {
+    display: flex;
+    gap: 24px;
+}
+.desktop-nav-links a {
+    color: var(--kapi-espresso, #2C1810);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+.desktop-nav-links a:hover {
+    color: var(--kapi-sienna, #B8602A);
+}
+.header-logo img {
+    height: 60px;
+    object-fit: contain;
+}
+
+/* Search Bar */
+.search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 30px;
+    padding: 6px 16px;
+    border: 1px solid rgba(0,0,0,0.1);
+    min-width: 200px;
+}
+.search-bar i {
+    color: #999;
+    margin-right: 8px;
+}
+.search-bar input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.85rem;
+    width: 100%;
+}
+
+/* Header Icons */
+.header-icon {
+    color: var(--kapi-espresso, #2C1810);
+    font-size: 1.25rem;
+    text-decoration: none;
+}
+.cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background-color: var(--kapi-plantation, #2D5A3D);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--kapi-espresso);
+    padding: 0;
+}
+
+/* Mobile Nav Links */
+.mobile-nav-links a {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    color: var(--kapi-espresso);
+    text-decoration: none;
+    font-weight: 700;
+}
