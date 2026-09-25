@@ -914,7 +914,7 @@ def search_products_api(request):
             'name': p.name,
             'price': price,
             'image': img,
-            'url': f"/shop/{cat_slug}/{sub_slug}/{p.slug}/"
+            'url': f"/{cat_slug}/{sub_slug}/{p.slug}/"
         })
         
     return JsonResponse({'products': results})
