@@ -374,7 +374,7 @@ def verify_payment(request):
                     customer=customer,
                     coupon_code=applied_coupon,
                     discount=discount_amt,
-                    email=customer.email or request.user.email,
+                    email=request.user.email,
                     phone=customer.phone_number or '',
                     full_name=data.get('full_name', 'Customer'),
                     address_line_1=data.get('address_line_1', ''),
@@ -629,7 +629,7 @@ def fc_verify_payment(request):
                     customer=customer,
                     coupon_code=applied_coupon,
                     discount=discount_amt,
-                    email=customer.email or request.user.email,
+                    email=request.user.email,
                     phone=customer.phone_number or '',
                     full_name=data.get('full_name', 'Customer'),
                     address_line_1=data.get('address_line_1', ''),
@@ -652,7 +652,7 @@ def fc_verify_payment(request):
                         product=item.product,
                         variant=item.variant,
                         product_name=item.product.name,
-                        variant_name=item.variant.title if item.variant else ''
+                        variant_name=item.variant.name if item.variant else ''
                     )
                 
                 cart.cart_items.all().delete()

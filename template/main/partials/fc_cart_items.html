@@ -5,7 +5,7 @@
         <img src="{% if item.product.thumbnail %}{{ item.product.thumbnail.url }}{% else %}{% static 'main/logos/LogoMain.webp' %}{% endif %}" class="fc-cart-img" alt="{{ item.product.name }}">
         <div class="fc-cart-details">
             <div class="fc-cart-title">{{ item.product.name }}</div>
-            <div class="fc-cart-meta">{% if item.variant %}{{ item.variant.title }}{% else %}250g{% endif %}</div>
+            <div class="fc-cart-meta">{% if item.variant %}{{ item.variant.name }}{% else %}250g{% endif %}</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
                 <div class="fc-qty-ctrl">
                     <button onclick="updateCartItem('{{ item.id }}', 'sub')">&minus;</button>
