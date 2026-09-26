@@ -36,3 +36,8 @@
         font-size: 0.65rem !important;
     }
 }
+
+/* Fix ticker bar overlapping offcanvas menu */
+.ticker-bar {
+    z-index: 1030 !important; 
+}
