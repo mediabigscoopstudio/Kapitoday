@@ -168,12 +168,30 @@ def product_detail(request, category_slug, subcategory_slug, product_slug):
     else:
         product = get_object_or_404(qs, slug=product_slug, category__slug=category_slug, sub_category__slug=subcategory_slug)
     
+    # Related products (same category, exclude current)
+    related_products = Product.objects.filter(category=product.category).exclude(id=product.id).prefetch_related('product_variant')[:4]
+    if not related_products:
+        related_products = Product.objects.exclude(id=product.id).prefetch_related('product_variant').order_by('?')[:4]
+        
+    # Find any active bundle offer containing this product
+    from dash.models import Offer
+    from django.utils import timezone
+    bundle_offer = Offer.objects.filter(
+        status='Active', 
+        action_type='bundle_price',
+        valid_from__lte=timezone.now(),
+        valid_to__gte=timezone.now(),
+        bundle_products=product
+    ).first()
+    
     cart = _get_or_create_cart(request)
     cart_items = cart.cart_items.all().select_related('product', 'variant')
     cart_total = sum((item.variant.price if item.variant else 0) * item.quantity for item in cart_items)
     
     context = {
         'product': product,
+        'related_products': related_products,
+        'bundle_offer': bundle_offer,
         'cart_items': cart_items,
         'cart_total': cart_total,
         'cart_count': sum(item.quantity for item in cart_items)

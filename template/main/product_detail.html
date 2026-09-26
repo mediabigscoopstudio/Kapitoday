@@ -1,318 +1,251 @@
-{% extends "main/base.html" %}
+{% extends 'main/base.html' %}
 {% load static %}
-{% block 'title' %}{{ product.name }} — Kapi Today{% endblock 'title' %}
+{% block 'title' %}{{ product.meta_title|default:product.name }} | Kapi Today{% endblock 'title' %}
+
+{% block 'meta' %}
+<meta name="description" content="{{ product.meta_description|default:product.description|truncatewords:20 }}">
+<meta name="keywords" content="{{ product.meta_keywords }}">
+{% if product.meta_image %}
+<meta property="og:image" content="{{ product.meta_image.url }}">
+{% elif product.thumbnail %}
+<meta property="og:image" content="{{ product.thumbnail.url }}">
+{% endif %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ product.name }}",
+  "image": "{% if product.thumbnail %}{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}{% endif %}",
+  "description": "{{ product.description|striptags }}",
+  "sku": "{{ product.slug }}",
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ request.build_absolute_uri }}",
+    "priceCurrency": "INR",
+    "price": "{% if product.product_variant.first %}{{ product.product_variant.first.price }}{% else %}0{% endif %}",
+    "availability": "{% if product.product_variant.first and product.product_variant.first.quantity > 0 %}https://schema.org/InStock{% else %}https://schema.org/OutOfStock{% endif %}"
+  }
+}
+</script>
+
+{% endblock 'meta' %}
 
 {% block 'css' %}
 <style>
-  .pdp-wrapper {
-    background: var(--kapi-cream);
-    padding: var(--space-3xl) 0;
-  }
-  
-  .pdp-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-3xl);
-  }
-  
-  @media (max-width: 768px) {
-    .pdp-grid { grid-template-columns: 1fr; gap: var(--space-xl); }
-  }
+/* Custom CSS for PDP */
+.pdp-breadcrumb { font-size: var(--text-sm); font-weight: 500; color: var(--kapi-stone); margin-bottom: var(--space-lg); }
+.pdp-breadcrumb a { color: var(--kapi-charcoal); text-decoration: none; }
+.pdp-breadcrumb a:hover { text-decoration: underline; }
+.pdp-hero { padding: var(--space-xl) 0 var(--space-2xl) 0; }
+.pdp-gallery-wrapper { display: flex; gap: var(--space-md); }
+.pdp-thumbnails { display: flex; flex-direction: column; gap: var(--space-sm); width: 80px; }
+.pdp-thumb { width: 80px; height: 100px; border: 2px solid transparent; cursor: pointer; border-radius: var(--radius-sm); overflow: hidden; transition: border var(--transition-fast); background: #fff; }
+.pdp-thumb.active, .pdp-thumb:hover { border-color: var(--kapi-brass); }
+.pdp-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.pdp-main-img-container { flex: 1; border-radius: var(--radius-sm); overflow: hidden; position: relative; background: #fff; display: flex; align-items: center; justify-content: center; }
+.pdp-main-img-container img { width: 100%; height: auto; max-height: 700px; object-fit: contain; transition: opacity 0.3s ease; }
+.pdp-eyebrow { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--kapi-brass-dark); margin-bottom: var(--space-sm); }
+.pdp-title { font-size: clamp(2rem, 3.5vw, 3rem); margin-bottom: var(--space-md); font-weight: 400; color: var(--kapi-dark-roast); line-height: 1.1; }
+.pdp-description { font-size: var(--text-md); color: var(--kapi-charcoal); margin-bottom: var(--space-xl); line-height: 1.7; }
+.pdp-variant-label { font-weight: 600; font-size: var(--text-sm); margin-bottom: var(--space-sm); text-transform: uppercase; letter-spacing: 0.05em; color: var(--kapi-stone); display: block; }
+.pdp-variants { display: flex; gap: var(--space-md); flex-wrap: wrap; margin-bottom: var(--space-lg); }
+.pdp-variant-card { border: 1px solid var(--kapi-sand); border-radius: var(--radius-sm); padding: var(--space-sm) var(--space-md); cursor: pointer; background: transparent; transition: all var(--transition-fast); display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 100px; }
+.pdp-variant-card.selected { border-color: var(--kapi-espresso); background: var(--kapi-espresso); color: var(--kapi-cream); }
+.pdp-variant-card.selected .v-price { color: var(--kapi-gold-accent); }
+.pdp-variant-card.disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+.v-name { font-weight: 600; font-size: var(--text-base); }
+.v-price { font-size: var(--text-sm); color: var(--kapi-charcoal); margin-top: 4px; transition: color var(--transition-fast); }
+.pdp-price-wrap { margin-bottom: var(--space-lg); display: flex; align-items: baseline; gap: var(--space-md); }
+.pdp-price { font-size: 2.5rem; font-weight: 400; color: var(--kapi-dark-roast); font-family: var(--font-heading); }
+.pdp-stock-status { font-size: var(--text-sm); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.stock-in { color: var(--kapi-plantation); }
+.stock-low { color: var(--kapi-terracotta); }
+.stock-out { color: var(--kapi-red-oxide); }
+.pdp-actions { display: flex; gap: var(--space-md); margin-bottom: var(--space-lg); }
+.pdp-qty-selector { display: flex; align-items: center; border: 1px solid var(--kapi-sand); border-radius: var(--radius-sm); }
+.pdp-qty-btn { background: transparent; border: none; width: 40px; height: 50px; font-size: 1.2rem; cursor: pointer; color: var(--kapi-charcoal); display: flex; align-items: center; justify-content: center; }
+.pdp-qty-input { width: 50px; height: 50px; border: none; text-align: center; font-weight: 600; font-size: 1rem; background: transparent; -moz-appearance: textfield; }
+.pdp-qty-input::-webkit-outer-spin-button, .pdp-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.btn-pdp-add { flex: 1; background: var(--kapi-espresso); color: var(--kapi-cream); border: none; border-radius: var(--radius-sm); font-size: 1.1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background var(--transition-fast); height: 50px; display: flex; align-items: center; justify-content: center; }
+.btn-pdp-add:hover { background: var(--kapi-dark-roast); }
+.btn-pdp-add:disabled { background: var(--kapi-sand); cursor: not-allowed; }
+.pdp-reassurance { display: flex; flex-direction: column; gap: var(--space-sm); padding-top: var(--space-lg); border-top: 1px solid var(--kapi-sand); }
+.reassurance-item { display: flex; align-items: center; gap: 10px; font-size: var(--text-sm); color: var(--kapi-charcoal); }
+.reassurance-item i { color: var(--kapi-brass-dark); font-size: 1.2rem; }
+.pdp-highlights-strip { background: var(--kapi-cream-warm); padding: var(--space-xl) 0; border-top: 1px solid var(--kapi-parchment); border-bottom: 1px solid var(--kapi-parchment); }
+.highlights-container { display: flex; justify-content: center; gap: var(--space-3xl); flex-wrap: wrap; }
+.highlight { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.highlight img { width: 40px; height: 40px; object-fit: contain; }
+.highlight-icon-fallback { font-size: 1.8rem; color: var(--kapi-brass-dark); }
+.highlight-text { font-size: var(--text-sm); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--kapi-dark-roast); }
+.pdp-story-section { padding: var(--space-4xl) 0; }
+.story-heading { font-size: clamp(2rem, 3vw, 2.5rem); text-align: center; margin-bottom: var(--space-md); font-weight: 400; color: var(--kapi-dark-roast); }
+.story-subheading { text-align: center; font-size: var(--text-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; color: var(--kapi-brass-dark); margin-bottom: var(--space-xl); }
+.story-content { font-size: var(--text-lg); line-height: 1.8; color: var(--kapi-charcoal); max-width: 800px; margin: 0 auto; text-align: center; }
+.aplus-section { padding: 0 0 var(--space-4xl) 0; }
+.aplus-item { margin-bottom: var(--space-2xl); text-align: center; }
+.aplus-item img { max-width: 100%; height: auto; border-radius: var(--radius-sm); }
+.pdp-accordion-section { padding: var(--space-3xl) 0; background: var(--kapi-cream-warm); }
+.accordion-item { border: none; background: transparent; border-bottom: 1px solid var(--kapi-parchment); }
+.accordion-button { background: transparent !important; color: var(--kapi-dark-roast) !important; font-family: var(--font-heading); font-size: 1.2rem; padding: 1.5rem 0; box-shadow: none !important; font-weight: 400; }
+.accordion-button:not(.collapsed) { color: var(--kapi-brass-dark) !important; }
+.accordion-body { padding: 0 0 1.5rem 0; font-size: var(--text-base); color: var(--kapi-charcoal); line-height: 1.7; }
+.pdp-related-section { padding: var(--space-4xl) 0; }
+.related-title { text-align: center; font-size: clamp(2rem, 3vw, 2.5rem); margin-bottom: var(--space-3xl); font-weight: 400; color: var(--kapi-dark-roast); }
+.pdp-sticky-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 15px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; display: none; align-items: center; justify-content: space-between; border-top: 1px solid var(--kapi-parchment); }
+.sticky-price { font-family: var(--font-heading); font-size: 1.5rem; color: var(--kapi-dark-roast); margin: 0; }
+.sticky-btn { background: var(--kapi-espresso); color: var(--kapi-cream); border: none; border-radius: var(--radius-sm); padding: 10px 24px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; transition: background var(--transition-fast); }
+.sticky-btn:hover { background: var(--kapi-dark-roast); }
+.sticky-btn:disabled { background: var(--kapi-sand); cursor: not-allowed; }
 
-  .pdp-gallery {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-  }
-
-  .pdp-main-image {
-    width: 100%;
-    border-radius: var(--radius-md);
-    background: #fff;
-    padding: var(--space-sm);
-    border: 1px solid rgba(139, 90, 43, 0.1);
-  }
-  .pdp-main-image img {
-    width: 100%;
-    height: auto;
-    border-radius: var(--radius-sm);
-    object-fit: cover;
-    aspect-ratio: 1/1;
-  }
-
-  .pdp-thumbnails {
-    display: flex;
-    gap: var(--space-sm);
-    overflow-x: auto;
-    padding-bottom: 5px;
-  }
-  
-  .pdp-thumb {
-    width: 80px;
-    height: 80px;
-    border-radius: var(--radius-sm);
-    border: 1px solid rgba(139, 90, 43, 0.2);
-    cursor: pointer;
-    background: #fff;
-    flex-shrink: 0;
-  }
-  .pdp-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: calc(var(--radius-sm) - 1px);
-  }
-  .pdp-thumb:hover { border-color: var(--kapi-brass); }
-
-  .pdp-info {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .pdp-meta {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--kapi-olive);
-    margin-bottom: var(--space-sm);
-    font-weight: 600;
-  }
-
-  .pdp-title {
-    font-family: var(--font-heading);
-    font-size: clamp(2rem, 4vw, 3rem);
-    color: var(--kapi-charcoal);
-    line-height: 1.1;
-    margin-bottom: var(--space-md);
-  }
-
-  .pdp-price {
-    font-family: var(--font-body);
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--kapi-brown);
-    margin-bottom: var(--space-lg);
-  }
-
-  .pdp-desc {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    color: var(--kapi-charcoal);
-    margin-bottom: var(--space-xl);
-    opacity: 0.9;
-  }
-
-  .pdp-variants-label {
-    font-weight: 600;
-    margin-bottom: var(--space-xs);
-    display: block;
-    color: var(--kapi-charcoal);
-  }
-
-  .pdp-form {
-    background: #fff;
-    padding: var(--space-lg);
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(139, 90, 43, 0.1);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-  }
-
-  .pdp-variant-select {
-    width: 100%;
-    padding: 14px;
-    border: 1px solid rgba(139, 90, 43, 0.3);
-    border-radius: var(--radius-sm);
-    font-family: var(--font-body);
-    font-size: 1rem;
-    margin-bottom: var(--space-md);
-    cursor: pointer;
-  }
-
-  .pdp-variant-select:focus {
-    outline: none;
-    border-color: var(--kapi-brass);
-    box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1);
-  }
-
-  .pdp-qty-row {
-    display: flex;
-    gap: var(--space-md);
-    margin-bottom: var(--space-lg);
-  }
-
-  .pdp-qty-input {
-    width: 80px;
-    padding: 12px;
-    border: 1px solid rgba(139, 90, 43, 0.3);
-    border-radius: var(--radius-sm);
-    text-align: center;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-
-  .btn-add-cart-large {
-    flex-grow: 1;
-    background: var(--kapi-charcoal);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .btn-add-cart-large:hover {
-    background: var(--kapi-brass);
-  }
-
-  /* Highlights Section */
-  .pdp-highlights {
-    margin-top: var(--space-3xl);
-    padding: var(--space-2xl) 0;
-    border-top: 1px solid rgba(139, 90, 43, 0.1);
-    border-bottom: 1px solid rgba(139, 90, 43, 0.1);
-    background: #fff;
-  }
-  
-  .highlights-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-xl);
-    text-align: center;
-  }
-
-  .highlight-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-  }
-  .highlight-item img {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
-  }
-  .highlight-item span {
-    font-family: var(--font-heading);
-    font-size: 1.1rem;
-    color: var(--kapi-charcoal);
-  }
-
-  /* A+ Content */
-  .aplus-section {
-    padding: var(--space-3xl) 0;
-    background: var(--kapi-cream);
-  }
-  
-  .aplus-item {
-    margin-bottom: var(--space-2xl);
-  }
-  
-  .aplus-item img {
-    width: 100%;
-    border-radius: var(--radius-md);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-  }
+@media (max-width: 991px) {
+  .pdp-gallery-wrapper { flex-direction: column-reverse; }
+  .pdp-thumbnails { flex-direction: row; width: 100%; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; gap: var(--space-md); }
+  .pdp-thumbnails::-webkit-scrollbar { display: none; }
+  .pdp-thumb { flex-shrink: 0; width: 70px; height: 90px; }
+}
+@media (max-width: 767px) {
+  .pdp-sticky-bar { display: flex; }
+  body { padding-bottom: 70px; }
+  .pdp-title { font-size: 2rem; }
+  .pdp-price { font-size: 2rem; }
+  .story-content { font-size: var(--text-base); text-align: left; }
+}
 </style>
 {% endblock 'css' %}
 
 {% block 'body' %}
-<section class="pdp-wrapper">
+<section class="pdp-hero">
   <div class="container">
-    <div class="pdp-grid">
-      
-      <!-- Gallery Left -->
-      <div class="pdp-gallery">
-        <div class="pdp-main-image">
-          <img id="mainImage" src="{% if product.thumbnail %}{{ product.thumbnail.url }}{% else %}{% static 'main/logos/LogoMain.webp' %}{% endif %}" alt="{{ product.name }}">
-        </div>
-        
-        {% if product.product_images.all %}
-        <div class="pdp-thumbnails">
-          {% if product.thumbnail %}
-          <div class="pdp-thumb" onclick="swapImage('{{ product.thumbnail.url }}')">
-            <img src="{{ product.thumbnail.url }}" alt="Thumbnail">
+    <div class="pdp-breadcrumb">
+      <a href="/">Home</a> / 
+      <a href="/shop/category/{{ product.category.slug }}/">{{ product.category.title }}</a> / 
+      {% if product.sub_category %}<a href="/shop/{{ product.category.slug }}/{{ product.sub_category.slug }}/">{{ product.sub_category.title }}</a> / {% endif %}
+      <span>{{ product.name }}</span>
+    </div>
+
+    <div class="row gx-5">
+      <!-- Left: Image Gallery -->
+      <div class="col-lg-7 mb-4 mb-lg-0">
+        <div class="pdp-gallery-wrapper">
+          
+          {% if product.product_images.all or product.thumbnail %}
+          <div class="pdp-thumbnails">
+            {% if product.thumbnail %}
+            <div class="pdp-thumb active" onclick="swapImage(this, '{{ product.thumbnail.url }}')">
+              <img src="{{ product.thumbnail.url }}" alt="{{ product.name }}">
+            </div>
+            {% endif %}
+            
+            {% for img in product.product_images.all %}
+            <div class="pdp-thumb" onclick="swapImage(this, '{{ img.image.url }}')">
+              <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:product.name }}">
+            </div>
+            {% endfor %}
           </div>
           {% endif %}
           
-          {% for img in product.product_images.all %}
-          <div class="pdp-thumb" onclick="swapImage('{{ img.image.url }}')">
-            <img src="{{ img.image.url }}" alt="{{ img.alt_text }}">
+          <div class="pdp-main-img-container">
+            <img id="mainImage" src="{% if product.thumbnail %}{{ product.thumbnail.url }}{% else %}{% static 'main/logos/LogoMain.webp' %}{% endif %}" alt="{{ product.name }}">
           </div>
-          {% endfor %}
+          
         </div>
-        {% endif %}
       </div>
 
-      <!-- Info Right -->
-      <div class="pdp-info">
-        <div class="pdp-meta">
-          {{ product.category.title }} {% if product.sub_category %} / {{ product.sub_category.title }}{% endif %}
+      <!-- Right: Product Info -->
+      <div class="col-lg-5">
+        <div class="pdp-eyebrow">
+          {% if product.category.title == 'Accessories' %}COFFEE GEAR{% else %}INDIAN COFFEE{% endif %} / 
+          {{ product.category.title }}
         </div>
         
         <h1 class="pdp-title">{{ product.name }}</h1>
-        
-        <div class="pdp-price" id="displayPrice">
-          {% if product.product_variant.first %}
-            ₹{{ product.product_variant.first.price }}
-          {% else %}
-            Currently Unavailable
+        <div class="pdp-description">
+          {{ product.description|truncatewords:20|striptags }}
+        </div>
+
+        <form action="{% url 'add_to_cart' %}" method="POST" id="addToCartForm">
+          {% csrf_token %}
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          <input type="hidden" name="variant_id" id="selectedVariantId" value="">
+          
+          {% if product.product_variant.all %}
+          <span class="pdp-variant-label">Choose Variant</span>
+          <div class="pdp-variants" id="variantContainer">
+            {% for v in product.product_variant.all %}
+              <div class="pdp-variant-card {% if v.status != 'Enabled' or v.quantity <= 0 %}disabled{% endif %}" 
+                   onclick="selectVariant(this, '{{ v.id }}', '{{ v.price }}', {{ v.quantity }}, '{{ v.status }}', '{% if v.image %}{{ v.image.url }}{% endif %}')"
+                   data-id="{{ v.id }}" data-price="{{ v.price }}" data-qty="{{ v.quantity }}">
+                <span class="v-name">{{ v.name }}</span>
+                <span class="v-price">₹{{ v.price }}</span>
+              </div>
+            {% endfor %}
+          </div>
           {% endif %}
-        </div>
-        
-        <div class="pdp-desc">
-          {{ product.description|linebreaks }}
-        </div>
-        
-        <div class="pdp-form">
-          <form action="{% url 'add_to_cart' %}" method="POST" class="add-to-cart-form">
-            {% csrf_token %}
-            <input type="hidden" name="product_id" value="{{ product.id }}">
-            
-            <label class="pdp-variants-label">Choose Variant</label>
-            <select name="variant_id" class="pdp-variant-select" id="variantSelect" onchange="updatePrice()" required>
-              {% for v in product.product_variant.all %}
-                <option value="{{ v.id }}" data-price="{{ v.price }}">
-                  {{ v.name }}
-                </option>
-              {% endfor %}
-            </select>
-            
-            <div class="pdp-qty-row">
-              <input type="number" name="quantity" class="pdp-qty-input" value="1" min="1" max="99" required>
-              <button type="submit" class="btn-add-cart-large" {% if not product.product_variant.all %}disabled{% endif %}>
-                <i class="bi bi-bag-plus"></i> Add to Cart
-              </button>
+
+          <div class="pdp-price-wrap">
+            <span class="pdp-price" id="displayPrice">
+              {% if product.product_variant.first %}
+                ₹{{ product.product_variant.first.price }}
+              {% else %}
+                N/A
+              {% endif %}
+            </span>
+            <span class="pdp-stock-status" id="displayStock">
+              <!-- JS will update this -->
+            </span>
+          </div>
+
+          <div class="pdp-actions">
+            <div class="pdp-qty-selector">
+              <button type="button" class="pdp-qty-btn" onclick="updateQty(-1)">−</button>
+              <input type="number" name="quantity" id="qtyInput" class="pdp-qty-input" value="1" min="1" max="99" readonly>
+              <button type="button" class="pdp-qty-btn" onclick="updateQty(1)">+</button>
             </div>
-          </form>
+            <button type="submit" class="btn-pdp-add" id="btnAddToCart">
+              Add to Cart
+            </button>
+          </div>
+        </form>
+
+        <div class="pdp-reassurance">
+          <div class="reassurance-item"><i class="bi bi-box-seam"></i> Carefully packed for freshness</div>
+          <div class="reassurance-item"><i class="bi bi-shield-check"></i> Secure, encrypted checkout</div>
+          <div class="reassurance-item"><i class="bi bi-truck"></i> Trackable pan-India delivery</div>
         </div>
-        
+
       </div>
     </div>
   </div>
 </section>
 
 {% if product.product_highlight.all %}
-<section class="pdp-highlights">
+<section class="pdp-highlights-strip">
   <div class="container">
-    <div class="highlights-grid">
+    <div class="highlights-container">
       {% for h in product.product_highlight.all %}
-      <div class="highlight-item">
+      <div class="highlight">
         {% if h.icon %}
         <img src="{{ h.icon.url }}" alt="{{ h.text }}">
         {% else %}
-        <i class="bi bi-star-fill" style="font-size:2rem; color:var(--kapi-brass);"></i>
+        <i class="bi bi-check-circle highlight-icon-fallback"></i>
         {% endif %}
-        <span>{{ h.text }}</span>
+        <span class="highlight-text">{{ h.text }}</span>
       </div>
       {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if product.description %}
+<section class="pdp-story-section">
+  <div class="container">
+    <div class="story-subheading">The Story Behind the Cup</div>
+    <h2 class="story-heading">Your Next Cup Starts Here</h2>
+    <div class="story-content">
+      {{ product.description|linebreaks }}
     </div>
   </div>
 </section>
@@ -324,33 +257,257 @@
     {% for c in product.product_content.all %}
       <div class="aplus-item">
         {% if c.image %}
-        <img src="{{ c.image.url }}" alt="{{ c.image_alt }}">
+        <img src="{{ c.image.url }}" alt="{{ c.image_alt|default:product.name }}" loading="lazy">
         {% endif %}
       </div>
     {% endfor %}
   </div>
 </section>
 {% endif %}
+
+<section class="pdp-accordion-section">
+  <div class="container" style="max-width: 800px;">
+    <div class="accordion accordion-flush" id="pdpAccordion">
+      
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingOne">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+            About this Coffee
+          </button>
+        </h2>
+        <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#pdpAccordion">
+          <div class="accordion-body">
+            Sourced from the finest Indian estates, this coffee is artisan roasted in small batches to highlight its unique regional characteristics. We ensure every bean meets our rigorous specialty standards.
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingTwo">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+            Shipping & Delivery
+          </button>
+        </h2>
+        <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#pdpAccordion">
+          <div class="accordion-body">
+            We roast and dispatch orders within 48 hours to ensure maximum freshness. Standard shipping takes 3-5 business days across India. Tracking details are provided via email once dispatched.
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="flush-headingThree">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+            Returns & Quality Guarantee
+          </button>
+        </h2>
+        <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#pdpAccordion">
+          <div class="accordion-body">
+            Because coffee is a perishable food product, we do not accept returns on roasted beans. However, if your order arrives damaged or you experience a quality issue, please reach out to us within 7 days.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+{% if bundle_offer %}
+<section class="pdp-bundle-section py-5" style="background: var(--kapi-parchment);">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center">
+        <h2 class="mb-4" style="font-family: var(--font-heading); color: var(--kapi-dark-roast);">BUILD YOUR KAPI KIT</h2>
+        <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 mb-4">
+          {% for bp in bundle_offer.bundle_products.all %}
+            <div class="text-center" style="width: 120px;">
+              <img src="{% if bp.thumbnail %}{{ bp.thumbnail.url }}{% else %}/static/main/logos/LogoMain.webp{% endif %}" alt="{{ bp.name }}" style="width: 100px; height: 100px; object-fit: contain; background: #fff; border-radius: 50%; padding: 10px; box-shadow: var(--shadow-sm); margin-bottom: 10px;">
+              <p style="font-size: 0.8rem; font-weight: 600; line-height: 1.2;">{{ bp.name|truncatechars:30 }}</p>
+            </div>
+            {% if not forloop.last %}<div style="font-size: 1.5rem; color: var(--kapi-brass-dark);"><i class="bi bi-plus-lg"></i></div>{% endif %}
+          {% endfor %}
+        </div>
+        <div class="d-flex justify-content-center align-items-center gap-4 mb-4">
+          <div class="text-end" style="color: var(--kapi-charcoal);">
+            <p class="mb-0" style="text-decoration: line-through; opacity: 0.7;">Regular price varies</p>
+            <h3 class="mb-0" style="color: var(--kapi-dark-roast); font-weight: 700;">Bundle Price: ₹{{ bundle_offer.bundle_price }}</h3>
+          </div>
+          <div>
+            <!-- Note: You would need an endpoint to add multiple products to cart for the bundle. For now, linking to shop. -->
+            <a href="/shop/" class="btn-pdp-add px-4" style="text-decoration: none;">Explore Kit Options</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if related_products %}
+<section class="pdp-related-section">
+  <div class="container">
+    <h2 class="related-title">Complete Your Coffee Ritual</h2>
+    <!-- Reusing existing base product grid -->
+    <div class="product-grid">
+      {% for rp in related_products %}
+        {% include 'main/components/product_card.html' with p=rp %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Sticky Mobile Purchase Bar -->
+<div class="pdp-sticky-bar d-md-none">
+  <p class="sticky-price" id="mobileStickyPrice">
+    {% if product.product_variant.first %}₹{{ product.product_variant.first.price }}{% endif %}
+  </p>
+  <button type="button" class="sticky-btn" id="mobileStickyBtn" onclick="document.getElementById('addToCartForm').requestSubmit()">
+    Add to Cart
+  </button>
+</div>
+
 {% endblock 'body' %}
 
 {% block 'script' %}
 <script>
-  function swapImage(url) {
-    document.getElementById('mainImage').src = url;
+  // Gallery logic
+  function swapImage(thumbEl, url) {
+    const mainImg = document.getElementById('mainImage');
+    mainImg.style.opacity = '0.5';
+    setTimeout(() => {
+      mainImg.src = url;
+      mainImg.style.opacity = '1';
+    }, 150);
+    
+    // Update active state
+    document.querySelectorAll('.pdp-thumb').forEach(t => t.classList.remove('active'));
+    thumbEl.classList.add('active');
   }
+
+  // Quantity logic
+  const qtyInput = document.getElementById('qtyInput');
+  let maxQty = 99;
   
-  function updatePrice() {
-    const select = document.getElementById('variantSelect');
-    const selectedOption = select.options[select.selectedIndex];
-    const price = selectedOption.getAttribute('data-price');
-    document.getElementById('displayPrice').innerText = '₹' + price;
+  function updateQty(change) {
+    let current = parseInt(qtyInput.value) || 1;
+    let next = current + change;
+    if (next >= 1 && next <= maxQty) {
+      qtyInput.value = next;
+    }
   }
+
+  // Variant Logic
+  const displayPrice = document.getElementById('displayPrice');
+  const mobileStickyPrice = document.getElementById('mobileStickyPrice');
+  const displayStock = document.getElementById('displayStock');
+  const btnAddToCart = document.getElementById('btnAddToCart');
+  const mobileStickyBtn = document.getElementById('mobileStickyBtn');
+  const hiddenVariantInput = document.getElementById('selectedVariantId');
   
-  // Call once on load to ensure sync
-  window.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('variantSelect')) {
-      updatePrice();
+  function selectVariant(cardEl, id, price, quantity, status, imageUrl) {
+    if (cardEl.classList.contains('disabled')) return;
+    
+    // Update active class
+    document.querySelectorAll('.pdp-variant-card').forEach(c => c.classList.remove('selected'));
+    cardEl.classList.add('selected');
+    
+    // Update hidden input
+    hiddenVariantInput.value = id;
+    
+    // Update Price
+    displayPrice.innerText = '₹' + price;
+    if(mobileStickyPrice) mobileStickyPrice.innerText = '₹' + price;
+    
+    // Update Image if variant has one
+    if (imageUrl && imageUrl.trim() !== '') {
+      // Find a matching thumbnail, or just swap main
+      const mainImg = document.getElementById('mainImage');
+      mainImg.src = imageUrl;
+    }
+    
+    // Update Stock & Button state
+    maxQty = quantity;
+    if (status !== 'Enabled' || quantity <= 0) {
+      displayStock.innerText = 'Out of Stock';
+      displayStock.className = 'pdp-stock-status stock-out';
+      btnAddToCart.disabled = true;
+      btnAddToCart.innerText = 'Out of Stock';
+      if(mobileStickyBtn) { mobileStickyBtn.disabled = true; mobileStickyBtn.innerText = 'Out of Stock'; }
+    } else if (quantity < 5) {
+      displayStock.innerText = `Only ${quantity} left`;
+      displayStock.className = 'pdp-stock-status stock-low';
+      btnAddToCart.disabled = false;
+      btnAddToCart.innerText = 'Add to Cart';
+      if(mobileStickyBtn) { mobileStickyBtn.disabled = false; mobileStickyBtn.innerText = 'Add to Cart'; }
+    } else {
+      displayStock.innerText = 'In Stock';
+      displayStock.className = 'pdp-stock-status stock-in';
+      btnAddToCart.disabled = false;
+      btnAddToCart.innerText = 'Add to Cart';
+      if(mobileStickyBtn) { mobileStickyBtn.disabled = false; mobileStickyBtn.innerText = 'Add to Cart'; }
+    }
+    
+    // Reset qty to 1 when changing variants
+    qtyInput.value = 1;
+  }
+
+  // Initialize first available variant on load
+  document.addEventListener('DOMContentLoaded', () => {
+    const availableVariant = document.querySelector('.pdp-variant-card:not(.disabled)');
+    if (availableVariant) {
+      availableVariant.click();
+    } else {
+      // If all disabled
+      btnAddToCart.disabled = true;
+      btnAddToCart.innerText = 'Out of Stock';
+      if(mobileStickyBtn) { mobileStickyBtn.disabled = true; mobileStickyBtn.innerText = 'Out of Stock'; }
     }
   });
+
+  // Handle Add To Cart Form Submission via AJAX to show a nice confirmation
+  const addToCartForm = document.getElementById('addToCartForm');
+  addToCartForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const ogBtnText = btnAddToCart.innerHTML;
+    
+    btnAddToCart.disabled = true;
+    btnAddToCart.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Adding...';
+    if(mobileStickyBtn) { mobileStickyBtn.disabled = true; mobileStickyBtn.innerHTML = 'Adding...'; }
+    
+    fetch(this.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(res => res.text())
+    .then(html => {
+      // Because the view might just return the whole page or redirect
+      // Assuming a normal Django form POST, we can just reload or update the cart drawer
+      btnAddToCart.innerHTML = '<i class="bi bi-check2"></i> Added to Cart';
+      btnAddToCart.style.background = 'var(--kapi-plantation)';
+      if(mobileStickyBtn) { mobileStickyBtn.innerHTML = 'Added'; mobileStickyBtn.style.background = 'var(--kapi-plantation)'; }
+      
+      // Update cart drawer if it exists (Kapi structure)
+      // Usually there is a fetch to refresh cart
+      setTimeout(() => {
+        window.location.href = '/shop/'; // Redirect to shop or open drawer
+      }, 1000);
+    })
+    .catch(err => {
+      console.error(err);
+      btnAddToCart.disabled = false;
+      btnAddToCart.innerHTML = ogBtnText;
+      if(mobileStickyBtn) { mobileStickyBtn.disabled = false; mobileStickyBtn.innerHTML = 'Add to Cart'; }
+    });
+  });
 </script>
+<style>
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+</style>
 {% endblock 'script' %}
