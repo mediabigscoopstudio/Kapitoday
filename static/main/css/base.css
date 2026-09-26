@@ -41,3 +41,11 @@
 .ticker-bar {
     z-index: 1030 !important; 
 }
+
+/* Guarantee Offcanvas sits above EVERYTHING (including ticker) */
+.offcanvas {
+    z-index: 1055 !important; 
+}
+.offcanvas-backdrop {
+    z-index: 1050 !important;
+}
