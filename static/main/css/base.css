@@ -4,3 +4,35 @@
 .qty-selector { flex-shrink: 0 !important; min-width: 90px !important; justify-content: space-between !important; display: flex !important; align-items: center !important; }
 .qty-btn { flex-shrink: 0 !important; width: 30px !important; height: 30px !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 0 !important; }
 .qty-input { width: 30px !important; flex-shrink: 0 !important; min-width: 30px !important; }
+
+@media (max-width: 768px) {
+    .price-qty-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+    .qty-selector {
+        width: 100% !important;
+        justify-content: space-between !important;
+        height: 38px !important;
+    }
+    .qty-btn {
+        width: 40px !important;
+        height: 100% !important;
+        font-size: 1.2rem !important;
+        background: #f8f9fa !important;
+    }
+    .qty-input {
+        flex-grow: 1 !important;
+        height: 100% !important;
+        text-align: center !important;
+        font-size: 1rem !important;
+    }
+    .price-main {
+        font-size: 1.2rem !important;
+    }
+    .v-label-pill {
+        padding: 5px 8px !important;
+        font-size: 0.65rem !important;
+    }
+}
