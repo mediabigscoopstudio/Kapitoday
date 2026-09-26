@@ -66,6 +66,25 @@
             </a>
             
             <div class="d-flex align-items-center gap-3">
+                
+                <!-- Account Dropdown (Mobile) -->
+                {% if request.user.is_authenticated %}
+                <div class="dropdown">
+                    <a href="#" class="header-icon" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration:none;">
+                        <i class="bi bi-person-check-fill"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                        <li><h6 class="dropdown-header">Hi, {{ request.user.first_name }}</h6></li>
+                        <li><a class="dropdown-item" href="{% url 'my_orders' %}">My Orders</a></li>
+                        <li><a class="dropdown-item" href="{% url 'customer_support' %}">Support</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                    </ul>
+                </div>
+                {% else %}
+                <a href="#" class="header-icon google-login-trigger" title="Login"><i class="bi bi-person"></i></a>
+                {% endif %}
+
                 <!-- Cart Button -->
                 <button type="button" class="header-icon position-relative border-0 bg-transparent" data-bs-toggle="offcanvas" data-bs-target="#fastCheckoutDrawer">
                     <i class="bi bi-bag"></i>
@@ -97,14 +116,7 @@
         <a href="/learn">Learn</a>
         <a href="/about">Our Story</a>
         <a href="/journal">Journal</a>
-        <hr>
-        {% if request.user.is_authenticated %}
-        <a href="{% url 'my_orders' %}"><i class="bi bi-box me-2"></i>My Orders</a>
-        <a href="{% url 'customer_support' %}"><i class="bi bi-headset me-2"></i>Support</a>
-        <a href="{% url 'logout' %}" class="text-danger"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
-        {% else %}
-        <a href="#" class="google-login-trigger"><i class="bi bi-person me-2"></i>Login / Register</a>
-        {% endif %}
+        
     </nav>
   </div>
 </div>
