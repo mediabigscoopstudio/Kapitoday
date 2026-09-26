@@ -1,16 +1,22 @@
 {% extends 'main/base.html' %}
 {% load static %}
+
+
 {% block 'title' %}{{ product.meta_title|default:product.name }} | Kapi Today{% endblock 'title' %}
 
-{% block 'meta' %}
-<meta name="description" content="{{ product.meta_description|default:product.description|truncatewords:20 }}">
-<meta name="keywords" content="{{ product.meta_keywords }}">
-{% if product.meta_image %}
-<meta property="og:image" content="{{ product.meta_image.url }}">
-{% elif product.thumbnail %}
-<meta property="og:image" content="{{ product.thumbnail.url }}">
-{% endif %}
+{% block 'meta_description' %}{{ product.meta_description|default:product.description|truncatewords:20|striptags }}{% endblock 'meta_description' %}
+{% block 'meta_keywords' %}{{ product.meta_keywords|default:product.name }}{% endblock 'meta_keywords' %}
 
+{% block 'og_title' %}{{ product.meta_title|default:product.name }} | Kapi Today{% endblock 'og_title' %}
+{% block 'og_description' %}{{ product.meta_description|default:product.description|truncatewords:20|striptags }}{% endblock 'og_description' %}
+{% block 'og_type' %}product{% endblock 'og_type' %}
+{% block 'og_image' %}{% if product.meta_image %}{{ request.scheme }}://{{ request.get_host }}{{ product.meta_image.url }}{% elif product.thumbnail %}{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}/static/main/images/seo/og-image.webp{% endif %}{% endblock 'og_image' %}
+
+{% block 'twitter_title' %}{{ product.meta_title|default:product.name }} | Kapi Today{% endblock 'twitter_title' %}
+{% block 'twitter_description' %}{{ product.meta_description|default:product.description|truncatewords:20|striptags }}{% endblock 'twitter_description' %}
+{% block 'twitter_image' %}{% if product.meta_image %}{{ request.scheme }}://{{ request.get_host }}{{ product.meta_image.url }}{% elif product.thumbnail %}{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}/static/main/images/seo/og-image.webp{% endif %}{% endblock 'twitter_image' %}
+
+{% block 'meta' %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org/",
@@ -28,7 +34,6 @@
   }
 }
 </script>
-
 {% endblock 'meta' %}
 
 {% block 'css' %}

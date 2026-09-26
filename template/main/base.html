@@ -4,9 +4,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block 'title' %}{% endblock 'title' %}</title>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  
+  <title>{% block 'title' %}Kapi Today - Authentic South Indian Filter Coffee{% endblock 'title' %}</title>
+  <meta name="description" content="{% block 'meta_description' %}Experience the rich, authentic taste of South Indian filter coffee. Estate-grown, artisanal roasts from the Western Ghats to your cup.{% endblock 'meta_description' %}">
+  <meta name="keywords" content="{% block 'meta_keywords' %}South Indian Coffee, Filter Coffee, Coffee Beans, Artisanal Coffee, Indian Coffee Roasters{% endblock 'meta_keywords' %}">
+  
+  <link rel="canonical" href="{% block 'canonical_url' %}{{ request.build_absolute_uri }}{% endblock 'canonical_url' %}">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="{% block 'og_type' %}website{% endblock 'og_type' %}">
+  <meta property="og:url" content="{% block 'og_url' %}{{ request.build_absolute_uri }}{% endblock 'og_url' %}">
+  <meta property="og:title" content="{% block 'og_title' %}Kapi Today - Authentic South Indian Filter Coffee{% endblock 'og_title' %}">
+  <meta property="og:description" content="{% block 'og_description' %}Experience the rich, authentic taste of South Indian filter coffee. Estate-grown, artisanal roasts from the Western Ghats to your cup.{% endblock 'og_description' %}">
+  <meta property="og:image" content="{% block 'og_image' %}{{ request.scheme }}://{{ request.get_host }}/static/main/images/seo/og-image.webp{% endblock 'og_image' %}">
+  <meta property="og:site_name" content="Kapi Today">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="{% block 'twitter_card' %}summary_large_image{% endblock 'twitter_card' %}">
+  <meta property="twitter:url" content="{% block 'twitter_url' %}{{ request.build_absolute_uri }}{% endblock 'twitter_url' %}">
+  <meta property="twitter:title" content="{% block 'twitter_title' %}Kapi Today - Authentic South Indian Filter Coffee{% endblock 'twitter_title' %}">
+  <meta property="twitter:description" content="{% block 'twitter_description' %}Experience the rich, authentic taste of South Indian filter coffee. Estate-grown, artisanal roasts from the Western Ghats to your cup.{% endblock 'twitter_description' %}">
+  <meta property="twitter:image" content="{% block 'twitter_image' %}{{ request.scheme }}://{{ request.get_host }}/static/main/images/seo/og-image.webp{% endblock 'twitter_image' %}">
+
   <link rel="shortcut icon" href="/static/main/logos/Vector.webp" type="image/x-icon">
-  {% block 'meta' %} {% endblock 'meta' %}
+  
+  {% block 'meta' %}{% endblock 'meta' %}
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

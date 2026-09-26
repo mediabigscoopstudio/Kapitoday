@@ -1,6 +1,17 @@
 {% extends "main/base.html" %}
 {% load static %}
-{% block 'title' %}Shop — Kapi Today{% endblock 'title' %}
+{% block 'title' %}{% if category %}{{ category.title }} | Shop{% else %}Shop All Coffee{% endif %} - Kapi Today{% endblock 'title' %}
+
+{% block 'meta_description' %}{% if category and category.description %}{{ category.description|striptags|truncatewords:20 }}{% else %}Explore our authentic collection of South Indian filter coffee. Estate-grown, artisanal roasts shipped fresh.{% endif %}{% endblock 'meta_description' %}
+
+{% block 'og_title' %}{% if category %}{{ category.title }} | Shop{% else %}Shop All Coffee{% endif %} - Kapi Today{% endblock 'og_title' %}
+{% block 'og_description' %}{% if category and category.description %}{{ category.description|striptags|truncatewords:20 }}{% else %}Explore our authentic collection of South Indian filter coffee. Estate-grown, artisanal roasts shipped fresh.{% endif %}{% endblock 'og_description' %}
+{% block 'og_image' %}{% if category and category.category_image %}{{ request.scheme }}://{{ request.get_host }}{{ category.category_image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}/static/main/images/seo/og-image.webp{% endif %}{% endblock 'og_image' %}
+
+{% block 'twitter_title' %}{% if category %}{{ category.title }} | Shop{% else %}Shop All Coffee{% endif %} - Kapi Today{% endblock 'twitter_title' %}
+{% block 'twitter_description' %}{% if category and category.description %}{{ category.description|striptags|truncatewords:20 }}{% else %}Explore our authentic collection of South Indian filter coffee. Estate-grown, artisanal roasts shipped fresh.{% endif %}{% endblock 'twitter_description' %}
+{% block 'twitter_image' %}{% if category and category.category_image %}{{ request.scheme }}://{{ request.get_host }}{{ category.category_image.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}/static/main/images/seo/og-image.webp{% endif %}{% endblock 'twitter_image' %}
+
 
 {% block 'css' %}
 <style>
