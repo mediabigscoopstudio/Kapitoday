@@ -31,6 +31,22 @@
   
   {% block 'meta' %}{% endblock 'meta' %}
 
+  <!-- Global Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Kapi Today",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/",
+    "logo": "{{ request.scheme }}://{{ request.get_host }}/static/main/logos/LogoMain.webp",
+    "description": "Authentic South Indian Filter Coffee. Estate-grown, artisanal roasts from the Western Ghats.",
+    "sameAs": [
+      "https://www.instagram.com/kapitoday"
+    ]
+  }
+  </script>
+
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,7 +58,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/static/main/css/base.css">
   {% block 'css' %}{% endblock 'css' %}
-  <link rel="stylesheet" href="{% static 'main/css/checkout.css' %}">
+  
 
   
 
@@ -324,7 +340,7 @@
   </div> <!-- /.page-wrapper -->
 
   <!-- Bootstrap 5 JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
 
   <script>
     // Sticky navbar shadow on scroll

@@ -85,7 +85,7 @@
             
             <a href="/shop" class="category-item">
                 <div class="category-icon-wrapper">
-                    <img src="/static/main/images/home/roast-dark.webp" alt="All Coffee">
+                    <img loading="lazy" src="/static/main/images/home/roast-dark.webp" alt="All Coffee">
                 </div>
                 <div class="category-text-wrapper">
                     <p class="category-title">All Coffee</p>
@@ -98,11 +98,11 @@
                 <div class="category-icon-wrapper">
                     {% with prod=cat.product_category.first %}
                         {% if prod and prod.thumbnail %}
-                            <img src="{{ prod.thumbnail.url }}" alt="{{ cat.title }}">
+                            <img loading="lazy" src="{{ prod.thumbnail.url }}" alt="{{ cat.title }}">
                         {% elif cat.category_image %}
-                            <img src="{{ cat.category_image.url }}" alt="{{ cat.title }}">
+                            <img loading="lazy" src="{{ cat.category_image.url }}" alt="{{ cat.title }}">
                         {% else %}
-                            <img src="/static/main/images/home/roast-dark.webp" alt="{{ cat.title }}">
+                            <img loading="lazy" src="/static/main/images/home/roast-dark.webp" alt="{{ cat.title }}">
                         {% endif %}
                     {% endwith %}
                 </div>

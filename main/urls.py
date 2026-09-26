@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import TemplateView
 from main import views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
     path('my-orders/', views.my_orders, name='my_orders'),
     path('api/search/', views.search_products_api, name='search_products_api'),
     path('my-orders/<str:display_id>/', views.my_order_detail, name='my_order_detail'),
