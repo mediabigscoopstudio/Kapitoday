@@ -73,73 +73,74 @@
 <!-- Pinecode Studio Modal -->
 <div class="modal fade" id="pinecodeModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0" style="border-radius: 24px; overflow: hidden; background-color: #f8f6f0;">
-      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 10; background-color: rgba(255,255,255,0.5); border-radius: 50%; padding: 10px;"></button>
+    <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; background-color: #f8f6f0;">
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 10; background-color: rgba(255,255,255,0.7); border-radius: 50%; padding: 8px;"></button>
       
       <div class="row g-0">
         <!-- Left Image -->
-        <div class="col-md-6 d-none d-md-block" style="background: url('/static/main/images/pinecode-cover.webp') center center/cover no-repeat; min-height: 100%;">
+        <div class="col-md-5 d-none d-md-block" style="background-color: #0f1e14; position: relative;">
+            <img src="/static/main/images/pinecode-cover.webp" alt="Pinecode Studio" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top;">
         </div>
         
-        <!-- Mobile Image (Hidden on desktop) -->
-        <div class="col-12 d-md-none">
-            <img src="/static/main/images/pinecode-cover.webp" alt="Pinecode Studio" class="w-100" style="height: 250px; object-fit: cover;">
+        <!-- Mobile Image -->
+        <div class="col-12 d-md-none" style="background-color: #0f1e14;">
+            <img src="/static/main/images/pinecode-cover.webp" alt="Pinecode Studio" class="w-100" style="max-height: 280px; object-fit: cover; object-position: center top;">
         </div>
 
         <!-- Right Content -->
-        <div class="col-md-6">
-          <div class="p-4 p-md-5">
-            <div class="d-inline-block px-3 py-1 mb-3 rounded-pill" style="background: #e2e8e0; color: #1e3a24; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px;">
+        <div class="col-md-7">
+          <div class="p-4">
+            <div class="d-inline-block px-3 py-1 mb-2 rounded-pill" style="background: #e2e8e0; color: #1e3a24; font-size: 0.6rem; font-weight: 700; letter-spacing: 1px;">
               DESIGNED AND DEVELOPED BY
             </div>
             
-            <h2 class="fw-bold mb-2" style="font-family: var(--font-heading, sans-serif); color: #0f1f14;">Pinecode Studio</h2>
-            <p class="mb-4" style="color: #4a5d50; font-size: 0.95rem;">Your Partner in Building Digital Products that Create Real Impact.</p>
+            <h2 class="fw-bold mb-1" style="font-family: var(--font-heading, sans-serif); color: #0f1f14; font-size: 1.8rem;">Pinecode Studio</h2>
+            <p class="mb-3" style="color: #4a5d50; font-size: 0.85rem;">Your Partner in Building Digital Products that Create Real Impact.</p>
             
-            <ul class="list-unstyled d-flex flex-column gap-3 mb-4">
-                <li class="d-flex align-items-start gap-3">
-                    <div class="p-2 rounded-3" style="background: #e9ece4; color: #1e3a24;"><i class="bi bi-display"></i></div>
+            <ul class="list-unstyled d-flex flex-column gap-2 mb-3">
+                <li class="d-flex align-items-center gap-3">
+                    <div class="p-2 rounded-3 d-flex align-items-center justify-content-center" style="background: #e9ece4; color: #1e3a24; width:36px; height:36px;"><i class="bi bi-display"></i></div>
                     <div>
-                        <h6 class="mb-1 fw-bold" style="color: #111; font-size: 0.9rem;">Custom Websites</h6>
-                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Modern, scalable and tailored to your brand.</p>
+                        <h6 class="mb-0 fw-bold" style="color: #111; font-size: 0.85rem;">Custom Websites</h6>
+                        <p class="mb-0 text-muted" style="font-size: 0.75rem;">Modern, scalable and tailored to your brand.</p>
                     </div>
                 </li>
-                <li class="d-flex align-items-start gap-3">
-                    <div class="p-2 rounded-3" style="background: #e9ece4; color: #1e3a24;"><i class="bi bi-cart3"></i></div>
+                <li class="d-flex align-items-center gap-3">
+                    <div class="p-2 rounded-3 d-flex align-items-center justify-content-center" style="background: #e9ece4; color: #1e3a24; width:36px; height:36px;"><i class="bi bi-cart3"></i></div>
                     <div>
-                        <h6 class="mb-1 fw-bold" style="color: #111; font-size: 0.9rem;">E-Commerce Solutions</h6>
-                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Powerful online stores that actually sell.</p>
+                        <h6 class="mb-0 fw-bold" style="color: #111; font-size: 0.85rem;">E-Commerce Solutions</h6>
+                        <p class="mb-0 text-muted" style="font-size: 0.75rem;">Powerful online stores that actually sell.</p>
                     </div>
                 </li>
-                <li class="d-flex align-items-start gap-3">
-                    <div class="p-2 rounded-3" style="background: #e9ece4; color: #1e3a24;"><i class="bi bi-phone"></i></div>
+                <li class="d-flex align-items-center gap-3">
+                    <div class="p-2 rounded-3 d-flex align-items-center justify-content-center" style="background: #e9ece4; color: #1e3a24; width:36px; height:36px;"><i class="bi bi-phone"></i></div>
                     <div>
-                        <h6 class="mb-1 fw-bold" style="color: #111; font-size: 0.9rem;">Mobile Apps</h6>
-                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Ideas, built for every screen.</p>
+                        <h6 class="mb-0 fw-bold" style="color: #111; font-size: 0.85rem;">Mobile Apps</h6>
+                        <p class="mb-0 text-muted" style="font-size: 0.75rem;">Ideas, built for every screen.</p>
                     </div>
                 </li>
-                <li class="d-flex align-items-start gap-3">
-                    <div class="p-2 rounded-3" style="background: #e9ece4; color: #1e3a24;"><i class="bi bi-graph-up-arrow"></i></div>
+                <li class="d-flex align-items-center gap-3">
+                    <div class="p-2 rounded-3 d-flex align-items-center justify-content-center" style="background: #e9ece4; color: #1e3a24; width:36px; height:36px;"><i class="bi bi-graph-up-arrow"></i></div>
                     <div>
-                        <h6 class="mb-1 fw-bold" style="color: #111; font-size: 0.9rem;">Digital Marketing</h6>
-                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Get visibility. Get customers. Get results.</p>
+                        <h6 class="mb-0 fw-bold" style="color: #111; font-size: 0.85rem;">Digital Marketing</h6>
+                        <p class="mb-0 text-muted" style="font-size: 0.75rem;">Get visibility. Get customers. Get results.</p>
                     </div>
                 </li>
-                <li class="d-flex align-items-start gap-3">
-                    <div class="p-2 rounded-3" style="background: #e9ece4; color: #1e3a24;"><i class="bi bi-gear"></i></div>
+                <li class="d-flex align-items-center gap-3">
+                    <div class="p-2 rounded-3 d-flex align-items-center justify-content-center" style="background: #e9ece4; color: #1e3a24; width:36px; height:36px;"><i class="bi bi-gear"></i></div>
                     <div>
-                        <h6 class="mb-1 fw-bold" style="color: #111; font-size: 0.9rem;">AI Automations</h6>
-                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Work smarter. Grow faster.</p>
+                        <h6 class="mb-0 fw-bold" style="color: #111; font-size: 0.85rem;">AI Automations</h6>
+                        <p class="mb-0 text-muted" style="font-size: 0.75rem;">Work smarter. Grow faster.</p>
                     </div>
                 </li>
             </ul>
             
-            <p class="fw-bold mb-3" style="color: #111; font-size: 0.9rem;">Want to build a website or e-commerce store for your business?</p>
-            <a href="https://pinecodestudio.com/" target="_blank" class="btn w-100 mb-3" style="background: #182b1b; color: #fff; padding: 12px; font-weight: 500; border-radius: 8px;">
+            <p class="fw-bold mb-2" style="color: #111; font-size: 0.85rem; text-align: center;">Want to build a website or e-commerce store?</p>
+            <a href="https://pinecodestudio.com/" target="_blank" class="btn w-100 mb-2" style="background: #182b1b; color: #fff; padding: 10px; font-weight: 500; border-radius: 8px; font-size: 0.9rem;">
                 Visit Pinecode Studio <i class="bi bi-box-arrow-up-right ms-2"></i>
             </a>
             
-            <div class="text-center" style="font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; color: #666;">
+            <div class="text-center" style="font-size: 0.6rem; font-weight: 700; letter-spacing: 1.5px; color: #888;">
                 BUILD &bull; LAUNCH &bull; GROW TOGETHER
             </div>
             
